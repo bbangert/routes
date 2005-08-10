@@ -32,7 +32,7 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual(None, m.match('/boo/blah'))
         self.assertEqual(None, m.match('/hi'))
         self.assertEqual(None, m.match('/hi/dude/what'))
-        self.assertEqual({'controller':'content','name':'dude'}, m.match('/hi/dude'))
+        self.assertEqual({'controller':'content','name':'dude','action':'index'}, m.match('/hi/dude'))
     
     def test_dynamic_with_default(self):
         m = Mapper()
@@ -55,7 +55,7 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual(None, m.match('/boo/blah'))
         self.assertEqual(None, m.match('/hi'))
         self.assertEqual(None, m.match('/hi/dude/what'))
-        self.assertEqual({'controller':'content','name':'index'}, m.match('/hi/index'))
+        self.assertEqual({'controller':'content','name':'index','action':'index'}, m.match('/hi/index'))
         self.assertEqual(None, m.match('/hi/dude'))
     
     def test_dynamic_with_regexp_condition(self):
@@ -70,8 +70,8 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual(None, m.match('/hi/138708jkhdf'))
         self.assertEqual(None, m.match('/hi/dkjfl8792343dfsf'))
         self.assertEqual(None, m.match('/hi/dude/what'))
-        self.assertEqual({'controller':'content','name':'index'}, m.match('/hi/index'))
-        self.assertEqual({'controller':'content','name':'dude'}, m.match('/hi/dude'))
+        self.assertEqual({'controller':'content','name':'index','action':'index'}, m.match('/hi/index'))
+        self.assertEqual({'controller':'content','name':'dude','action':'index'}, m.match('/hi/dude'))
     
     def test_dynamic_with_regexp_and_default(self):
         m = Mapper()

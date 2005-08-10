@@ -99,18 +99,26 @@ class TestGeneration(unittest.TestCase):
         m.connect('viewpost/:id', controller='post', action='view')
         m.connect(':controller/:action/:id')
         
-        self.assertEqual('/blog/view', m.generate(controller='blog', action='view', year=2004, month='blah'))
+        self.assertEqual('/blog/view?year=2004&month=blah', m.generate(controller='blog', action='view', year=2004, month='blah'))
         self.assertEqual('/archive/2004/11', m.generate(controller='blog', action='view', year=2004, month=11))
         self.assertEqual('/archive/2004/11', m.generate(controller='blog', action='view', year=2004, month='11'))
         self.assertEqual('/archive/2004', m.generate(controller='blog', action='view', year=2004))
         self.assertEqual('/viewpost/3', m.generate(controller='post', action='view', id=3))
+        
+    def test_extras(self):
+        m = Mapper()
+        m.connect('viewpost/:id', controller='post', action='view')
+        m.connect(':controller/:action/:id')
+        
+        self.assertEqual('/blog?extra=3', m.generate(controller='blog', action='index', extra=3))
+        self.assertEqual('/viewpost/2?extra=3', m.generate(controller='post', action='view', id=2, extra=3))
     
     def test_static(self):
         m = Mapper()
         m.connect('hello/world',known='known_value',controller='content',action='index')
         
         self.assertEqual('/hello/world', m.generate(controller='content',action= 'index',known ='known_value'))
-        self.assertEqual('/hello/world', m.generate(controller='content',action='index',known='known_value',extra='hi'))
+        self.assertEqual('/hello/world?extra=hi', m.generate(controller='content',action='index',known='known_value',extra='hi'))
         
         self.assertEqual(None, m.generate(known='foo'))
     

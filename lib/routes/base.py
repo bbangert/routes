@@ -9,7 +9,7 @@ import re, time, sys
 from urllib import quote_plus
 
 def quote(string):
-    return quote_plus(string, '/')
+    return quote_plus(str(string), '/')
 
 if sys.version < '2.4':
     from sets import ImmutableSet as frozenset
@@ -39,9 +39,7 @@ class Route(object):
         defaultkeys = frozenset([key for key in kargs.keys() if key not in reserved_keys])
         routekeys = frozenset([key[1:] for key in routelist if (key.startswith(':') or key.startswith('*')) and key not in reserved_keys])
         
-        # Save the maximum keys we could utilize
-        self.maxkeys = defaultkeys | routekeys
-        
+        maxkeys = defaultkeys | routekeys
         # Save our routelist
         self.routelist = routelist[:]
         self.routepath = routepath
@@ -60,9 +58,15 @@ class Route(object):
                 defaults[key] = None
         if 'action' in routekeys and not defaults.has_key('action'):
             defaults['action'] = 'index'
+        elif not defaults.has_key('action') and 'controller' in maxkeys:
+            defaults['action'] = 'index'
         if 'id' in routekeys and not defaults.has_key('id'):
             defaults['id'] = None
-        
+        defaultkeys = frozenset([key for key in defaults.keys() if key not in reserved_keys])
+
+        # Save the maximum keys we could utilize
+        self.maxkeys = defaultkeys | routekeys
+
         # We walk our route backwards, anytime we can leave off a key due to it
         # having a default, or being None, we know its not needed. As soon as we
         # add something though, the rest is needed no matter what.
@@ -87,7 +91,7 @@ class Route(object):
         # match these ones for the URL to be usable.
         hardcoded = []
         for key in self.maxkeys:
-            if key not in routekeys and kargs[key] is not None:
+            if key not in routekeys and defaults[key] is not None:
                 hardcoded.append(key)
         self.defaults = defaults
         self.hardcoded = frozenset(hardcoded)
@@ -200,14 +204,14 @@ class Route(object):
                     continue
                 if val is None:
                     raise Exception, "Route causes gaps"
-                val = quote(str(val))
+                val = quote(val)
                 urllist.append(val)
                 if kargs.has_key(arg): del kargs[arg]
                 gaps = True
             elif part.startswith('*'):
                 arg = part[1:]
                 if kargs.has_key(arg) and kargs[arg] is not None:
-                    val = quote(str(kargs[arg]))
+                    val = quote(kargs[arg])
                     urllist.append(val)
                     gaps = True
             else:
@@ -216,9 +220,9 @@ class Route(object):
         urllist.reverse()
         url = '/' + '/'.join(urllist)
         extras = frozenset(kargs.keys()) - self.maxkeys
-        #if extras:
-            #url += '?'
-            #url += '&'.join([str(key)+'='+str(kargs[key]) for key in extras])
+        if extras:
+            url += '?'
+            url += '&'.join([quote(key)+'='+quote(kargs[key]) for key in extras if key != 'action' or key != 'controller'])
         return url
     
 
@@ -243,6 +247,7 @@ class Mapper(object):
         self.minkeys = {}
         self.cachematch = {}
         self.created_regs = False
+        self.urlcache = None
     
     def connect(self, *args, **kargs):
         """
@@ -294,12 +299,14 @@ class Mapper(object):
         
         m.generate(controller='content',action='view',id=10)
         """
-        # If they used action with 'index', thats the default, so we'll pretend
-        # it isn't here for proper result ordering
-        actionDef = False
-        if kargs.has_key('action') and kargs['action'] == 'index':
-            del kargs['action']
-            actionDef = True
+        
+        # Check the url cache to see if it exists, use it if it does
+        if self.urlcache:
+            try:
+                return urlcache[str(kargs)]
+            except:
+                pass
+        
         keys = frozenset(kargs.keys())
         
         # This keysort is probably expensive, so we'll cache the results. Since key lookups
@@ -328,11 +335,6 @@ class Mapper(object):
             keylist.sort(keysort)
             self.cachematch[keys] = keylist
         
-        # Restore the action arg, to ensure its called as 'index'
-        if actionDef:
-            kargs['action'] = 'index'
-            keys = frozenset(kargs.keys())
-            
         #print keylist
         for routelist in keylist:
             for route in self.maxkeys[routelist]:
@@ -348,6 +350,8 @@ class Mapper(object):
                 if len(route.minkeys-keys) == 0:
                     try:
                         path = route.generate(**kargs)
+                        if self.urlcache:
+                            self.urlcache[str(kargs)] = path
                         return path
                     except:
                         continue
