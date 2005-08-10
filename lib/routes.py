@@ -344,7 +344,6 @@ class Mapper(object):
                 if len(route.minkeys-keys) == 0:
                     try:
                         path = route.generate(**kargs)
-                        self.cacheurls[str(kargs)] = path
                         return path
                     except:
                         continue
