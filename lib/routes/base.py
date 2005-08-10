@@ -5,14 +5,14 @@
 #  Copyright (c) 2005 Parachute. All rights reserved.
 #
 
-import re, time
+import re, time, sys
 from urllib import quote_plus
 
 def quote(string):
     return quote_plus(string, '/')
 
-
-if not "frozenset" in dir(__builtins__): from sets import ImmutableSet as frozenset
+if sys.version < '2.4':
+    from sets import ImmutableSet as frozenset
 
 class Route(object):
     """
