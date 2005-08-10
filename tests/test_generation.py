@@ -8,7 +8,7 @@
 import sys
 import routes
 import unittest
-from routes import Mapper
+from routes.base import Mapper
 
 class TestGeneration(unittest.TestCase):
     def test_all_static_no_reqs(self):

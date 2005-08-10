@@ -7,7 +7,7 @@
 
 import sys
 import routes
-from routes import Mapper
+from routes.base import Mapper
 import unittest
 
 class TestRecognition(unittest.TestCase):
