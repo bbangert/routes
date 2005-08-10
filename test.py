@@ -1,4 +1,7 @@
-import unittest
+import unittest, sys
+sys.path.append('./tests')
+sys.path.append('./lib')
+
 from test_generation import TestGeneration
 from test_recognition import TestRecognition
 

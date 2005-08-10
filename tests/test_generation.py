@@ -5,6 +5,7 @@
 #  Copyright (c) 2005 Parachute. All rights reserved.
 #
 
+import sys
 import routes
 import unittest
 from routes import Mapper
