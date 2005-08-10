@@ -44,6 +44,7 @@ class Route(object):
         
         # Save our routelist
         self.routelist = routelist[:]
+        self.routepath = routepath
         
         # Build a req list with all the regexp requirements for our args
         self.reqs = kargs.has_key('requirements') and kargs['requirements']
@@ -147,7 +148,7 @@ class Route(object):
             result = {}
             extras = frozenset(self.defaults.keys()) - frozenset(matchdict.keys())
             for key in self.reqs.keys():
-                if key not in matchdict.keys():
+                if key not in matchdict.keys() or matchdict[key] is None:
                     try:
                         result[key] = self.defaults[key]
                     except:
@@ -155,6 +156,7 @@ class Route(object):
                 else:
                     value = matchdict[key] or (self.defaults.has_key(key) and self.defaults[key]) or ''
                     if not re.compile('^' + self.reqs[key] + '$').match(value):
+                        print "Didn't match reqs"
                         return False
             for key,val in matchdict.iteritems():
                 if not val and self.defaults.has_key(key) and self.defaults[key]:
@@ -178,7 +180,7 @@ class Route(object):
             if kargs.has_key(key):
                 if self.defaults.has_key(key) and self.defaults[key] is None and kargs[key] is None:
                     continue
-                if not re.compile('^' + self.reqs[key] + '$').match(kargs[key]):
+                if not re.compile('^' + self.reqs[key] + '$').match(str(kargs[key])):
                     raise Exception, "Route doesn't match reqs"
 
         routelist = self.routebackwards
@@ -300,7 +302,9 @@ class Mapper(object):
             actionDef = True
         keys = frozenset(kargs.keys())
         
-        # This keysort is probably expensive, so we'll cache the results
+        # This keysort is probably expensive, so we'll cache the results. Since key lookups
+        # by set isn't the quickest, I try and fetch first, and deal with it when it fails,
+        # rather than using has_key then fetching it (two key lookups)
         try:
             keylist = self.cachematch[keys]
         except:

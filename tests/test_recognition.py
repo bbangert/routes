@@ -88,6 +88,20 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual({'controller':'content','action':'index'}, m.match('/hi/index'))
         self.assertEqual({'controller':'content','action':'dude'}, m.match('/hi/dude'))
     
+    def test_multiroute(self):
+        m = Mapper()
+        m.connect('archive/:year/:month/:day', controller='blog', action='view', month=None, day=None,
+                                    requirements={'month':'\d{1,2}','day':'\d{1,2}'})
+        m.connect('viewpost/:id', controller='post', action='view')
+        m.connect(':controller/:action/:id')
+        m.create_regs(['post','blog','admin/user'])
+        
+        self.assertEqual(None, m.match('/'))
+        self.assertEqual(None, m.match('/archive'))
+        self.assertEqual(None, m.match('/archive/2004/ab'))
+        self.assertEqual({'controller':'blog','action':'view','id':None}, m.match('/blog/view'))
+        self.assertEqual({'controller':'blog','action':'view','month':None,'day':None,'year':'2004'}, m.match('/archive/2004'))
+        
     def test_path(self):
         m = Mapper()
         m.connect('hi/*file', controller='content', action='download')

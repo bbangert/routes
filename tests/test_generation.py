@@ -100,6 +100,8 @@ class TestGeneration(unittest.TestCase):
         m.connect(':controller/:action/:id')
         
         self.assertEqual('/blog/view', m.generate(controller='blog', action='view', year=2004, month='blah'))
+        self.assertEqual('/archive/2004/11', m.generate(controller='blog', action='view', year=2004, month=11))
+        self.assertEqual('/archive/2004/11', m.generate(controller='blog', action='view', year=2004, month='11'))
         self.assertEqual('/archive/2004', m.generate(controller='blog', action='view', year=2004))
         self.assertEqual('/viewpost/3', m.generate(controller='post', action='view', id=3))
     
