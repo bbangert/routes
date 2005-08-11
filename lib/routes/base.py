@@ -110,17 +110,22 @@ class Route(object):
         
         if not reg: reg = '/'
         reg = '^' + reg + '$'
-        #print "\nRegexp Made: " + reg
         
         self.regexp = reg
         self.regmatch = re.compile(reg)
         
     def buildnextreg(self, path, clist):
+        """
+        Recursively build our regexp given a path, and a controller list.
+        
+        Returns the regular expression string, and two booleans that can be ignored as
+        they're only used internally by buildnextreg
+        """
         part = path[0]
         reg = ''
         
         # noreqs will remember whether the remainder has either a string match, or a non-defaulted
-        # regexp match on a key
+        # regexp match on a key, allblank remembers if the rest could possible be completely empty
         (rest, noreqs, allblank) = ('', True, True)
         if len(path[1:]) > 0:
             (rest, noreqs, allblank) = self.buildnextreg(path[1:], clist)
@@ -136,45 +141,58 @@ class Route(object):
                 partreg = '(?P<' + var + '>' + '|'.join(clist) + ')'
             else:
                 partreg = '(?P<' + var + '>[^/]+)'
-                
+            
+            if self.reqs.has_key(var): noreqs = False
+            
             # Now we determine if its optional, or required. This changes depending on what is in
             # the rest of the match. If noreqs is true, then its possible the entire thing is optional
-            # as there's no reqs or string matches. If false, then this section isn't optional to complete
-            # the match, so we're required no matter what
-            if self.reqs.has_key(var): noreqs = False
+            # as there's no reqs or string matches.
             if noreqs:
                 # The rest is optional, but now we have an optional with a regexp. Wrap to ensure that if we match
-                # anything, we match our regexp first
+                # anything, we match our regexp first. It's still possible we could be completely blank as we have
+                # a default
                 if self.reqs.has_key(var) and self.defaults.has_key(var):
                     reg = '(/' + partreg + rest + ')?'
-                # Or we have a regexp match with no default
+                
+                # Or we have a regexp match with no default, so now being completely blank form here on out isn't
+                # possible
                 elif self.reqs.has_key(var):
                     allblank = False
-                    reg = '(/' + partreg + ')' + rest
-                # Or we have a default with no regexp
+                    reg = '/' + partreg + rest
+                
+                # Or we have a default with no regexp, don't touch the allblank
                 elif self.defaults.has_key(var):
                     reg = '(/' + partreg + ')?' + rest
+                
+                # Or we have a key with no default, and no reqs. Not possible to be all blank from here
                 else:
                     allblank = False
-                    reg = '(/' + partreg + ')' + rest
+                    reg = '/' + partreg + rest
             # In this case, we have something dangling that might need to be matched
             else:
-                # If they can all be blank, we can optionally match here, unless we have
-                # our own reqs, in which case we're optional match, but MUST match here
-                # if we match at all
+                # If they can all be blank, and we have a default here, we know its
+                # safe to make everything from here optional. Since something else in
+                # the chain does have req's though, we have to make the partreg here
+                # required to continue matching
                 if allblank and self.defaults.has_key(var):
                     reg = '(/' + partreg + rest + ')?'
+                    
+                # Same as before, but they can't all be blank, so we have to require it all to ensure
+                # our matches line up right
                 else:
                     reg = '/' + partreg + rest
         elif part.startswith('*'):
             var = part[1:]
             reg = '(/' + '(?P<' + var + '>.*))*' + rest
+        
+        # We have a normal string here, this is a req, and it prevents us from being all blank
         else:
             noreqs = False
             allblank = False
             reg = '/' + part + rest
-        return (reg, noreqs, allblank)
         
+        return (reg, noreqs, allblank)
+    
     def match(self, url):
         """
         Match a url to our regexp. While the regexp might match, this operation isn't
@@ -194,14 +212,12 @@ class Route(object):
             for key in self.reqs.keys():
                 if key not in matchdict.keys() or matchdict[key] is None:
                     try:
-                        print 'Checking default for: ' + str(key)
                         result[key] = self.defaults[key]
                     except:
                         return False
                 else:
                     value = matchdict[key] or (self.defaults.has_key(key) and self.defaults[key]) or ''
                     if not re.compile('^' + self.reqs[key] + '$').match(value):
-                        print "Didn't match reqs"
                         return False
             for key,val in matchdict.iteritems():
                 if not val and self.defaults.has_key(key) and self.defaults[key]:
