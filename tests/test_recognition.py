@@ -167,6 +167,17 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual({'controller':'admin/user','action':'view','url':None}, m.match('/admin/user/view'))
         self.assertEqual({'controller':'admin/user','action':'view','url':'blob/check'}, m.match('/admin/user/view/blob/check'))
     
+    def test_dynamic_with_default_and_string_condition_backwards(self):
+        m = Mapper()
+        m.connect(':action/hi')
+        m.create_regs([])
+        
+        self.assertEqual(None, m.match('/'))
+        self.assertEqual(None, m.match('/boo'))
+        self.assertEqual(None, m.match('/boo/blah'))
+        self.assertEqual({'action':'index'}, m.match('/index/hi'))
+        self.assertEqual({'action':'index'}, m.match('/index/hi'))
+    
     def test_path_with_dyanmic_and_default(self):
         m = Mapper()
         m.connect(':controller/:action/*url', controller='content', action='view')
