@@ -105,6 +105,14 @@ class TestGeneration(unittest.TestCase):
         self.assertEqual('/archive/2004', m.generate(controller='blog', action='view', year=2004))
         self.assertEqual('/viewpost/3', m.generate(controller='post', action='view', id=3))
         
+    def test_the_smallest_route(self):
+        m = Mapper()
+        m.connect('', controller='page', action='view', title='HomePage')
+        m.connect('pages/:title', controller='page', action='view')
+        
+        self.assertEqual('/', m.generate(controller='page', action='view', title='HomePage'))
+        self.assertEqual('/pages/joe', m.generate(controller='page', action='view', title='joe'))
+        
     def test_extras(self):
         m = Mapper()
         m.connect('viewpost/:id', controller='post', action='view')

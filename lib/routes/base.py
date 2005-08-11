@@ -106,35 +106,61 @@ class Route(object):
         that can be utilized
         """
         
-        # Build our regexp to match this expression
-        default = '[^/]+'
-        reg = ''
-        for part in self.routelist:
-            if not part:
-                continue
-            if part.startswith(':'):
-                var = part[1:]
-                partreg = ''
-                if self.reqs.has_key(var):
-                    partreg += '(?P<' + var + '>' + self.reqs[var] + ')'
-                elif var == 'controller':
-                    partreg += '(?P<' + var + '>' + '|'.join(clist) + ')'
-                else:
-                    partreg += '(?P<' + var + '>' + default + ')'
-                if self.defaults.has_key(var):
-                    reg += '(/' + partreg + '){0,1}'
-                else:
-                    reg += '/' + partreg
-            elif part.startswith('*'):
-                var = part[1:]
-                reg += '(/' + '(?P<' + var + '>.*))*'
-            else:
-                reg += '/' + part
+        (reg, gaps) = self.buildnextreg(self.routelist, clist)
+        print reg
+        
         if not reg: reg = '/'
         reg = '^' + reg + '$'
         self.regexp = reg
         self.regmatch = re.compile(reg)
-    
+        
+    def buildnextreg(self, path, clist):
+        default = '[^/]+'
+        part = path[0]
+        reg = ''
+        (rest, moregaps) = ('', False)
+        if len(path[1:]) > 0:
+            (rest, moregaps) = self.buildnextreg(path[1:], clist)
+        gaps = False
+        if part.startswith(':'):
+            var = part[1:]
+            partreg = ''
+            if self.reqs.has_key(var) and self.defaults.has_key(var) and not moregaps:
+                gaps = True
+                reg = '(/(?P<' + var + '>' + self.reqs[var] + ')?'
+                reg = reg + rest
+            elif self.reqs.has_key(var) and self.defaults.has_key(var) and moregaps:
+                gaps = True
+                reg = '(/(?P<' + var + '>' + self.reqs[var] + ')'
+                reg = reg + rest
+            elif self.reqs.has_key(var) and not self.defaults.has_key(var) and moregaps:
+                reg = '(/(?P<' + var + '>' + self.reqs[var] + ')'
+                reg = reg + '(' + rest + ')?'
+                
+            if self.reqs.has_key(var):
+                gaps = True
+                partreg = '(?P<' + var + '>' + self.reqs[var] + ')'
+            elif var == 'controller':
+                gaps = True
+                partreg = '(?P<' + var + '>' + '|'.join(clist) + ')'
+            else:
+                partreg = '(?P<' + var + '>' + default + ')'
+            if self.defaults.has_key(var) and not moregaps:
+                reg = '(/' + partreg + ')?'
+            else:
+                reg = '/' + partreg
+        elif part.startswith('*'):
+            var = part[1:]
+            reg = '(/' + '(?P<' + var + '>.*))*'
+        else:
+            gaps = True
+            reg = '/' + part
+        if moregaps and gaps:
+            reg = '(' + reg + rest + ')?'
+        else:
+            reg = reg + rest
+        return (reg, gaps)
+        
     def match(self, url):
         """
         Match a url to our regexp. While the regexp might match, this operation isn't
@@ -154,6 +180,7 @@ class Route(object):
             for key in self.reqs.keys():
                 if key not in matchdict.keys() or matchdict[key] is None:
                     try:
+                        print 'Checking default for: ' + str(key)
                         result[key] = self.defaults[key]
                     except:
                         return False
