@@ -153,6 +153,32 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual({'controller':'content','action':'download','file':'dude'}, m.match('/hi/dude'))
         self.assertEqual({'controller':'content','action':'download','file':'dude/what'}, m.match('/hi/dude/what'))
     
+    def test_path_with_dynamic(self):
+        m = Mapper()
+        m.connect(':controller/:action/*url')
+        m.create_regs(['content','admin/user'])
+        
+        self.assertEqual(None, m.match('/'))
+        self.assertEqual(None, m.match('/blog'))
+        self.assertEqual({'controller':'content','action':'index','url':None}, m.match('/content'))
+        self.assertEqual({'controller':'content','action':'view','url':None}, m.match('/content/view'))
+        self.assertEqual({'controller':'content','action':'view','url':'blob'}, m.match('/content/view/blob'))
+        self.assertEqual({'controller':'admin/user','action':'index','url':None}, m.match('/admin/user'))
+        self.assertEqual({'controller':'admin/user','action':'view','url':None}, m.match('/admin/user/view'))
+        self.assertEqual({'controller':'admin/user','action':'view','url':'blob/check'}, m.match('/admin/user/view/blob/check'))
+    
+    def test_path_with_dyanmic_and_default(self):
+        m = Mapper()
+        m.connect(':controller/:action/*url', controller='content', action='view')
+        m.create_regs(['content','admin/user'])
+        
+        self.assertEqual({'controller':'content','action':'view','url':''}, m.match('/'))
+        self.assertEqual({'controller':'content','action':'view','url':None}, m.match('/content'))
+        self.assertEqual({'controller':'content','action':'view','url':None}, m.match('/content/view'))
+        self.assertEqual({'controller':'content','action':'goober','url':'view/here'}, m.match('/goober/view/here'))
+        self.assertEqual({'controller':'admin/user','action':'view','url':None}, m.match('/admin/user'))
+        self.assertEqual({'controller':'admin/user','action':'view','url':None}, m.match('/admin/user/view'))
+    
     def test_path_backwards(self):
         m = Mapper()
         m.connect('*file/login', controller='content', action='download')
