@@ -232,12 +232,13 @@ class Mapper(object):
     m = Mapper()
     m.connect(':controller/:action/:id')
     m.connect('', controller='welcome')
-    
+        
     To create URL -> dict translations, all controllers should be scanned, loaded into a list, and
     passed into create_reg() to tell all the routes to generate regexp's used for recognition.
-    
+        
     Dict -> URL translation can be done at any point with a mapper by using the generate() method.
     """
+    
     def __init__(self):
         """
         Create a new Mapper object and initialize our defaults
@@ -252,7 +253,7 @@ class Mapper(object):
     def connect(self, *args, **kargs):
         """
         Create and connect a new route to our Mapper instance. 
-        
+            
         The arguments and syntax accepted is identical to the Route creation.
         """
         route = Route(*args, **kargs)
@@ -332,6 +333,7 @@ class Mapper(object):
                 # Otherwise, we return the one that has the most in common
                 else:
                     return cmp(len(keys&b), len(keys&a))
+            
             keylist.sort(keysort)
             self.cachematch[keys] = keylist
         
