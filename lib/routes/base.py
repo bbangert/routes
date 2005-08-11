@@ -106,60 +106,74 @@ class Route(object):
         that can be utilized
         """
         
-        (reg, gaps) = self.buildnextreg(self.routelist, clist)
-        print reg
+        (reg, noreqs, allblank) = self.buildnextreg(self.routelist, clist)
         
         if not reg: reg = '/'
         reg = '^' + reg + '$'
+        #print "\nRegexp Made: " + reg
+        
         self.regexp = reg
         self.regmatch = re.compile(reg)
         
     def buildnextreg(self, path, clist):
-        default = '[^/]+'
         part = path[0]
         reg = ''
-        (rest, moregaps) = ('', False)
+        
+        # noreqs will remember whether the remainder has either a string match, or a non-defaulted
+        # regexp match on a key
+        (rest, noreqs, allblank) = ('', True, True)
         if len(path[1:]) > 0:
-            (rest, moregaps) = self.buildnextreg(path[1:], clist)
-        gaps = False
+            (rest, noreqs, allblank) = self.buildnextreg(path[1:], clist)
+            
         if part.startswith(':'):
             var = part[1:]
             partreg = ''
-            if self.reqs.has_key(var) and self.defaults.has_key(var) and not moregaps:
-                gaps = True
-                reg = '(/(?P<' + var + '>' + self.reqs[var] + ')?'
-                reg = reg + rest
-            elif self.reqs.has_key(var) and self.defaults.has_key(var) and moregaps:
-                gaps = True
-                reg = '(/(?P<' + var + '>' + self.reqs[var] + ')'
-                reg = reg + rest
-            elif self.reqs.has_key(var) and not self.defaults.has_key(var) and moregaps:
-                reg = '(/(?P<' + var + '>' + self.reqs[var] + ')'
-                reg = reg + '(' + rest + ')?'
-                
+            
+            # First we plug in the proper part matcher
             if self.reqs.has_key(var):
-                gaps = True
                 partreg = '(?P<' + var + '>' + self.reqs[var] + ')'
             elif var == 'controller':
-                gaps = True
                 partreg = '(?P<' + var + '>' + '|'.join(clist) + ')'
             else:
-                partreg = '(?P<' + var + '>' + default + ')'
-            if self.defaults.has_key(var) and not moregaps:
-                reg = '(/' + partreg + ')?'
+                partreg = '(?P<' + var + '>[^/]+)'
+                
+            # Now we determine if its optional, or required. This changes depending on what is in
+            # the rest of the match. If noreqs is true, then its possible the entire thing is optional
+            # as there's no reqs or string matches. If false, then this section isn't optional to complete
+            # the match, so we're required no matter what
+            if self.reqs.has_key(var): noreqs = False
+            if noreqs:
+                # The rest is optional, but now we have an optional with a regexp. Wrap to ensure that if we match
+                # anything, we match our regexp first
+                if self.reqs.has_key(var) and self.defaults.has_key(var):
+                    reg = '(/' + partreg + rest + ')?'
+                # Or we have a regexp match with no default
+                elif self.reqs.has_key(var):
+                    allblank = False
+                    reg = '(/' + partreg + ')' + rest
+                # Or we have a default with no regexp
+                elif self.defaults.has_key(var):
+                    reg = '(/' + partreg + ')?' + rest
+                else:
+                    allblank = False
+                    reg = '(/' + partreg + ')' + rest
+            # In this case, we have something dangling that might need to be matched
             else:
-                reg = '/' + partreg
+                # If they can all be blank, we can optionally match here, unless we have
+                # our own reqs, in which case we're optional match, but MUST match here
+                # if we match at all
+                if allblank and self.defaults.has_key(var):
+                    reg = '(/' + partreg + rest + ')?'
+                else:
+                    reg = '/' + partreg + rest
         elif part.startswith('*'):
             var = part[1:]
-            reg = '(/' + '(?P<' + var + '>.*))*'
+            reg = '(/' + '(?P<' + var + '>.*))*' + rest
         else:
-            gaps = True
-            reg = '/' + part
-        if moregaps and gaps:
-            reg = '(' + reg + rest + ')?'
-        else:
-            reg = reg + rest
-        return (reg, gaps)
+            noreqs = False
+            allblank = False
+            reg = '/' + part + rest
+        return (reg, noreqs, allblank)
         
     def match(self, url):
         """
