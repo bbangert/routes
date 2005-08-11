@@ -102,20 +102,45 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual({'controller':'blog','action':'view','id':None}, m.match('/blog/view'))
         self.assertEqual({'controller':'blog','action':'view','month':None,'day':None,'year':'2004'}, m.match('/archive/2004'))
         
-    def test_multiroute_haha(self):
+    def test_dynamic_with_regexp_defaults_and_gaps(self):
         m = Mapper()
         m.connect('archive/:year/:month/:day', controller='blog', action='view', month=None, day=None,
                                     requirements={'month':'\d{1,2}'})
-        m.connect('viewpost/:id', controller='post', action='view')
-        m.connect(':controller/:action/:id')
+        m.connect('view/:id/:controller', controller='blog', id=2, action='view', requirements={'id':'\d{1,2}'})
         m.create_regs(['post','blog','admin/user'])
 
         self.assertEqual(None, m.match('/'))
         self.assertEqual(None, m.match('/archive'))
         self.assertEqual(None, m.match('/archive/2004/haha'))
-        self.assertEqual({'controller':'blog','action':'view','id':None}, m.match('/blog/view'))
+        self.assertEqual(None, m.match('/view/blog'))
+        self.assertEqual({'controller':'blog', 'action':'view', 'id':'2'}, m.match('/view'))
         self.assertEqual({'controller':'blog','action':'view','month':None,'day':None,'year':'2004'}, m.match('/archive/2004'))
 
+    def test_dynamic_with_regexp_gaps_controllers(self):
+        m = Mapper()
+        m.connect('view/:id/:controller', id=2, action='view', requirements={'id':'\d{1,2}'})
+        m.create_regs(['post','blog','admin/user'])
+        
+        self.assertEqual(None, m.match('/'))
+        self.assertEqual(None, m.match('/view'))
+        self.assertEqual(None, m.match('/view/blog'))
+        self.assertEqual(None, m.match('/view/3'))
+        self.assertEqual(None, m.match('/view/4/honker'))
+        self.assertEqual({'controller':'blog','action':'view','id':'2'}, m.match('/view/2/blog'))
+    
+    def test_dynamic_with_trailing_strings(self):
+        m = Mapper()
+        m.connect('view/:id/:controller/super', controller='blog', id=2, action='view', requirements={'id':'\d{1,2}'})
+        m.create_regs(['post','blog','admin/user'])
+        
+        self.assertEqual(None, m.match('/'))
+        self.assertEqual(None, m.match('/view'))
+        self.assertEqual(None, m.match('/view/blah/blog/super'))
+        self.assertEqual(None, m.match('/view/3/super'))
+        self.assertEqual(None, m.match('/view/super'))
+        self.assertEqual({'controller':'blog','action':'view','id':'2'}, m.match('/view/2/blog/super'))
+        self.assertEqual({'controller':'admin/user','action':'view','id':'4'}, m.match('/view/4/admin/user/super'))
+    
     def test_path(self):
         m = Mapper()
         m.connect('hi/*file', controller='content', action='download')
