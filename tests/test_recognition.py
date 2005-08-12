@@ -34,6 +34,19 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual(None, m.match('/hi/dude/what'))
         self.assertEqual({'controller':'content','name':'dude','action':'index'}, m.match('/hi/dude'))
     
+    def test_basic_dynamic_backwards(self):
+        m = Mapper()
+        m.connect(':name/hi')
+        m.create_regs([])
+
+        self.assertEqual(None, m.match('/'))
+        self.assertEqual(None, m.match('/hi'))
+        self.assertEqual(None, m.match('/boo'))
+        self.assertEqual(None, m.match('/boo/blah'))
+        self.assertEqual(None, m.match('/shop/wallmart/hi'))
+        self.assertEqual({'name':'fred'}, m.match('/fred/hi'))
+        self.assertEqual({'name':'index'}, m.match('/index/hi'))
+    
     def test_dynamic_with_default(self):
         m = Mapper()
         m.connect('hi/:action', controller='content')
@@ -46,11 +59,35 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual({'controller':'content','action':'index'}, m.match('/hi/index'))
         self.assertEqual({'controller':'content','action':'dude'}, m.match('/hi/dude'))
     
+    def test_dynamic_with_default_backwards(self):
+        m = Mapper()
+        m.connect(':action/hi', controller='content')
+        m.create_regs([])
+
+        self.assertEqual(None, m.match('/'))
+        self.assertEqual(None, m.match('/boo'))
+        self.assertEqual(None, m.match('/boo/blah'))
+        self.assertEqual({'controller':'content','action':'index'}, m.match('/hi'))
+        self.assertEqual({'controller':'content','action':'index'}, m.match('/index/hi'))
+        self.assertEqual({'controller':'content','action':'dude'}, m.match('/dude/hi'))
+    
     def test_dynamic_with_string_condition(self):
+        m = Mapper()
+        m.connect(':name/hi', controller='content', requirements={'name':'index'})
+        m.create_regs([])
+        
+        self.assertEqual(None, m.match('/boo'))
+        self.assertEqual(None, m.match('/boo/blah'))
+        self.assertEqual(None, m.match('/hi'))
+        self.assertEqual(None, m.match('/dude/what/hi'))
+        self.assertEqual({'controller':'content','name':'index','action':'index'}, m.match('/index/hi'))
+        self.assertEqual(None, m.match('/dude/hi'))
+    
+    def test_dynamic_with_string_condition_backwards(self):
         m = Mapper()
         m.connect('hi/:name', controller='content', requirements={'name':'index'})
         m.create_regs([])
-        
+
         self.assertEqual(None, m.match('/boo'))
         self.assertEqual(None, m.match('/boo/blah'))
         self.assertEqual(None, m.match('/hi'))
@@ -87,6 +124,26 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual({'controller':'content','action':'index'}, m.match('/hi'))
         self.assertEqual({'controller':'content','action':'index'}, m.match('/hi/index'))
         self.assertEqual({'controller':'content','action':'dude'}, m.match('/hi/dude'))
+    
+    def test_dynamic_with_default_and_string_condition_backwards(self):
+        m = Mapper()
+        m.connect(':action/hi')
+        m.create_regs([])
+
+        self.assertEqual(None, m.match('/'))
+        self.assertEqual(None, m.match('/boo'))
+        self.assertEqual(None, m.match('/boo/blah'))
+        self.assertEqual({'action':'index'}, m.match('/hi'))
+        self.assertEqual({'action':'index'}, m.match('/index/hi'))
+
+    def test_dynamic_and_controller_with_string_and_default_backwards(self):
+        m = Mapper()
+        m.connect(':controller/:action/hi', controller='content')
+        m.create_regs(['content','admin/user'])
+
+        self.assertEqual(None, m.match('/'))
+        self.assertEqual(None, m.match('/fred'))
+
     
     def test_multiroute(self):
         m = Mapper()
@@ -136,8 +193,9 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual(None, m.match('/'))
         self.assertEqual(None, m.match('/view'))
         self.assertEqual(None, m.match('/view/blah/blog/super'))
-        self.assertEqual(None, m.match('/view/3/super'))
+        self.assertEqual(None, m.match('/view/ha/super'))
         self.assertEqual(None, m.match('/view/super'))
+        self.assertEqual({'controller':'blog','action':'view','id':'4'}, m.match('/view/4/super'))
         self.assertEqual({'controller':'blog','action':'view','id':'2'}, m.match('/view/2/blog/super'))
         self.assertEqual({'controller':'admin/user','action':'view','id':'4'}, m.match('/view/4/admin/user/super'))
     
@@ -167,16 +225,6 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual({'controller':'admin/user','action':'view','url':None}, m.match('/admin/user/view'))
         self.assertEqual({'controller':'admin/user','action':'view','url':'blob/check'}, m.match('/admin/user/view/blob/check'))
     
-    def test_dynamic_with_default_and_string_condition_backwards(self):
-        m = Mapper()
-        m.connect(':action/hi')
-        m.create_regs([])
-        
-        self.assertEqual(None, m.match('/'))
-        self.assertEqual(None, m.match('/boo'))
-        self.assertEqual(None, m.match('/boo/blah'))
-        self.assertEqual({'action':'index'}, m.match('/index/hi'))
-        self.assertEqual({'action':'index'}, m.match('/index/hi'))
     
     def test_path_with_dyanmic_and_default(self):
         m = Mapper()
