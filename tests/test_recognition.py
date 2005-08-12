@@ -67,7 +67,7 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual(None, m.match('/'))
         self.assertEqual(None, m.match('/boo'))
         self.assertEqual(None, m.match('/boo/blah'))
-        self.assertEqual({'controller':'content','action':'index'}, m.match('/hi'))
+        self.assertEqual(None, m.match('/hi'))
         self.assertEqual({'controller':'content','action':'index'}, m.match('/index/hi'))
         self.assertEqual({'controller':'content','action':'dude'}, m.match('/dude/hi'))
     
@@ -133,7 +133,7 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual(None, m.match('/'))
         self.assertEqual(None, m.match('/boo'))
         self.assertEqual(None, m.match('/boo/blah'))
-        self.assertEqual({'action':'index'}, m.match('/hi'))
+        self.assertEqual(None, m.match('/hi'))
         self.assertEqual({'action':'index'}, m.match('/index/hi'))
 
     def test_dynamic_and_controller_with_string_and_default_backwards(self):
@@ -195,7 +195,7 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual(None, m.match('/view/blah/blog/super'))
         self.assertEqual(None, m.match('/view/ha/super'))
         self.assertEqual(None, m.match('/view/super'))
-        self.assertEqual({'controller':'blog','action':'view','id':'4'}, m.match('/view/4/super'))
+        self.assertEqual(None, m.match('/view/4/super'))
         self.assertEqual({'controller':'blog','action':'view','id':'2'}, m.match('/view/2/blog/super'))
         self.assertEqual({'controller':'admin/user','action':'view','id':'4'}, m.match('/view/4/admin/user/super'))
     

@@ -187,6 +187,7 @@ class Route(object):
         
         # We have a normal string here, this is a req, and it prevents us from being all blank
         else:
+            noreqs = False
             allblank = False
             reg = '/' + part + rest
         
