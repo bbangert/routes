@@ -428,16 +428,35 @@ else:
     c.connect(':controller/:action/:id')
 
     def bench_gen():
+        m = Mapper()
+        m.connect('', controller='articles', action='index')
+        m.connect('admin', controller='admin/general', action='index')
+
+        m.connect('admin/comments/article/:article_id/:action/:id', controller = 'admin/comments', action = None, id=None)
+        m.connect('admin/trackback/article/:article_id/:action/:id', controller='admin/trackback', action=None, id=None)
+        m.connect('admin/content/:action/:id', controller='admin/content')
+
+        m.connect('xml/:action/feed.xml', controller='xml')
+        m.connect('xml/articlerss/:id/feed.xml', controller='xml', action='articlerss')
+        m.connect('index.rdf', controller='xml', action='rss')
+
+        m.connect('articles', controller='articles', action='index')
+        m.connect('articles/page/:page', controller='articles', action='index', requirements = {'page':'\d+'})
+
+        m.connect('articles/:year/:month/:day/page/:page', controller='articles', action='find_by_date', month = None, day = None,
+                            requirements = {'year':'\d{4}', 'month':'\d{1,2}','day':'\d{1,2}'})
+        m.connect('articles/category/:id', controller='articles', action='category')
+        m.connect('pages/*name', controller='articles', action='view_page')
         n = 1000
         start = time.time()
         for x in range(1,n):
-            c.generate(controller='content', action='index')
-            c.generate(controller='content', action='list')
-            c.generate(controller='content', action='show', id='10')
-            
-            c.generate(controller='admin/user', action='index')
-            c.generate(controller='admin/user', action='list')
-            c.generate(controller='admin/user', action='show', id='10')
+            m.generate(controller='articles', action='index', page=4)
+            m.generate(controller='admin/general', action='index')
+            m.generate(controller='admin/comments', action=None)
+
+            m.generate(controller='articles', action='find_by_date', year=2004)
+            m.generate(controller='articles', action='category', id=4)
+            m.generate(controller='xml', action='articlerss', id=2)
         end = time.time()
         ts = time.time()
         for x in range(1,n*3):
