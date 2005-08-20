@@ -16,41 +16,86 @@ if sys.version < '2.4':
 
 class Route(object):
     """
-    The Route object holds a route recognition and generation routine, typical usage looks like:
+    The Route object holds a route recognition and generation routine.
     
-    newroute = Route(':controller/:action/:id')
-    newroute = Route('date/:year/:month/:day', controller="blog", action="view")
-    
-    Note: Route is generally never called directly, a Mapper instances connect method should
-    be used to add routes.
-    
+    See __init__ docs for usage.
     """
     
     def __init__(self, routepath, **kargs):
         """
         Initialize a route, with a given routepath for matching/generation, and a set of keyword
         args that setup defaults.
-        """
         
+        Usage:
+        newroute = Route(':controller/:action/:id')
+        newroute = Route('date/:year/:month/:day', controller="blog", action="view")
+        newroute = Route('archives/:page', controller="blog", action="by_page",
+                         requirements = { 'page':'\d{1,2}' })
+
+        Note: Route is generally not called directly, a Mapper instance connect method should
+        be used to add routes.
+        """
+        # reserved keys that don't count
         reserved_keys = ['requirements']
         
-        # Build 3 lists, our route list, the default keys, and the route keys
-        routelist = routepath.split('/')
-        defaultkeys = frozenset([key for key in kargs.keys() if key not in reserved_keys])
+        # Build our routelist, and the keys used in the route
+        self.routelist = routelist = routepath.split('/')
         routekeys = frozenset([key[1:] for key in routelist if (key.startswith(':') or key.startswith('*')) and key not in reserved_keys])
         
-        maxkeys = defaultkeys | routekeys
-        # Save our routelist
-        self.routelist = routelist[:]
-        self.routepath = routepath
         
         # Build a req list with all the regexp requirements for our args
-        self.reqs = kargs.has_key('requirements') and kargs['requirements']
-        if not self.reqs: self.reqs = {}
+        self.reqs = kargs.get('requirements', {})
+        self.req_regs = {}
+        for key,val in self.reqs.iteritems():
+            self.req_regs[key] = re.compile('^' + val + '$')
+        # Update our defaults and set new default keys if needed. defaults needs to be saved
+        (self.defaults, defaultkeys) = self._defaults(routekeys, reserved_keys, kargs)
+        # Save the maximum keys we could utilize
+        self.maxkeys = defaultkeys | routekeys
+        # Populate our minimum keys, and save a copy of our backward keys for quicker generation later
+        (self.minkeys, self.routebackwards) = self._minkeys(routelist[:])
+        # Populate our hardcoded keys, these are ones that are set and don't exist in the route
+        self.hardcoded = frozenset([key for key in self.maxkeys if key not in routekeys and self.defaults[key] is not None])
         
-        # Put together our list of defaults, stringify non-None values
-        # and add in our action/id default if they use it and didn't specify it
+    def _minkeys(self, routelist):
+        """
+        Utility function to walk the route backwards, and determine the minimum
+        keys we can handle to generate a working route.
+        
+        routelist is a list of the '/' split route path
+        defaults is a dict of all the defaults provided for the route
+        """
+        minkeys = []
+        backcheck = routelist[:]
+        gaps = False
+        backcheck.reverse()
+        for part in backcheck:
+            if not part.startswith(':'):
+                gaps = True
+                continue
+            key = part[1:]
+            if self.defaults.has_key(key) and not gaps:
+                continue
+            minkeys.append(key)
+            gaps = True
+        return  (frozenset(minkeys), backcheck)
+    
+    def _defaults(self, routekeys, reserved_keys, kargs):
+        """
+        Put together our list of defaults, stringify non-None values
+        and add in our action/id default if they use it and didn't specify it
+        
+        defaultkeys is a list of the currently assumed default keys
+        routekeys is a list of the keys found in the route path
+        reserved_keys is a list of keys that are not 
+        """
         defaults = {}
+        # Add in a controller/action default if they don't exist
+        if 'controller' not in routekeys and not kargs.has_key('controller'):
+            kargs['controller'] = 'content'
+        if 'action' not in routekeys and not kargs.has_key('action'):
+            kargs['action'] = 'index'
+        defaultkeys = frozenset([key for key in kargs.keys() if key not in reserved_keys])
         for key in defaultkeys:
             if kargs[key] != None:
                 defaults[key] = str(kargs[key])
@@ -62,40 +107,9 @@ class Route(object):
             defaults['action'] = 'index'
         if 'id' in routekeys and not defaults.has_key('id'):
             defaults['id'] = None
-        defaultkeys = frozenset([key for key in defaults.keys() if key not in reserved_keys])
-
-        # Save the maximum keys we could utilize
-        self.maxkeys = defaultkeys | routekeys
-
-        # We walk our route backwards, anytime we can leave off a key due to it
-        # having a default, or being None, we know its not needed. As soon as we
-        # add something though, the rest is needed no matter what.
-        minkeys = []
-        backcheck = routelist[:]
-        gaps = False
-        backcheck.reverse()
-        self.routebackwards = backcheck[:]
-        for part in backcheck:
-            if not part.startswith(':'):
-                gaps = True
-                continue
-            key = part[1:]
-            if defaults.has_key(key) and not gaps:
-                continue
-            minkeys.append(key)
-            gaps = True
-        self.minkeys = frozenset(minkeys)
-
-        # Our hardcoded args exist as defaults, but have no place in the route to
-        # specify them. Thus for the route to be generated, the args passed in must
-        # match these ones for the URL to be usable.
-        hardcoded = []
-        for key in self.maxkeys:
-            if key not in routekeys and defaults[key] is not None:
-                hardcoded.append(key)
-        self.defaults = defaults
-        self.hardcoded = frozenset(hardcoded)
-    
+        newdefaultkeys = frozenset([key for key in defaults.keys() if key not in reserved_keys])
+        return (defaults, newdefaultkeys)
+        
     def makeregexp(self, clist):
         """
         Create a regular expression for matching purposes, this MUST be called before match
@@ -183,8 +197,22 @@ class Route(object):
                     reg = '/' + partreg + rest
         elif part.startswith('*'):
             var = part[1:]
-            reg = '(/' + '(?P<' + var + '>.*))*' + rest
-        
+            if noreqs:
+                if self.defaults.has_key(var):
+                    reg = '(/' + '(?P<' + var + '>.*))*' + rest
+                else:
+                    reg = '/' + '(?P<' + var + '>.*)' + rest
+                    allblank = False
+                    noreqs = False
+            else:
+                if allblank and self.defaults.has_key(var):
+                    reg = '(/' + '(?P<' + var + '>.*))*' + rest
+                elif self.defaults.has_key(var):
+                    reg = '(/' + '(?P<' + var + '>.*))*' + rest
+                else:
+                    allblank = False
+                    noreqs = False
+                    reg = '/' + '(?P<' + var + '>.*)' + rest
         # We have a normal string here, this is a req, and it prevents us from being all blank
         else:
             noreqs = False
@@ -238,11 +266,9 @@ class Route(object):
         
         # Verify that our args pass any regexp requirements
         for key in self.reqs.keys():
-            if kargs.has_key(key):
-                if self.defaults.has_key(key) and self.defaults[key] is None and kargs[key] is None:
-                    continue
-                if not re.compile('^' + self.reqs[key] + '$').match(str(kargs[key])):
-                    raise Exception, "Route doesn't match reqs"
+            val = kargs.get(key)
+            if val and not self.req_regs[key].match(str(kargs[key])):
+                return False
 
         routelist = self.routebackwards
         urllist = []
@@ -260,7 +286,7 @@ class Route(object):
                 if (not val or val is None) and not gaps:
                     continue
                 if val is None:
-                    raise Exception, "Route causes gaps"
+                    return False
                 val = quote(val)
                 urllist.append(val)
                 if kargs.has_key(arg): del kargs[arg]
@@ -285,33 +311,36 @@ class Route(object):
 
 class Mapper(object):
     """
-    Instantiate a new mapper and assign a default route:
-    m = Mapper()
-    m.connect(':controller/:action/:id')
-    m.connect('', controller='welcome')
-        
-    To create URL -> dict translations, all controllers should be scanned, loaded into a list, and
-    passed into create_reg() to tell all the routes to generate regexp's used for recognition.
-        
-    Dict -> URL translation can be done at any point with a mapper by using the generate() method.
+    Mapper handles URL generation and URL recognition in a web application.
+    
+    Mapper is built handling dictionary's. It is assumed that the web application will handle
+    the dictionary returned by URL recognition to dispatch appropriately.
+    
+    URL generation is done by passing keyword parameters into the generate function, a URL is then
+    returned.
     """
     
     def __init__(self):
         """
-        Create a new Mapper object and initialize our defaults
+        Create a new Mapper instance
         """
         self.matchlist = []
         self.maxkeys = {}
         self.minkeys = {}
-        self.cachematch = {}
-        self.created_regs = False
         self.urlcache = None
+        self._created_regs = False
+        self._created_gens = False
     
     def connect(self, *args, **kargs):
         """
-        Create and connect a new route to our Mapper instance. 
-            
-        The arguments and syntax accepted is identical to the Route creation.
+        Create and connect a new Route to the Mapper. 
+        Usage:
+        
+        m = Mapper()
+        m.connect(':controller/:action/:id')
+        m.connect('date/:year/:month/:day', controller="blog", action="view")
+        m.connect('archives/:page', controller="blog", action="by_page",
+                  requirements = { 'page':'\d{1,2}' })
         """
         route = Route(*args, **kargs)
         self.matchlist.append(route)
@@ -323,7 +352,53 @@ class Mapper(object):
                 break
         if not exists:
             self.maxkeys[route.maxkeys] = [route]
+        self._created_gens = False
     
+    def _create_gens(self):
+        """
+        Create the generation hashes for route lookups
+        """
+        
+        # Use keys temporailly to assemble the list to avoid excessive
+        # list iteration testing with "in"
+        controllerlist = {}
+        actionlist = {}
+        
+        # Assemble all the hardcoded/defaulted actions/controllers used
+        for route in self.matchlist:
+            if route.defaults.has_key('controller'):
+                controllerlist[route.defaults['controller']] = True
+            if route.defaults.has_key('action'):
+                actionlist[route.defaults['action']] = True
+        
+        # Setup the lists of all controllers/actions we'll add each route
+        # to. We include the '*' in the case that a generate contains a
+        # controller/action that has no hardcodes
+        controllerlist = controllerlist.keys() + ['*']
+        actionlist = actionlist.keys() + ['*']
+        
+        # Go through our list again, assemble the controllers/actions we'll
+        # add each route to. If its hardcoded, we only add it to that dict key.
+        # Otherwise we add it to every hardcode since it can be changed.
+        gens = {} # Our generated two-deep hash
+        for route in self.matchlist:
+            clist = controllerlist
+            alist = actionlist
+            if 'controller' in route.hardcoded:
+                clist = [route.defaults['controller']]
+            if 'action' in route.hardcoded:
+                alist = [str(route.defaults['action'])]
+            for controller in clist:
+                if not gens.has_key(controller):
+                    gens[controller] = {}
+                for action in alist:
+                    actiondict = gens[controller]
+                    if not actiondict.has_key(action):
+                        actiondict[action] = ([], {})
+                    actiondict[action][0].append(route)
+        self._gendict = gens
+        self._created_gens = True
+        
     def create_regs(self, clist):
         """
         Iterate through all connected Routes with our controller list (clist), and
@@ -332,7 +407,7 @@ class Mapper(object):
         for key,val in self.maxkeys.iteritems():
             for route in val:
                 route.makeregexp(clist)
-        self.created_regs = True
+        self._created_regs = True
     
     def match(self, url):
         """
@@ -342,7 +417,7 @@ class Mapper(object):
         
         resultdict = m.match('/joe/sixpack')
         """
-        if not self.created_regs:
+        if not self._created_regs:
             raise Exception, "Must created regexps first"
             
         for route in self.matchlist:
@@ -350,7 +425,7 @@ class Mapper(object):
             if match: return match
         return None
     
-    def generate(self, **kargs):
+    def generate(self, controller='content', action='index', **kargs):
         """
         Generate a route from a set of keywords and return the url text, or None if no
         URL could be generated.
@@ -358,31 +433,68 @@ class Mapper(object):
         m.generate(controller='content',action='view',id=10)
         """
         
+        # Generate ourself if we haven't already
+        if not self._created_gens:
+            self._create_gens()
+
+        kargs['controller'] = controller
+        kargs['action'] = action
+        
         # Check the url cache to see if it exists, use it if it does
-        if self.urlcache:
+        if self.urlcache is not None:
             try:
-                return urlcache[str(kargs)]
+                return self.urlcache[str(kargs)]
             except:
                 pass
         
-        keys = frozenset(kargs.keys())
+        if self._gendict.has_key(controller):
+            actionlist = self._gendict[controller]
+        else:
+            actionlist = self._gendict.get('*')
+        if not actionlist: return None
+        if actionlist.has_key(action):
+            (keylist, sortcache) = actionlist[action]
+        else:
+            (keylist, sortcache) = actionlist.get('*', (None, None))
+        if not keylist: return None
         
-        # This keysort is probably expensive, so we'll cache the results. Since key lookups
-        # by set isn't the quickest, I try and fetch first, and deal with it when it fails,
-        # rather than using has_key then fetching it (two key lookups)
-        try:
-            keylist = self.cachematch[keys]
-        except:
-            keylist = self.maxkeys.keys()
+        keys = frozenset(kargs.keys())
+        cacheset = False
+        cachekey = str(keys)
+        cachelist = sortcache.get(cachekey)
+        if cachelist:
+            keylist = cachelist
+        else:
+            cacheset = True
+            newlist = []
+            for route in keylist:
+                if len(route.minkeys-keys) == 0:
+                    newlist.append(route)
+            keylist = newlist
+
             def keysort(a, b):
+                am = a.minkeys
+                a = a.maxkeys
+                b = b.maxkeys
+                
+                lendiffa = len(keys^a)
+                lendiffb = len(keys^b)
+                # If they both match, don't switch them
+                if lendiffa == 0 and lendiffb == 0:
+                    return 0
+                
                 # First, if a matches exactly, use it
-                if len(keys^a) == 0:
+                if lendiffa == 0:
                     return -1
-                    
+                
                 # Or b matches exactly, use it
-                if len(keys^b) == 0:
+                if lendiffb == 0:
                     return 1
-                    
+                
+                # Neither matches exactly, return the one with the most in common
+                if cmp(lendiffa,lendiffb) != 0:
+                    return cmp(lendiffa,lendiffb)
+                
                 # Neither matches exactly, but if they both have just as much in common
                 if len(keys&b) == len(keys&a):
                     return cmp(len(a),len(b))     # Then we return the shortest of the two
@@ -392,28 +504,25 @@ class Mapper(object):
                     return cmp(len(keys&b), len(keys&a))
             
             keylist.sort(keysort)
-            self.cachematch[keys] = keylist
+            if cacheset:
+                sortcache[cachekey] = keylist
         
-        #print keylist
-        for routelist in keylist:
-            for route in self.maxkeys[routelist]:
-                if len(route.minkeys-keys) != 0: continue
-                fail = False
-                for key in route.hardcoded:
-                    if not kargs.has_key(key):
-                        continue
-                    if kargs[key] != route.defaults[key]:
-                        fail = True
-                        break
-                if fail: continue
-                if len(route.minkeys-keys) == 0:
-                    try:
-                        path = route.generate(**kargs)
-                        if self.urlcache:
-                            self.urlcache[str(kargs)] = path
-                        return path
-                    except:
-                        continue
+        for route in keylist:
+            fail = False
+            for key in route.hardcoded:
+                if not kargs.has_key(key):
+                    continue
+                if kargs[key] != route.defaults[key]:
+                    fail = True
+                    break
+            if fail: continue
+            path = route.generate(**kargs)
+            if path:
+                if self.urlcache is not None:
+                    self.urlcache[str(kargs)] = path
+                return path
+            else:
+                continue
         return None
     
 
@@ -426,8 +535,57 @@ else:
     url = '/date/2004/20/4'
     c = Mapper()
     c.connect(':controller/:action/:id')
+    
+    m = Mapper()
+    m.connect('page/:id/:action', controller='pages', action='show')
+    m.connect(':controller/:action/:id')
 
-    def bench_gen():
+    def bench_gen(withcache = False):
+        m = Mapper()
+        m.connect('', controller='articles', action='index')
+        m.connect('admin', controller='admin/general', action='index')
+        
+        m.connect('admin/comments/article/:article_id/:action/:id', controller = 'admin/comments', action = None, id=None)
+        m.connect('admin/trackback/article/:article_id/:action/:id', controller='admin/trackback', action=None, id=None)
+        m.connect('admin/content/:action/:id', controller='admin/content')
+        
+        m.connect('xml/:action/feed.xml', controller='xml')
+        m.connect('xml/articlerss/:id/feed.xml', controller='xml', action='articlerss')
+        m.connect('index.rdf', controller='xml', action='rss')
+        
+        m.connect('articles', controller='articles', action='index')
+        m.connect('articles/page/:page', controller='articles', action='index', requirements = {'page':'\d+'})
+        
+        m.connect('articles/:year/:month/:day/page/:page', controller='articles', action='find_by_date', month = None, day = None,
+                            requirements = {'year':'\d{4}', 'month':'\d{1,2}','day':'\d{1,2}'})
+        m.connect('articles/category/:id', controller='articles', action='category')
+        m.connect('pages/*name', controller='articles', action='view_page')
+        if withcache:
+            m.urlcache = {}
+        m._create_gens()
+        n = 5000
+        start = time.time()
+        for x in range(1,n):
+            m.generate(controller='articles', action='index', page=4)
+            m.generate(controller='admin/general', action='index')
+            m.generate(controller='admin/comments', action='show', article_id=2)
+            
+            m.generate(controller='articles', action='find_by_date', year=2004, page=1)
+            m.generate(controller='articles', action='category', id=4)
+            m.generate(controller='xml', action='articlerss', id=2)
+        end = time.time()
+        ts = time.time()
+        for x in range(1,n*6):
+            pass
+        en = time.time()
+        total = end-start-(en-ts)
+        per_url = total / (n*6)
+        print "Generation (%s URLs)" % (n*6)
+        print "%s ms/url" % (per_url*1000)
+        print "%s urls/s\n" % (1.00/per_url)
+    
+    def bench_rec():
+        n = 1000
         m = Mapper()
         m.connect('', controller='articles', action='index')
         m.connect('admin', controller='admin/general', action='index')
@@ -447,46 +605,21 @@ else:
                             requirements = {'year':'\d{4}', 'month':'\d{1,2}','day':'\d{1,2}'})
         m.connect('articles/category/:id', controller='articles', action='category')
         m.connect('pages/*name', controller='articles', action='view_page')
-        n = 1000
+        m.create_regs(['content','admin/why', 'admin/user'])
         start = time.time()
         for x in range(1,n):
-            m.generate(controller='articles', action='index', page=4)
-            m.generate(controller='admin/general', action='index')
-            m.generate(controller='admin/comments', action=None)
-
-            m.generate(controller='articles', action='find_by_date', year=2004)
-            m.generate(controller='articles', action='category', id=4)
-            m.generate(controller='xml', action='articlerss', id=2)
-        end = time.time()
-        ts = time.time()
-        for x in range(1,n*3):
-            pass
-        en = time.time()
-        total = end-start-(en-ts)
-        per_url = total / (n*6)
-        print "Generation\n"
-        print "%s ms/url" % (per_url*1000)
-        print "%s urls/s\n" % (1.00/per_url)
-    
-    def bench_rec():
-        n = 1000
-        c = Mapper()
-        c.connect(':controller/:action/:id')
-        c.create_regs(['content','admin/user'])
-        start = time.time()
-        for x in range(1,n):
-            a = c.match('/content')
-            a = c.match('/content/list')
-            a = c.match('/content/show/10')
+            a = m.match('/content')
+            a = m.match('/content/list')
+            a = m.match('/content/show/10')
             
-            a = c.match('/admin/user')
-            a = c.match('/admin/user/list')
-            a = c.match('/admin/user/show/bbangert')
+            a = m.match('/admin/user')
+            a = m.match('/admin/user/list')
+            a = m.match('/admin/user/show/bbangert')
             
-            a = c.match('/admin/user/show/bbangert/dude')
-            a = c.match('/admin/why/show/bbangert')
-            a = c.match('/content/show/10/20')
-            a = c.match('/food')
+            a = m.match('/admin/user/show/bbangert/dude')
+            a = m.match('/admin/why/show/bbangert')
+            a = m.match('/content/show/10/20')
+            a = m.match('/food')
         end = time.time()
         ts = time.time()
         for x in range(1,n):

@@ -11,6 +11,7 @@ import unittest
 from routes.base import Mapper
 
 class TestGeneration(unittest.TestCase):
+    
     def test_all_static_no_reqs(self):
         m = Mapper()
         m.connect('hello/world')
@@ -76,7 +77,6 @@ class TestGeneration(unittest.TestCase):
         m = Mapper()
         m.connect('hi/:controller')
         
-        self.assertEqual(None, m.generate())
         self.assertEqual('/hi/content', m.generate(controller='content'))
         self.assertEqual('/hi/admin/user', m.generate(controller='admin/user'))
     
@@ -104,6 +104,53 @@ class TestGeneration(unittest.TestCase):
         self.assertEqual('/archive/2004/11', m.generate(controller='blog', action='view', year=2004, month='11'))
         self.assertEqual('/archive/2004', m.generate(controller='blog', action='view', year=2004))
         self.assertEqual('/viewpost/3', m.generate(controller='post', action='view', id=3))
+        
+    def test_big_multiroute(self):
+        m = Mapper()
+        m.connect('', controller='articles', action='index')
+        m.connect('admin', controller='admin/general', action='index')
+
+        m.connect('admin/comments/article/:article_id/:action/:id', controller = 'admin/comments', action=None, id=None)
+        m.connect('admin/trackback/article/:article_id/:action/:id', controller='admin/trackback', action=None, id=None)
+        m.connect('admin/content/:action/:id', controller='admin/content')
+
+        m.connect('xml/:action/feed.xml', controller='xml')
+        m.connect('xml/articlerss/:id/feed.xml', controller='xml', action='articlerss')
+        m.connect('index.rdf', controller='xml', action='rss')
+
+        m.connect('articles', controller='articles', action='index')
+        m.connect('articles/page/:page', controller='articles', action='index', requirements = {'page':'\d+'})
+
+        m.connect('articles/:year/:month/:day/page/:page', controller='articles', action='find_by_date', month = None, day = None,
+                            requirements = {'year':'\d{4}', 'month':'\d{1,2}','day':'\d{1,2}'})
+        m.connect('articles/category/:id', controller='articles', action='category')
+        m.connect('pages/*name', controller='articles', action='view_page')
+        
+        
+        self.assertEqual('/pages/the/idiot/has/spoken', m.generate(controller='articles', action='view_page',
+                            name='the/idiot/has/spoken'))
+        self.assertEqual('/', m.generate(controller='articles', action='index'))
+        self.assertEqual('/xml/articlerss/4/feed.xml', m.generate(controller='xml', action='articlerss', id=4))
+        self.assertEqual('/xml/rss/feed.xml', m.generate(controller='xml', action='rss'))
+        self.assertEqual('/admin/comments/article/4/view/2', m.generate(controller='admin/comments', action='view', article_id=4, id=2))
+        self.assertEqual('/admin', m.generate(controller='admin/general'))
+        self.assertEqual('/admin/comments/article/4/index', m.generate(controller='admin/comments', article_id=4))
+        self.assertEqual('/admin/comments/article/4', m.generate(controller='admin/comments', action=None, article_id=4))
+        self.assertEqual('/articles/2004/2/20/page/1', m.generate(controller='articles', action='find_by_date', 
+                    year=2004, month=2, day=20, page=1))
+        self.assertEqual('/articles/category', m.generate(controller='articles', action='category'))
+        self.assertEqual('/xml/index/feed.xml', m.generate(controller='xml'))
+        self.assertEqual('/xml/articlerss/feed.xml', m.generate(controller='xml', action='articlerss'))
+        
+        self.assertEqual(None, m.generate(controller='admin/comments', id=2))
+        self.assertEqual(None, m.generate(controller='articles', action='find_by_date', year=2004))
+    
+    def test_no_extras(self):
+        m = Mapper()
+        m.connect(':controller/:action/:id')
+        m.connect('archive/:year/:month/:day', controller='blog', action='view', month=None, day=None)
+        
+        self.assertEqual('/archive/2004', m.generate(controller='blog', action='view', year=2004))
         
     def test_the_smallest_route(self):
         m = Mapper()
@@ -166,8 +213,8 @@ class TestGeneration(unittest.TestCase):
         self.assertEqual('/page/10', m.generate(controller='content', action='show_page', id=10))
         
         self.assertEqual('/blog/show/4', m.generate(controller='blog', action='show', id=4))
-        self.assertEqual('/page', m.generate(controller='content'))
-        self.assertEqual('/page/4', m.generate(controller='content',id=4))
+        self.assertEqual('/page', m.generate(controller='content', action='show_page'))
+        self.assertEqual('/page/4', m.generate(controller='content', action='show_page',id=4))
         self.assertEqual('/content/show', m.generate(controller='content', action='show'))
     
     def test_uppercase_recognition(self):
@@ -185,8 +232,7 @@ class TestGeneration(unittest.TestCase):
         m.connect('page/:id/:action', controller='pages', action='show')
         m.connect(':controller/:action/:id')
 
-        self.assertEqual('/page/20', m.generate(id=20))
-        self.assertEqual('/page/20', m.generate(controller='pages', id=20, action='show'))
+        self.assertEqual('/page/20', m.generate(controller='pages', action='show', id=20))
         self.assertEqual('/pages/boo', m.generate(controller='pages', action='boo'))
     
     def test_both_requirement_and_optional(self):

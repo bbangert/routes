@@ -44,8 +44,8 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual(None, m.match('/boo'))
         self.assertEqual(None, m.match('/boo/blah'))
         self.assertEqual(None, m.match('/shop/wallmart/hi'))
-        self.assertEqual({'name':'fred'}, m.match('/fred/hi'))
-        self.assertEqual({'name':'index'}, m.match('/index/hi'))
+        self.assertEqual({'name':'fred', 'action':'index', 'controller':'content'}, m.match('/fred/hi'))
+        self.assertEqual({'name':'index', 'action':'index', 'controller':'content'}, m.match('/index/hi'))
     
     def test_dynamic_with_default(self):
         m = Mapper()
@@ -134,7 +134,7 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual(None, m.match('/boo'))
         self.assertEqual(None, m.match('/boo/blah'))
         self.assertEqual(None, m.match('/hi'))
-        self.assertEqual({'action':'index'}, m.match('/index/hi'))
+        self.assertEqual({'action':'index', 'controller':'content'}, m.match('/index/hi'))
 
     def test_dynamic_and_controller_with_string_and_default_backwards(self):
         m = Mapper()
@@ -206,7 +206,7 @@ class TestRecognition(unittest.TestCase):
         
         self.assertEqual(None, m.match('/boo'))
         self.assertEqual(None, m.match('/boo/blah'))
-        self.assertEqual({'controller':'content','action':'download','file':None}, m.match('/hi'))
+        self.assertEqual(None, m.match('/hi'))
         self.assertEqual({'controller':'content','action':'download','file':'books/learning_python.pdf'}, m.match('/hi/books/learning_python.pdf'))
         self.assertEqual({'controller':'content','action':'download','file':'dude'}, m.match('/hi/dude'))
         self.assertEqual({'controller':'content','action':'download','file':'dude/what'}, m.match('/hi/dude/what'))
@@ -218,17 +218,17 @@ class TestRecognition(unittest.TestCase):
         
         self.assertEqual(None, m.match('/'))
         self.assertEqual(None, m.match('/blog'))
-        self.assertEqual({'controller':'content','action':'index','url':None}, m.match('/content'))
-        self.assertEqual({'controller':'content','action':'view','url':None}, m.match('/content/view'))
+        self.assertEqual(None, m.match('/content'))
+        self.assertEqual(None, m.match('/content/view'))
         self.assertEqual({'controller':'content','action':'view','url':'blob'}, m.match('/content/view/blob'))
-        self.assertEqual({'controller':'admin/user','action':'index','url':None}, m.match('/admin/user'))
-        self.assertEqual({'controller':'admin/user','action':'view','url':None}, m.match('/admin/user/view'))
+        self.assertEqual(None, m.match('/admin/user'))
+        self.assertEqual(None, m.match('/admin/user/view'))
         self.assertEqual({'controller':'admin/user','action':'view','url':'blob/check'}, m.match('/admin/user/view/blob/check'))
     
     
     def test_path_with_dyanmic_and_default(self):
         m = Mapper()
-        m.connect(':controller/:action/*url', controller='content', action='view')
+        m.connect(':controller/:action/*url', controller='content', action='view', url=None)
         m.create_regs(['content','admin/user'])
         
         self.assertEqual({'controller':'content','action':'view','url':''}, m.match('/'))
@@ -238,6 +238,18 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual({'controller':'admin/user','action':'view','url':None}, m.match('/admin/user'))
         self.assertEqual({'controller':'admin/user','action':'view','url':None}, m.match('/admin/user/view'))
     
+    def test_path_with_dynamic_and_default_backwards(self):
+        m = Mapper()
+        m.connect('*file/login', controller='content', action='download', file=None)
+        m.create_regs([])
+
+        self.assertEqual(None, m.match('/boo'))
+        self.assertEqual(None, m.match('/boo/blah'))
+        self.assertEqual({'controller':'content','action':'download','file':None}, m.match('/login'))
+        self.assertEqual({'controller':'content','action':'download','file':'books/learning_python.pdf'}, m.match('/books/learning_python.pdf/login'))
+        self.assertEqual({'controller':'content','action':'download','file':'dude'}, m.match('/dude/login'))
+        self.assertEqual({'controller':'content','action':'download','file':'dude/what'}, m.match('/dude/what/login'))
+        
     def test_path_backwards(self):
         m = Mapper()
         m.connect('*file/login', controller='content', action='download')
@@ -245,7 +257,7 @@ class TestRecognition(unittest.TestCase):
         
         self.assertEqual(None, m.match('/boo'))
         self.assertEqual(None, m.match('/boo/blah'))
-        self.assertEqual({'controller':'content','action':'download','file':None}, m.match('/login'))
+        self.assertEqual(None, m.match('/login'))
         self.assertEqual({'controller':'content','action':'download','file':'books/learning_python.pdf'}, m.match('/books/learning_python.pdf/login'))
         self.assertEqual({'controller':'content','action':'download','file':'dude'}, m.match('/dude/login'))
         self.assertEqual({'controller':'content','action':'download','file':'dude/what'}, m.match('/dude/what/login'))
@@ -258,12 +270,12 @@ class TestRecognition(unittest.TestCase):
 
         self.assertEqual(None, m.match('/boo'))
         self.assertEqual(None, m.match('/boo/blah'))
-        self.assertEqual({'controller':'content','action':'check_access','url':None}, m.match('/login'))
+        self.assertEqual(None, m.match('/login'))
         self.assertEqual({'controller':'content','action':'check_access','url':'books/learning_python.pdf'}, m.match('/books/learning_python.pdf/login'))
         self.assertEqual({'controller':'content','action':'check_access','url':'dude'}, m.match('/dude/login'))
         self.assertEqual({'controller':'content','action':'check_access','url':'dude/what'}, m.match('/dude/what/login'))
         
-        self.assertEqual({'controller':'admin/user','action':'view','url':None}, m.match('/admin/user'))
+        self.assertEqual(None, m.match('/admin/user'))
         self.assertEqual({'controller':'admin/user','action':'view','url':'books/learning_python.pdf'}, m.match('/books/learning_python.pdf/admin/user'))
         self.assertEqual({'controller':'admin/user','action':'view','url':'dude'}, m.match('/dude/admin/user'))
         self.assertEqual({'controller':'admin/user','action':'view','url':'dude/what'}, m.match('/dude/what/admin/user'))
