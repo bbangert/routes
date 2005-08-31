@@ -1,14 +1,13 @@
-#
-#  test_recognition
-#
-#  Created by Ben Bangert on 2005-08-08.
-#  Copyright (c) 2005 Parachute. All rights reserved.
-#
+"""
+test_recognition
 
-import sys
+(c) Copyright 2005 Ben Bangert, Parachute
+[See end of file]
+"""
+
+import sys, time, unittest
 import routes
 from routes.base import Mapper
-import unittest
 
 class TestRecognition(unittest.TestCase):
 
@@ -324,3 +323,79 @@ class TestRecognition(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+else:
+    def bench_rec():
+        n = 1000
+        m = Mapper()
+        m.connect('', controller='articles', action='index')
+        m.connect('admin', controller='admin/general', action='index')
+
+        m.connect('admin/comments/article/:article_id/:action/:id', controller = 'admin/comments', action = None, id=None)
+        m.connect('admin/trackback/article/:article_id/:action/:id', controller='admin/trackback', action=None, id=None)
+        m.connect('admin/content/:action/:id', controller='admin/content')
+
+        m.connect('xml/:action/feed.xml', controller='xml')
+        m.connect('xml/articlerss/:id/feed.xml', controller='xml', action='articlerss')
+        m.connect('index.rdf', controller='xml', action='rss')
+
+        m.connect('articles', controller='articles', action='index')
+        m.connect('articles/page/:page', controller='articles', action='index', requirements = {'page':'\d+'})
+
+        m.connect('articles/:year/:month/:day/page/:page', controller='articles', action='find_by_date', month = None, day = None,
+                            requirements = {'year':'\d{4}', 'month':'\d{1,2}','day':'\d{1,2}'})
+        m.connect('articles/category/:id', controller='articles', action='category')
+        m.connect('pages/*name', controller='articles', action='view_page')
+        m.create_regs(['content','admin/why', 'admin/user'])
+        start = time.time()
+        for x in range(1,n):
+            a = m.match('/content')
+            a = m.match('/content/list')
+            a = m.match('/content/show/10')
+
+            a = m.match('/admin/user')
+            a = m.match('/admin/user/list')
+            a = m.match('/admin/user/show/bbangert')
+
+            a = m.match('/admin/user/show/bbangert/dude')
+            a = m.match('/admin/why/show/bbangert')
+            a = m.match('/content/show/10/20')
+            a = m.match('/food')
+        end = time.time()
+        ts = time.time()
+        for x in range(1,n):
+            pass
+        en = time.time()
+        total = end-start-(en-ts)
+        per_url = total / (n*10)
+        print "Recognition\n"
+        print "%s ms/url" % (per_url*1000)
+        print "%s urls/s\n" % (1.00/per_url)
+    
+"""
+Copyright (c) 2005 Ben Bangert <ben@groovie.org>, Parachute
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+3. The name of the author or contributors may not be used to endorse or
+   promote products derived from this software without specific prior
+   written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+"""

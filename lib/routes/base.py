@@ -1,15 +1,13 @@
-#
-#  base
-#
-#  Created by Ben Bangert on 2005-08-08.
-#  Copyright (c) 2005 Parachute. All rights reserved.
-#
+"""
+base - Route and Mapper core classes
 
-import re, time, sys
-from urllib import quote_plus
+(c) Copyright 2005 Ben Bangert, Parachute
+[See end of file]
+"""
 
-def quote(string):
-    return quote_plus(str(string), '/')
+import re, sys
+import threadinglocal
+from util import url_quote
 
 if sys.version < '2.4':
     from sets import ImmutableSet as frozenset
@@ -40,7 +38,8 @@ class Route(object):
         
         # Build our routelist, and the keys used in the route
         self.routelist = routelist = routepath.split('/')
-        routekeys = frozenset([key[1:] for key in routelist if (key.startswith(':') or key.startswith('*')) and key not in reserved_keys])
+        routekeys = frozenset([key[1:] for key in routelist \
+            if (key.startswith(':') or key.startswith('*')) and key not in reserved_keys])
         
         
         # Build a req list with all the regexp requirements for our args
@@ -55,7 +54,8 @@ class Route(object):
         # Populate our minimum keys, and save a copy of our backward keys for quicker generation later
         (self.minkeys, self.routebackwards) = self._minkeys(routelist[:])
         # Populate our hardcoded keys, these are ones that are set and don't exist in the route
-        self.hardcoded = frozenset([key for key in self.maxkeys if key not in routekeys and self.defaults[key] is not None])
+        self.hardcoded = frozenset([key for key in self.maxkeys \
+            if key not in routekeys and self.defaults[key] is not None])
         
     def _minkeys(self, routelist):
         """
@@ -267,7 +267,7 @@ class Route(object):
         # Verify that our args pass any regexp requirements
         for key in self.reqs.keys():
             val = kargs.get(key)
-            if val and not self.req_regs[key].match(str(kargs[key])):
+            if val and not self.req_regs[key].match(str(val)):
                 return False
 
         routelist = self.routebackwards
@@ -276,26 +276,23 @@ class Route(object):
         for part in routelist:
             if part.startswith(':'):
                 arg = part[1:]
-                if self.defaults.has_key(arg) and kargs.has_key(arg) and str(kargs[arg]) == self.defaults[arg] and not gaps:
-                    continue
                 if self.defaults.has_key(arg) and not kargs.has_key(arg) and not gaps:
+                    continue                
+                if str(self.defaults.get(arg, 'bla1h')) == str(kargs.get(arg, 'hoop94')) and not gaps: 
                     continue
-                val = kargs.has_key(arg) and kargs[arg]
-                if not val:
-                    val = self.defaults.has_key(arg) and self.defaults[arg]
-                if (not val or val is None) and not gaps:
+                val = kargs.get(arg) or self.defaults.get(arg)
+                if val is None and not gaps:
                     continue
                 if val is None:
                     return False
-                val = quote(val)
-                urllist.append(val)
+                urllist.append(url_quote(val))
                 if kargs.has_key(arg): del kargs[arg]
                 gaps = True
             elif part.startswith('*'):
                 arg = part[1:]
-                if kargs.has_key(arg) and kargs[arg] is not None:
-                    val = quote(kargs[arg])
-                    urllist.append(val)
+                kar = kargs.get(arg)
+                if kar is not None:
+                    urllist.append(url_quote(kar))
                     gaps = True
             else:
                 gaps = True
@@ -305,7 +302,7 @@ class Route(object):
         extras = frozenset(kargs.keys()) - self.maxkeys
         if extras:
             url += '?'
-            url += '&'.join([quote(key)+'='+quote(kargs[key]) for key in extras if key != 'action' or key != 'controller'])
+            url += '&'.join([url_quote(key)+'='+url_quote(kargs[key]) for key in extras if key != 'action' or key != 'controller'])
         return url
     
 
@@ -380,7 +377,7 @@ class Mapper(object):
         # Go through our list again, assemble the controllers/actions we'll
         # add each route to. If its hardcoded, we only add it to that dict key.
         # Otherwise we add it to every hardcode since it can be changed.
-        gens = {} # Our generated two-deep hash
+        gendict = {} # Our generated two-deep hash
         for route in self.matchlist:
             clist = controllerlist
             alist = actionlist
@@ -389,14 +386,10 @@ class Mapper(object):
             if 'action' in route.hardcoded:
                 alist = [str(route.defaults['action'])]
             for controller in clist:
-                if not gens.has_key(controller):
-                    gens[controller] = {}
                 for action in alist:
-                    actiondict = gens[controller]
-                    if not actiondict.has_key(action):
-                        actiondict[action] = ([], {})
-                    actiondict[action][0].append(route)
-        self._gendict = gens
+                    actiondict = gendict.setdefault(controller, {})
+                    actiondict.setdefault(action, ([], {}))[0].append(route)
+        self._gendict = gendict
         self._created_gens = True
         
     def create_regs(self, clist):
@@ -447,15 +440,9 @@ class Mapper(object):
             except:
                 pass
         
-        if self._gendict.has_key(controller):
-            actionlist = self._gendict[controller]
-        else:
-            actionlist = self._gendict.get('*')
+        actionlist = self._gendict.get(controller) or self._gendict.get('*')
         if not actionlist: return None
-        if actionlist.has_key(action):
-            (keylist, sortcache) = actionlist[action]
-        else:
-            (keylist, sortcache) = actionlist.get('*', (None, None))
+        (keylist, sortcache) = actionlist.get(action) or actionlist.get('*', (None, None))
         if not keylist: return None
         
         keys = frozenset(kargs.keys())
@@ -510,9 +497,9 @@ class Mapper(object):
         for route in keylist:
             fail = False
             for key in route.hardcoded:
-                if not kargs.has_key(key):
-                    continue
-                if kargs[key] != route.defaults[key]:
+                kval = kargs.get(key)
+                if not kval: continue
+                if kval != route.defaults[key]:
                     fail = True
                     break
             if fail: continue
@@ -525,110 +512,39 @@ class Mapper(object):
                 continue
         return None
     
-
-if __name__ == '__main__':
-    pass
-else:
-    m = Mapper()
-    m.connect('date/:year/:month/:day', controller = 'blog', action = 'by_date', month = None, day = None)
-    m.connect(':controller/:action/:id', id = None)
-    url = '/date/2004/20/4'
-    c = Mapper()
-    c.connect(':controller/:action/:id')
+class RouteConfig(threadinglocal.local): pass
+class Config(object):
+    _shared_state = RouteConfig()
+    def __new__(cls, *p, **k):
+        self = object.__new__(cls, *p, **k)
+        self.__dict__ = cls._shared_state.__dict__
+        return self
     
-    m = Mapper()
-    m.connect('page/:id/:action', controller='pages', action='show')
-    m.connect(':controller/:action/:id')
+"""
+Copyright (c) 2005 Ben Bangert <ben@groovie.org>, Parachute
+All rights reserved.
 
-    def bench_gen(withcache = False):
-        m = Mapper()
-        m.connect('', controller='articles', action='index')
-        m.connect('admin', controller='admin/general', action='index')
-        
-        m.connect('admin/comments/article/:article_id/:action/:id', controller = 'admin/comments', action = None, id=None)
-        m.connect('admin/trackback/article/:article_id/:action/:id', controller='admin/trackback', action=None, id=None)
-        m.connect('admin/content/:action/:id', controller='admin/content')
-        
-        m.connect('xml/:action/feed.xml', controller='xml')
-        m.connect('xml/articlerss/:id/feed.xml', controller='xml', action='articlerss')
-        m.connect('index.rdf', controller='xml', action='rss')
-        
-        m.connect('articles', controller='articles', action='index')
-        m.connect('articles/page/:page', controller='articles', action='index', requirements = {'page':'\d+'})
-        
-        m.connect('articles/:year/:month/:day/page/:page', controller='articles', action='find_by_date', month = None, day = None,
-                            requirements = {'year':'\d{4}', 'month':'\d{1,2}','day':'\d{1,2}'})
-        m.connect('articles/category/:id', controller='articles', action='category')
-        m.connect('pages/*name', controller='articles', action='view_page')
-        if withcache:
-            m.urlcache = {}
-        m._create_gens()
-        n = 5000
-        start = time.time()
-        for x in range(1,n):
-            m.generate(controller='articles', action='index', page=4)
-            m.generate(controller='admin/general', action='index')
-            m.generate(controller='admin/comments', action='show', article_id=2)
-            
-            m.generate(controller='articles', action='find_by_date', year=2004, page=1)
-            m.generate(controller='articles', action='category', id=4)
-            m.generate(controller='xml', action='articlerss', id=2)
-        end = time.time()
-        ts = time.time()
-        for x in range(1,n*6):
-            pass
-        en = time.time()
-        total = end-start-(en-ts)
-        per_url = total / (n*6)
-        print "Generation (%s URLs)" % (n*6)
-        print "%s ms/url" % (per_url*1000)
-        print "%s urls/s\n" % (1.00/per_url)
-    
-    def bench_rec():
-        n = 1000
-        m = Mapper()
-        m.connect('', controller='articles', action='index')
-        m.connect('admin', controller='admin/general', action='index')
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+3. The name of the author or contributors may not be used to endorse or
+   promote products derived from this software without specific prior
+   written permission.
 
-        m.connect('admin/comments/article/:article_id/:action/:id', controller = 'admin/comments', action = None, id=None)
-        m.connect('admin/trackback/article/:article_id/:action/:id', controller='admin/trackback', action=None, id=None)
-        m.connect('admin/content/:action/:id', controller='admin/content')
-
-        m.connect('xml/:action/feed.xml', controller='xml')
-        m.connect('xml/articlerss/:id/feed.xml', controller='xml', action='articlerss')
-        m.connect('index.rdf', controller='xml', action='rss')
-
-        m.connect('articles', controller='articles', action='index')
-        m.connect('articles/page/:page', controller='articles', action='index', requirements = {'page':'\d+'})
-
-        m.connect('articles/:year/:month/:day/page/:page', controller='articles', action='find_by_date', month = None, day = None,
-                            requirements = {'year':'\d{4}', 'month':'\d{1,2}','day':'\d{1,2}'})
-        m.connect('articles/category/:id', controller='articles', action='category')
-        m.connect('pages/*name', controller='articles', action='view_page')
-        m.create_regs(['content','admin/why', 'admin/user'])
-        start = time.time()
-        for x in range(1,n):
-            a = m.match('/content')
-            a = m.match('/content/list')
-            a = m.match('/content/show/10')
-            
-            a = m.match('/admin/user')
-            a = m.match('/admin/user/list')
-            a = m.match('/admin/user/show/bbangert')
-            
-            a = m.match('/admin/user/show/bbangert/dude')
-            a = m.match('/admin/why/show/bbangert')
-            a = m.match('/content/show/10/20')
-            a = m.match('/food')
-        end = time.time()
-        ts = time.time()
-        for x in range(1,n):
-            pass
-        en = time.time()
-        total = end-start-(en-ts)
-        per_url = total / (n*10)
-        print "Recognition\n"
-        print "%s ms/url" % (per_url*1000)
-        print "%s urls/s\n" % (1.00/per_url)
-    
-
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+"""
