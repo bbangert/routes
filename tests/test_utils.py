@@ -7,8 +7,9 @@ test_utils
 
 import sys, time, unittest
 import routes
-from routes.base import Mapper, Config
+from routes.base import Mapper
 from routes.util import *
+from routes import request_config
 
 class TestUtils(unittest.TestCase):
     def setUp(self):
@@ -17,7 +18,7 @@ class TestUtils(unittest.TestCase):
                   requirements={'month':'\d{1,2}','day':'\d{1,2}'})
         m.connect('viewpost/:id', controller='post', action='view')
         m.connect(':controller/:action/:id')
-        con = Config()
+        con = request_config()
         con.mapper = m
         con.host = 'www.test.com'
         con.protocol = 'http'

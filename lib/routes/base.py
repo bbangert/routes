@@ -6,8 +6,8 @@ base - Route and Mapper core classes
 """
 
 import re, sys
-import threadinglocal
 from util import url_quote
+from routes import request_config
 
 if sys.version < '2.4':
     from sets import ImmutableSet as frozenset
@@ -29,7 +29,7 @@ class Route(object):
         newroute = Route('date/:year/:month/:day', controller="blog", action="view")
         newroute = Route('archives/:page', controller="blog", action="by_page",
                          requirements = { 'page':'\d{1,2}' })
-
+        
         Note: Route is generally not called directly, a Mapper instance connect method should
         be used to add routes.
         """
@@ -56,7 +56,7 @@ class Route(object):
         # Populate our hardcoded keys, these are ones that are set and don't exist in the route
         self.hardcoded = frozenset([key for key in self.maxkeys \
             if key not in routekeys and self.defaults[key] is not None])
-        
+    
     def _minkeys(self, routelist):
         """
         Utility function to walk the route backwards, and determine the minimum
@@ -269,7 +269,7 @@ class Route(object):
             val = kargs.get(key)
             if val and not self.req_regs[key].match(str(val)):
                 return False
-
+        
         routelist = self.routebackwards
         urllist = []
         gaps = False
@@ -391,7 +391,7 @@ class Mapper(object):
                     actiondict.setdefault(action, ([], {}))[0].append(route)
         self._gendict = gendict
         self._created_gens = True
-        
+    
     def create_regs(self, clist):
         """
         Iterate through all connected Routes with our controller list (clist), and
@@ -429,7 +429,7 @@ class Mapper(object):
         # Generate ourself if we haven't already
         if not self._created_gens:
             self._create_gens()
-
+        
         kargs['controller'] = controller
         kargs['action'] = action
         
@@ -458,7 +458,7 @@ class Mapper(object):
                 if len(route.minkeys-keys) == 0:
                     newlist.append(route)
             keylist = newlist
-
+            
             def keysort(a, b):
                 am = a.minkeys
                 a = a.maxkeys
@@ -511,14 +511,6 @@ class Mapper(object):
             else:
                 continue
         return None
-    
-class Config(object):
-    __shared_state = threadinglocal.local()
-    def __getattr__(self, name):
-        return self.__shared_state.__getattr__(name)
-    
-    def __setattr__(self, name, value):
-        return self.__shared_state.__setattr__(name, value)
     
 """
 Copyright (c) 2005 Ben Bangert <ben@groovie.org>, Parachute
