@@ -512,14 +512,13 @@ class Mapper(object):
                 continue
         return None
     
-class RouteConfig(threadinglocal.local): pass
 class Config(object):
-    _shared_state = RouteConfig()
+    __shared_state = threadinglocal.local()
     def __getattr__(self, name):
-        return self._shared_state.__getattr__(name)
+        return self.__shared_state.__getattr__(name)
     
     def __setattr__(self, name, value):
-        return self._shared_state.__setattr__(name, value)
+        return self.__shared_state.__setattr__(name, value)
     
 """
 Copyright (c) 2005 Ben Bangert <ben@groovie.org>, Parachute
