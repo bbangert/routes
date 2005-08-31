@@ -4,11 +4,11 @@ util
 [See end of file]
 
 
-PLEASE NOTE: Many of these functions expect a initialized Config object. This is 
+PLEASE NOTE: Many of these functions expect an initialized RequestConfig object. This is 
              expected to have been initialized for EACH REQUEST by the web framework
              like so:
 import routes.base
-config = base.Config()
+config = base.RequestConfig()
 config.mapper = mapper       # mapper should be a Mapper instance thats ready for use
 config.host = host           # host is the hostname of the webapp
 config.protocol = protocol   # protocol is the protocol of the current request
@@ -18,7 +18,7 @@ config.redirect = redir_func # redir_func should be a function that issues a red
 
 """
 import urllib
-import base
+from routes import request_config
 
 def _screenargs(new):
     """
@@ -32,12 +32,9 @@ def _screenargs(new):
         return new
     elif conval and not new.has_key('action'):
         new['action'] = 'index'
-    config = base.Config()
+    config = request_config()
     old = config.mapper_dict.copy()
-    todel = []
-    for key, val in new.iteritems():
-        if val is None: todel.append(key)
-    for key in todel:
+    for key in [key for key in new.keys() if new[key] is None]:
         del new[key]
         if old.has_key(key): del old[key]
     old.update(new)
@@ -71,7 +68,7 @@ def url_for(anchor = None, host = None, protocol = None, **kargs):
          url_for(action='list', id=None)  =>  '/blog/list'  
     """
     
-    config = base.Config()
+    config = request_config()
     newargs = _screenargs(kargs)
     url = config.mapper.generate(**newargs)
     if anchor: url += '#' + url_quote(anchor)
@@ -82,7 +79,18 @@ def url_for(anchor = None, host = None, protocol = None, **kargs):
     return url
 
 def redirect_to(*args, **kargs):
-    config = base.Config()
+    """
+    Redirects based on the arguments. This can be one of three formats:
+        - (Keyword Args) Lookup the best URL using the same keyword args
+                         as url_for and redirect to it
+        - (String starting with protocol) Redirect to the string exactly as is
+        - (String without protocol) Prepend the string with the current protocol
+                                    and host, then redirect to it.
+    Redirect's *should* occur as a "302 Moved" header, however the web framework
+    may utilize a different method.
+    """
+    
+    config = request_config()
     target = ''
     if args:
         target = args[0]
@@ -90,7 +98,8 @@ def redirect_to(*args, **kargs):
             target = config.protocol + '://' + config.host + target
     elif kargs:
         target = url_for(**kargs)
-    config.redirect(target)
+    config.redirect(url_quote(target))
+
 
 """
 Copyright (c) 2005 Ben Bangert <ben@groovie.org>, Parachute
