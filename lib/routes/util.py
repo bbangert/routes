@@ -7,8 +7,8 @@ util
 PLEASE NOTE: Many of these functions expect an initialized RequestConfig object. This is 
              expected to have been initialized for EACH REQUEST by the web framework
              like so:
-import routes.base
-config = base.RequestConfig()
+import routes
+config = routes.request_config()
 config.mapper = mapper       # mapper should be a Mapper instance thats ready for use
 config.host = host           # host is the hostname of the webapp
 config.protocol = protocol   # protocol is the protocol of the current request
