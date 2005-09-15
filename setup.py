@@ -1,20 +1,20 @@
-#
-#  setup
-#
-#  Created by Ben Bangert on 2005-08-09.
-#  Copyright (c) 2005 Parachute. All rights reserved.
-#
+from ez_setup import use_setuptools
+use_setuptools()
+from setuptools import setup, find_packages
 
 import sys
 import os
 from distutils.core import setup
 
-setup(name="routes",
+setup(name="Routes",
       version='0.1',
       description='Routing Recognition and Generation Tools',
+      long_description="""
+A Routing package for Python that directly support 98% of the Rails unit tests
+""",
       author='Ben Bangert',
       author_email='ben@groovie.org',
       url='http://routes.groovie.org/',
-      package_dir = {'': 'lib'},
-      packages = ['routes']
+      packages=find_packages(exclude='tests'),
       )
+      
