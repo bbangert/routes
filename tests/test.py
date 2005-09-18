@@ -1,6 +1,5 @@
-import unittest, sys
-sys.path.append('./tests')
-sys.path.append('./lib')
+import unittest, sys, os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from test_generation import TestGeneration
 from test_recognition import TestRecognition
