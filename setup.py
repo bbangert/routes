@@ -18,5 +18,5 @@ A Routing package for Python that matches URL's to dicts and vice versa
       author='Ben Bangert',
       author_email='ben@groovie.org',
       url='http://routes.groovie.org/',
-      packages=find_packages(exclude='tests'),
+      packages=find_packages(exclude=['tests', 'ez_setup']),
       )
