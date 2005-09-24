@@ -319,6 +319,22 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual(None, m.match('/hello/world/how/are/you/today'))
         
         self.assertEqual({'controller':'content','action':'index'}, m.match('/'))
+
+    def test_dynamic_with_prefix(self):
+        m = Mapper()
+        m.prefix = '/blog'
+        m.connect(':controller/:action/:id')
+        m.create_regs(['content', 'archive', 'admin/comments'])
+
+        self.assertEqual(None, m.match('/x'))
+        self.assertEqual(None, m.match('/admin/comments'))
+        self.assertEqual(None, m.match('/content/view'))
+        self.assertEqual(None, m.match('/archive/view/4'))
+
+        self.assertEqual({'controller':'content','action':'index','id':None}, m.match('/blog/content'))
+        self.assertEqual({'controller':'admin/comments','action':'view','id':None}, m.match('/blog/admin/comments/view'))
+        self.assertEqual({'controller':'archive','action':'index','id':None}, m.match('/blog/archive'))
+        self.assertEqual({'controller':'archive','action':'view', 'id':'4'}, m.match('/blog/archive/view/4'))
     
 
 if __name__ == '__main__':

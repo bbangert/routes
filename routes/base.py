@@ -327,6 +327,8 @@ class Mapper(object):
         self.urlcache = None
         self._created_regs = False
         self._created_gens = False
+        self.prefix = None
+        self._regprefix = None
     
     def connect(self, *args, **kargs):
         """
@@ -400,6 +402,11 @@ class Mapper(object):
         for key,val in self.maxkeys.iteritems():
             for route in val:
                 route.makeregexp(clist)
+        
+        
+        # Create our regexp to strip the prefix
+        if self.prefix:
+            self._regprefix = re.compile(self.prefix + '(.*)')
         self._created_regs = True
     
     def match(self, url):
@@ -414,6 +421,11 @@ class Mapper(object):
             raise Exception, "Must created regexps first"
             
         for route in self.matchlist:
+            if self.prefix:
+                if re.match(self._regprefix, url):
+                    url = re.sub(self._regprefix, r'\1', url)
+                else:
+                    continue
             match = route.match(url)
             if match: return match
         return None
@@ -505,6 +517,8 @@ class Mapper(object):
             if fail: continue
             path = route.generate(**kargs)
             if path:
+                if self.prefix:
+                    path = self.prefix + path
                 if self.urlcache is not None:
                     self.urlcache[str(kargs)] = path
                 return path
