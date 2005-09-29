@@ -257,6 +257,26 @@ class TestGeneration(unittest.TestCase):
 
         self.assertEqual('/', m.generate(controller='content', action='index'))
         self.assertEqual('/', m.generate(controller='content'))
+    def test_url_with_prefix(self):
+        m = Mapper()
+        m.prefix = '/blog'
+        m.connect(':controller/:action/:id')
+        m.create_regs(['content','blog','admin/comments'])
+
+        self.assertEqual('/blog/content/view', m.generate(controller='content', action='view'))
+        self.assertEqual('/blog/content', m.generate(controller='content'))
+        self.assertEqual('/blog/admin/comments', m.generate(controller='admin/comments'))
+
+    def test_url_with_prefix_deeper(self):
+        m = Mapper()
+        m.prefix = '/blog/phil'
+        m.connect(':controller/:action/:id')
+        m.create_regs(['content','blog','admin/comments'])
+
+        self.assertEqual('/blog/phil/content/view', m.generate(controller='content', action='view'))
+        self.assertEqual('/blog/phil/content', m.generate(controller='content'))
+        self.assertEqual('/blog/phil/admin/comments', m.generate(controller='admin/comments'))
+
     
 
 if __name__ == '__main__':
