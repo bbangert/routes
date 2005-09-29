@@ -43,7 +43,7 @@ def _screenargs(new):
 def url_quote(string):
     return urllib.quote_plus(str(string), '/')
 
-def url_for(anchor = None, host = None, protocol = None, **kargs):
+def url_for(*args, **kargs):
     """
     Returns a url that has been rewritten according to the keyword args and the defined
     Routes in the mapper. All keys given to url_for are sent to the Routes Mapper instance
@@ -65,11 +65,27 @@ def url_for(anchor = None, host = None, protocol = None, **kargs):
          url_for(controller='/admin')     =>  '/admin',
          url_for(controller='admin')      =>  '/admin/index/4'
          url_for(action='edit')           =>  '/blog/post/4',
-         url_for(action='list', id=None)  =>  '/blog/list'  
-    """
+         url_for(action='list', id=None)  =>  '/blog/list'
     
+    If there is a string present as the first argument, it is assumed to be a Route Name, and
+    a lookup will be done on the Routes Mapper instance to see if there is a set of keyword
+    defaults associated with that name. If so, the keyword args passed in will override default
+    ones that were retrieved.  
+    """
+    anchor = kargs.get('anchor')
+    host = kargs.get('host')
+    protocol = kargs.get('protocol')
+    for key in ['anchor', 'host', 'protocol']:
+        if kargs.get(key): del kargs[key]
     config = request_config()
-    newargs = _screenargs(kargs)
+    newdict = None
+    if len(args) > 0:
+        newdict = config.mapper._routenames.get(args[0])
+    if newdict:
+        newargs = newdict.copy()
+        newargs.update(kargs)
+    else:
+        newargs = _screenargs(kargs)
     url = config.mapper.generate(**newargs)
     if anchor: url += '#' + url_quote(anchor)
     if host or protocol:

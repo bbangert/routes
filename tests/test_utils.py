@@ -46,7 +46,22 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('/archive/2004/10', url_for(month=10))
         self.assertEqual('/archive/2004/9/2', url_for(month=9, day=2))
         self.assertEqual('/blog', url_for(controller='blog', year=None))
+
+
+    def test_with_route_names(self):
+        m = self.con.mapper
+        self.con.mapper_dict = {}
+        m.connect('home', '', controller='blog', action='splash')
+        m.connect('category_home', 'category/:section', controller='blog', action='view', section='home')
+        m.create_regs(['content','blog','admin/comments'])
+
+        self.assertEqual('/content/view', url_for(controller='content', action='view'))
+        self.assertEqual('/content', url_for(controller='content'))
+        self.assertEqual('/admin/comments', url_for(controller='admin/comments'))
+        self.assertEqual('/category', url_for('category_home'))
+        self.assertEqual('/', url_for('home'))
     
+
 if __name__ == '__main__':
     unittest.main()
 else:

@@ -329,6 +329,7 @@ class Mapper(object):
         self._created_gens = False
         self.prefix = None
         self._regprefix = None
+        self._routenames = {}
     
     def connect(self, *args, **kargs):
         """
@@ -340,9 +341,18 @@ class Mapper(object):
         m.connect('date/:year/:month/:day', controller="blog", action="view")
         m.connect('archives/:page', controller="blog", action="by_page",
                   requirements = { 'page':'\d{1,2}' })
+        m.connect('category_list', 'archives/category/:section', controller='blog', action='category',
+                  section='home', type='list')
+        m.connect('home', '', controller='blog', action='view', section='home')
         """
+        routename = None
+        if len(args) > 1:
+            routename = args[0]
+            args = args[1:]
         route = Route(*args, **kargs)
         self.matchlist.append(route)
+        if routename:
+            self._routenames[routename] = route.defaults.copy()
         exists = False
         for key in self.maxkeys:
             if key == route.maxkeys:
