@@ -6,10 +6,7 @@ test_utils
 """
 
 import sys, time, unittest
-import routes
-from routes.base import Mapper
-from routes.util import *
-from routes import request_config
+from routes import *
 
 class TestUtils(unittest.TestCase):
     def setUp(self):

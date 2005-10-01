@@ -6,8 +6,7 @@ test_generation
 """
 
 import sys, time, unittest
-import routes
-from routes.base import Mapper
+from routes import *
 
 class TestGeneration(unittest.TestCase):
     
@@ -276,7 +275,6 @@ class TestGeneration(unittest.TestCase):
         self.assertEqual('/blog/phil/content/view', m.generate(controller='content', action='view'))
         self.assertEqual('/blog/phil/content', m.generate(controller='content'))
         self.assertEqual('/blog/phil/admin/comments', m.generate(controller='admin/comments'))
-
     
 
 if __name__ == '__main__':

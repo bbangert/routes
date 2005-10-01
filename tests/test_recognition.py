@@ -6,8 +6,7 @@ test_recognition
 """
 
 import sys, time, unittest
-import routes
-from routes.base import Mapper
+from routes import *
 
 class TestRecognition(unittest.TestCase):
 

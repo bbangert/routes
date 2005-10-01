@@ -19,3 +19,6 @@ else:
   
 def request_config():
     return _RequestConfig()
+    
+from base import Mapper
+from util import url_for, redirect_to
