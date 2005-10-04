@@ -50,6 +50,7 @@ class TestUtils(unittest.TestCase):
         self.con.mapper_dict = {}
         m.connect('home', '', controller='blog', action='splash')
         m.connect('category_home', 'category/:section', controller='blog', action='view', section='home')
+        m.connect(':controller/:action/:id')
         m.create_regs(['content','blog','admin/comments'])
 
         self.assertEqual('/content/view', url_for(controller='content', action='view'))
@@ -58,6 +59,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('/category', url_for('category_home'))
         self.assertEqual('/category/food', url_for('category_home', section='food'))
         self.assertEqual('/category', url_for('home', action='view', section='home'))
+        self.assertEqual('/content/splash', url_for('home', controller='content'))
         self.assertEqual('/', url_for('home'))
     
 
