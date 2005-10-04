@@ -56,6 +56,8 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('/content', url_for(controller='content'))
         self.assertEqual('/admin/comments', url_for(controller='admin/comments'))
         self.assertEqual('/category', url_for('category_home'))
+        self.assertEqual('/category/food', url_for('category_home', section='food'))
+        self.assertEqual('/category', url_for('home', action='view', section='home'))
         self.assertEqual('/', url_for('home'))
     
 
