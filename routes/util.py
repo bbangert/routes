@@ -111,7 +111,7 @@ def redirect_to(*args, **kargs):
     if args:
         target = args[0]
         if target.startswith('/'):
-            target = config.protocol + '://' + config.host + target
+            target = config.protocol + '://' + config.host + url_quote(target)
         elif not target.startswith('http://'):
             newdict = config.mapper._routenames.get(args[0])
             if newdict:
@@ -120,7 +120,7 @@ def redirect_to(*args, **kargs):
                 target = url_for(**newargs)
     elif kargs:
         target = url_for(**kargs)
-    config.redirect(url_quote(target))
+    config.redirect(target)
 
 
 """

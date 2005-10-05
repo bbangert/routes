@@ -50,7 +50,6 @@ class TestUtils(unittest.TestCase):
         self.con.mapper_dict = {}
         m.connect('home', '', controller='blog', action='splash')
         m.connect('category_home', 'category/:section', controller='blog', action='view', section='home')
-        m.connect(':controller/:action/:id')
         m.create_regs(['content','blog','admin/comments'])
 
         self.assertEqual('/content/view', url_for(controller='content', action='view'))
@@ -61,6 +60,28 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('/category', url_for('home', action='view', section='home'))
         self.assertEqual('/content/splash', url_for('home', controller='content'))
         self.assertEqual('/', url_for('home'))
+
+    def test_with_route_names_and_redirect_to(self):
+        m = self.con.mapper
+        self.con.mapper_dict = {}
+        result = None
+        def printer(echo):
+            con = request_config
+            con.result = echo
+        self.con.redirect = printer
+        m.connect('home', '', controller='blog', action='splash')
+        m.connect('category_home', 'category/:section', controller='blog', action='view', section='home')
+        m.create_regs(['content','blog','admin/comments'])
+        
+        redirect_to(controller='content', action='view')
+        self.assertEqual('/content/view', self.con.result)
+        self.assertEqual('/content', redirect_to(controller='content'))
+        self.assertEqual('/admin/comments', redirect_to(controller='admin/comments'))
+        self.assertEqual('/category', redirect_to('category_home'))
+        self.assertEqual('/category/food', redirect_to('category_home', section='food'))
+        self.assertEqual('/category', redirect_to('home', action='view', section='home'))
+        self.assertEqual('/content/splash', redirect_to('home', controller='content'))
+        self.assertEqual('/', redirect_to('home'))
     
 
 if __name__ == '__main__':
