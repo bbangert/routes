@@ -8,7 +8,7 @@ setup(name="Routes",
       long_description="""
 A Routing package for Python that matches URL's to dicts and vice versa
 """,
-      classifiers=["Development Status :: 4 - Beta",
+      classifiers=["Development Status :: 5 - Production/Stable",
                    "Intended Audience :: Developers",
                    "License :: OSI Approved :: BSD License",
                    "Programming Language :: Python",

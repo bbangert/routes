@@ -1,0 +1,35 @@
+Routes Changelog
+========================
+
+1.0 (Oct. 5, 2005)
+------------------
+
+*Backwards Incompatibilities*
+
+* None, however routes.__init__ will now load the common symbols most people will
+  want to actually use.
+  Thus, you can either:
+       from routes import *
+  Or:
+       from routes import request_confg, Mapper
+  The following names are available for importing from routes:
+      request_config, Mapper, url_for, redirect_to
+
+  
+*New Features*
+
+* Route Names - You can now name a route, which will save a copy of the defaults
+  defined for later use by url_for or redirect_to. 
+  Thus, a route and url_for looking like this:
+       m.connect('home', controller='blog', action='splash')
+       url_for(controller='blog', action='splash')   # => /home
+  Can now be used with a name:
+       m.connect('home_url','home', controller='blog', action='splash')
+       url_for('home_url')  # => /home
+  
+  Additional keywords can still be added to url_for and will override defaults in
+  the named route.
+  
+*Tests*
+
+* redirect_to now has two sets of tests to ensure it works properly
