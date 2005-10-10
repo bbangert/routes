@@ -15,6 +15,8 @@ config.protocol = protocol   # protocol is the protocol of the current request
 config.mapper_dict = mapdi   # mapdi should be the dict returned by mapper.match()
 config.redirect = redir_func # redir_func should be a function that issues a redirect, and
                              #       takes a url as the sole argument
+config.prefix                # Set if the application is moved under a URL prefix. Prefix
+                             # will be stripped before matching, and prepended on generation
 
 """
 import urllib

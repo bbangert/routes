@@ -123,7 +123,7 @@ class Route(object):
         (reg, noreqs, allblank) = self.buildnextreg(self.routelist, clist)
         
         if not reg: reg = '/'
-        reg = '^' + reg + '$'
+        reg = '^' + reg + '(/)?' + '$'
         
         self.regexp = reg
         self.regmatch = re.compile(reg)
@@ -232,6 +232,8 @@ class Route(object):
         other possible return is False if a match doesn't work out.
         """
         
+        if url.endswith('/') and len(url) > 1:
+            url = url[:-1]
         m = self.regmatch.match(url)
         if m:
             matchdict = m.groupdict()

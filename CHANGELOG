@@ -30,6 +30,10 @@ Routes Changelog
   Additional keywords can still be added to url_for and will override defaults in
   the named route.
   
+* Trailing / - Route recognition earlier failed on trailing slashes, not really a bug,
+  not really a feature I guess. Anyways, trailing slashes are o.k. now as in the Rails
+  version.
+  
 *Tests*
 
 * redirect_to now has two sets of tests to ensure it works properly

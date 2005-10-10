@@ -31,6 +31,7 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual(None, m.match('/hi'))
         self.assertEqual(None, m.match('/hi/dude/what'))
         self.assertEqual({'controller':'content','name':'dude','action':'index'}, m.match('/hi/dude'))
+        self.assertEqual({'controller':'content','name':'dude','action':'index'}, m.match('/hi/dude/'))
     
     def test_basic_dynamic_backwards(self):
         m = Mapper()
@@ -67,6 +68,7 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual(None, m.match('/boo/blah'))
         self.assertEqual(None, m.match('/hi'))
         self.assertEqual({'controller':'content','action':'index'}, m.match('/index/hi'))
+        self.assertEqual({'controller':'content','action':'index'}, m.match('/index/hi/'))
         self.assertEqual({'controller':'content','action':'dude'}, m.match('/dude/hi'))
     
     def test_dynamic_with_string_condition(self):
@@ -105,6 +107,7 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual(None, m.match('/hi/138708jkhdf'))
         self.assertEqual(None, m.match('/hi/dkjfl8792343dfsf'))
         self.assertEqual(None, m.match('/hi/dude/what'))
+        self.assertEqual(None, m.match('/hi/dude/what/'))
         self.assertEqual({'controller':'content','name':'index','action':'index'}, m.match('/hi/index'))
         self.assertEqual({'controller':'content','name':'dude','action':'index'}, m.match('/hi/dude'))
     
@@ -118,7 +121,7 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual(None, m.match('/hi/FOXY'))
         self.assertEqual(None, m.match('/hi/138708jkhdf'))
         self.assertEqual(None, m.match('/hi/dkjfl8792343dfsf'))
-        self.assertEqual(None, m.match('/hi/dude/what'))
+        self.assertEqual(None, m.match('/hi/dude/what/'))
         self.assertEqual({'controller':'content','action':'index'}, m.match('/hi'))
         self.assertEqual({'controller':'content','action':'index'}, m.match('/hi/index'))
         self.assertEqual({'controller':'content','action':'dude'}, m.match('/hi/dude'))
@@ -231,6 +234,7 @@ class TestRecognition(unittest.TestCase):
         
         self.assertEqual({'controller':'content','action':'view','url':''}, m.match('/'))
         self.assertEqual({'controller':'content','action':'view','url':None}, m.match('/content'))
+        self.assertEqual({'controller':'content','action':'view','url':None}, m.match('/content/'))
         self.assertEqual({'controller':'content','action':'view','url':None}, m.match('/content/view'))
         self.assertEqual({'controller':'content','action':'goober','url':'view/here'}, m.match('/goober/view/here'))
         self.assertEqual({'controller':'admin/user','action':'view','url':None}, m.match('/admin/user'))
@@ -288,6 +292,7 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual(None, m.match('/hi/13870948'))
         self.assertEqual(None, m.match('/hi/content/dog'))
         self.assertEqual(None, m.match('/hi/admin/user/foo'))
+        self.assertEqual(None, m.match('/hi/admin/user/foo/'))
         self.assertEqual({'controller':'content','action':'hi'}, m.match('/hi/content'))
         self.assertEqual({'controller':'admin/user', 'action':'hi'}, m.match('/hi/admin/user'))
     
