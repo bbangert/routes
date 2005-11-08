@@ -421,16 +421,13 @@ class Mapper(object):
             self._regprefix = re.compile(self.prefix + '(.*)')
         self._created_regs = True
     
-    def match(self, url, return_route=False):
+    def _match(self, url):
         """
-        Match a URL against against one of the routes contained.
+        Matches a URL against a route, and returns a tuple of
+        the match dict and the route object if a match is
+        successfull, otherwise it returns empty.
         
-        Will return None if no valid match is found.
-        
-        If return_route is True, then the route object that matched will
-        also be returned.
-        
-        resultdict = m.match('/joe/sixpack')
+        For internal use only.
         """
         if not self._created_regs:
             raise Exception, "Must created regexps first"
@@ -443,11 +440,36 @@ class Mapper(object):
                     continue
             match = route.match(url)
             if match: 
-                if return_route:
-                    return match, route
-                else:
-                    return match
+                return (match, route)
         return None
+        
+    def match(self, url):
+        """
+        Match a URL against against one of the routes contained.
+        
+        Will return None if no valid match is found.
+        
+        resultdict = m.match('/joe/sixpack')
+        """
+        result = self._match(url)
+        if result:
+            return result[0]
+        return None
+        
+    def routematch(self, url):
+        """
+        Match a URL against against one of the routes contained.
+        
+        Will return None if no valid match is found, otherwise a
+        result dict and a route object is returned.
+                
+        resultdict, route_obj = m.match('/joe/sixpack')
+        """
+        result = self._match(url)
+        if result:
+            return result[0], result[1]
+        return None
+        
     
     def generate(self, controller='content', action='index', **kargs):
         """
