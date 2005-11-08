@@ -421,11 +421,14 @@ class Mapper(object):
             self._regprefix = re.compile(self.prefix + '(.*)')
         self._created_regs = True
     
-    def match(self, url):
+    def match(self, url, return_route=False):
         """
         Match a URL against against one of the routes contained.
         
         Will return None if no valid match is found.
+        
+        If return_route is True, then the route object that matched will
+        also be returned.
         
         resultdict = m.match('/joe/sixpack')
         """
@@ -439,7 +442,11 @@ class Mapper(object):
                 else:
                     continue
             match = route.match(url)
-            if match: return match
+            if match: 
+                if return_route:
+                    return match, route
+                else:
+                    return match
         return None
     
     def generate(self, controller='content', action='index', **kargs):
