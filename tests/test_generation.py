@@ -256,6 +256,7 @@ class TestGeneration(unittest.TestCase):
 
         self.assertEqual('/', m.generate(controller='content', action='index'))
         self.assertEqual('/', m.generate(controller='content'))
+    
     def test_url_with_prefix(self):
         m = Mapper()
         m.prefix = '/blog'
@@ -275,7 +276,27 @@ class TestGeneration(unittest.TestCase):
         self.assertEqual('/blog/phil/content/view', m.generate(controller='content', action='view'))
         self.assertEqual('/blog/phil/content', m.generate(controller='content'))
         self.assertEqual('/blog/phil/admin/comments', m.generate(controller='admin/comments'))
-    
+
+    def test_url_with_environ_empty(self):
+        m = Mapper()
+        m.environ = dict(SCRIPT_NAME='')
+        m.connect(':controller/:action/:id')
+        m.create_regs(['content','blog','admin/comments'])
+
+        self.assertEqual('/content/view', m.generate(controller='content', action='view'))
+        self.assertEqual('/content', m.generate(controller='content'))
+        self.assertEqual('/admin/comments', m.generate(controller='admin/comments'))
+
+    def test_url_with_environ(self):
+        m = Mapper()
+        m.environ = dict(SCRIPT_NAME='/blog')
+        m.connect(':controller/:action/:id')
+        m.create_regs(['content','blog','admin/comments'])
+
+        self.assertEqual('/blog/content/view', m.generate(controller='content', action='view'))
+        self.assertEqual('/blog/content', m.generate(controller='content'))
+        self.assertEqual('/blog/admin/comments', m.generate(controller='admin/comments'))
+
 
 if __name__ == '__main__':
     unittest.main()

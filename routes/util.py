@@ -17,6 +17,8 @@ config.redirect = redir_func # redir_func should be a function that issues a red
                              #       takes a url as the sole argument
 config.prefix                # Set if the application is moved under a URL prefix. Prefix
                              # will be stripped before matching, and prepended on generation
+config.environ               # Set to the WSGI environ for automatic prefix support if the
+                             # webapp is underneath a 'SCRIPT_NAME'
 
 """
 import urllib

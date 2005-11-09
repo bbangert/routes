@@ -330,6 +330,7 @@ class Mapper(object):
         self._created_regs = False
         self._created_gens = False
         self.prefix = None
+        self.environ = None
         self._regprefix = None
         self._routenames = {}
     
@@ -560,6 +561,8 @@ class Mapper(object):
             if path:
                 if self.prefix:
                     path = self.prefix + path
+                if self.environ and self.environ['SCRIPT_NAME'] != '':
+                    path = self.environ['SCRIPT_NAME'] + path
                 if self.urlcache is not None:
                     self.urlcache[str(kargs)] = path
                 return path
