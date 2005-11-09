@@ -561,7 +561,7 @@ class Mapper(object):
             if path:
                 if self.prefix:
                     path = self.prefix + path
-                if self.environ and self.environ['SCRIPT_NAME'] != '':
+                if self.environ and self.environ.get('SCRIPT_NAME', '') != '':
                     path = self.environ['SCRIPT_NAME'] + path
                 if self.urlcache is not None:
                     self.urlcache[str(kargs)] = path
