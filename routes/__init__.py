@@ -1,3 +1,8 @@
+"""
+Provides common classes and functions most users will want access to.
+
+"""
+
 import threadinglocal, sys
 
 if sys.version < '2.4':

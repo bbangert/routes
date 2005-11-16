@@ -1,12 +1,10 @@
 """
-base - Route and Mapper core classes
+Route and Mapper core classes
 
-(c) Copyright 2005 Ben Bangert, Parachute
-[See end of file]
 """
 
 import re, sys
-from util import url_quote
+from util import _url_quote as url_quote
 from routes import request_config
 
 if sys.version < '2.4':
@@ -16,7 +14,7 @@ class Route(object):
     """
     The Route object holds a route recognition and generation routine.
     
-    See __init__ docs for usage.
+    See Route.__init__ docs for usage.
     """
     
     def __init__(self, routepath, **kargs):
@@ -25,10 +23,15 @@ class Route(object):
         args that setup defaults.
         
         Usage:
-        newroute = Route(':controller/:action/:id')
-        newroute = Route('date/:year/:month/:day', controller="blog", action="view")
-        newroute = Route('archives/:page', controller="blog", action="by_page",
-        requirements = { 'page':'\d{1,2}' })
+        
+        >>> from routes.base import Route
+        >>> newroute = Route(':controller/:action/:id')
+        >>> newroute.defaults
+        {'action': 'index', 'id': None}
+        >>> newroute = Route('date/:year/:month/:day', controller="blog", action="view")
+        >>> newroute = Route('archives/:page', controller="blog", action="by_page", requirements = { 'page':'\d{1,2}' })
+        >>> newroute.reqs
+        {'page': '\\d{1,2}'}
         
         Note: Route is generally not called directly, a Mapper instance connect method should
         be used to add routes.

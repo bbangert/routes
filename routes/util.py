@@ -1,25 +1,29 @@
 """
-util - Utility functions for use in templates / controllers
+Utility functions for use in templates / controllers
 
-(c) Copyright 2005 Ben Bangert, Parachute
-[See end of file]
-
-
-PLEASE NOTE: Many of these functions expect an initialized RequestConfig object. This is 
+*PLEASE NOTE*: Many of these functions expect an initialized RequestConfig object. This is 
 expected to have been initialized for EACH REQUEST by the web framework
 like so:
-import routes
+
 config = routes.request_config()
-config.mapper = mapper       # mapper should be a Mapper instance thats ready for use
-config.host = host           # host is the hostname of the webapp
-config.protocol = protocol   # protocol is the protocol of the current request
-config.mapper_dict = mapdi   # mapdi should be the dict returned by mapper.match()
-config.redirect = redir_func # redir_func should be a function that issues a redirect, and
-#       takes a url as the sole argument
-config.prefix                # Set if the application is moved under a URL prefix. Prefix
-# will be stripped before matching, and prepended on generation
-config.environ               # Set to the WSGI environ for automatic prefix support if the
-# webapp is underneath a 'SCRIPT_NAME'
+    Retrieve the thread-local request_config object
+config.mapper = mapper
+    mapper should be a Mapper instance thats ready for use
+config.host = host
+    host is the hostname of the webapp
+config.protocol = protocol
+    protocol is the protocol of the current request
+config.mapper_dict = mapdict
+    mapdict should be the dict returned by mapper.match()
+config.redirect = redir_func
+    redir_func should be a function that issues a redirect, 
+    and takes a url as the sole argument
+config.prefix
+    Set if the application is moved under a URL prefix. Prefix
+    will be stripped before matching, and prepended on generation
+config.environ
+    Set to the WSGI environ for automatic prefix support if the
+    webapp is underneath a 'SCRIPT_NAME'
 
 """
 import urllib
@@ -45,32 +49,36 @@ def _screenargs(new):
     old.update(new)
     return old
 
-def url_quote(string):
+def _url_quote(string):
     return urllib.quote_plus(str(string), '/')
 
 def url_for(*args, **kargs):
     """
     Returns a url that has been rewritten according to the keyword args and the defined
-    Routes in the mapper. All keys given to url_for are sent to the Routes Mapper instance
-    for generation except for:
-    anchor   - specified the anchor name to be appened to the path
-    host     - overrides the default (current) host if provided
-    protocol - overrides the default (current) protocol if provided
+    Routes in the mapper. 
+    
+    All keys given to url_for are sent to the Routes Mapper instance for generation except for::
+        
+        anchor          specified the anchor name to be appened to the path
+        host            overrides the default (current) host if provided
+        protocol        overrides the default (current) protocol if provided
         
     The URL is generated based on the rest of the keys. When generating a new URL, values
     will be used from the current request's parameters (if present). The following rules
     are used to determine when and how to keep the current requests parameters:
+    
     * If the controller is present and begins with '/', no defaults are used
     * If the controller is changed, action is set to 'index' unless otherwise specified
     
     For example, if the current request yielded a dict of
     {'controller': 'blog', 'action': 'view', 'id': 2}, with the standard 
-    ':controller/:action/:id' route, you'd get the following results:
-    url_for(id=4)                    =>  '/blog/view/4',
-    url_for(controller='/admin')     =>  '/admin',
-    url_for(controller='admin')      =>  '/admin/index/4'
-    url_for(action='edit')           =>  '/blog/post/4',
-    url_for(action='list', id=None)  =>  '/blog/list'
+    ':controller/:action/:id' route, you'd get the following results::
+    
+        url_for(id=4)                    =>  '/blog/view/4',
+        url_for(controller='/admin')     =>  '/admin',
+        url_for(controller='admin')      =>  '/admin/index/4'
+        url_for(action='edit')           =>  '/blog/post/4',
+        url_for(action='list', id=None)  =>  '/blog/list'
     
     If there is a string present as the first argument, it is assumed to be a Route Name, and
     a lookup will be done on the Routes Mapper instance to see if there is a set of keyword
@@ -92,7 +100,7 @@ def url_for(*args, **kargs):
     else:
         newargs = _screenargs(kargs)
     url = config.mapper.generate(**newargs)
-    if anchor: url += '#' + url_quote(anchor)
+    if anchor: url += '#' + _url_quote(anchor)
     if host or protocol:
         if not host: host = config.host
         if not protocol: protocol = config.protocol
@@ -102,11 +110,14 @@ def url_for(*args, **kargs):
 def redirect_to(*args, **kargs):
     """
     Redirects based on the arguments. This can be one of three formats:
-    - (Keyword Args) Lookup the best URL using the same keyword args
-    as url_for and redirect to it
-    - (String starting with protocol) Redirect to the string exactly as is
-    - (String without protocol) Prepend the string with the current protocol
-    and host, then redirect to it.
+    
+    Keyword Args
+        Lookup the best URL using the same keyword args as url_for and redirect to it
+    String starting with protocol
+        Redirect to the string exactly as is
+    String without protocol
+        Prepend the string with the current protocol and host, then redirect to it.
+       
     Redirect's *should* occur as a "302 Moved" header, however the web framework
     may utilize a different method.
     """
@@ -116,7 +127,7 @@ def redirect_to(*args, **kargs):
     if args:
         target = args[0]
         if target.startswith('/'):
-            target = config.protocol + '://' + config.host + url_quote(target)
+            target = config.protocol + '://' + config.host + _url_quote(target)
         elif not target.startswith('http://'):
             newdict = config.mapper._routenames.get(args[0])
             if newdict:

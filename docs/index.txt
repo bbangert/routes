@@ -1,5 +1,5 @@
 Routes
 ++++++
 
-Routes is a Python port of the `Rails routes system <http://manuals.rubyonrails.com/read/book/9>`_
+Routes is a Python re-implementation of the `Rails routes system <http://manuals.rubyonrails.com/read/book/9>`_
 for mapping URL's to Controllers/Actions and generating URL's. 
