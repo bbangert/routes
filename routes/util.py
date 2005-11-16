@@ -1,12 +1,13 @@
 """
-util
+util - Utility functions for use in templates / controllers
+
 (c) Copyright 2005 Ben Bangert, Parachute
 [See end of file]
 
 
 PLEASE NOTE: Many of these functions expect an initialized RequestConfig object. This is 
-             expected to have been initialized for EACH REQUEST by the web framework
-             like so:
+expected to have been initialized for EACH REQUEST by the web framework
+like so:
 import routes
 config = routes.request_config()
 config.mapper = mapper       # mapper should be a Mapper instance thats ready for use
@@ -14,11 +15,11 @@ config.host = host           # host is the hostname of the webapp
 config.protocol = protocol   # protocol is the protocol of the current request
 config.mapper_dict = mapdi   # mapdi should be the dict returned by mapper.match()
 config.redirect = redir_func # redir_func should be a function that issues a redirect, and
-                             #       takes a url as the sole argument
+#       takes a url as the sole argument
 config.prefix                # Set if the application is moved under a URL prefix. Prefix
-                             # will be stripped before matching, and prepended on generation
+# will be stripped before matching, and prepended on generation
 config.environ               # Set to the WSGI environ for automatic prefix support if the
-                             # webapp is underneath a 'SCRIPT_NAME'
+# webapp is underneath a 'SCRIPT_NAME'
 
 """
 import urllib
@@ -52,24 +53,24 @@ def url_for(*args, **kargs):
     Returns a url that has been rewritten according to the keyword args and the defined
     Routes in the mapper. All keys given to url_for are sent to the Routes Mapper instance
     for generation except for:
-        anchor   - specified the anchor name to be appened to the path
-        host     - overrides the default (current) host if provided
-        protocol - overrides the default (current) protocol if provided
+    anchor   - specified the anchor name to be appened to the path
+    host     - overrides the default (current) host if provided
+    protocol - overrides the default (current) protocol if provided
         
     The URL is generated based on the rest of the keys. When generating a new URL, values
     will be used from the current request's parameters (if present). The following rules
     are used to determine when and how to keep the current requests parameters:
-       * If the controller is present and begins with '/', no defaults are used
-       * If the controller is changed, action is set to 'index' unless otherwise specified
+    * If the controller is present and begins with '/', no defaults are used
+    * If the controller is changed, action is set to 'index' unless otherwise specified
     
     For example, if the current request yielded a dict of
     {'controller': 'blog', 'action': 'view', 'id': 2}, with the standard 
     ':controller/:action/:id' route, you'd get the following results:
-         url_for(id=4)                    =>  '/blog/view/4',
-         url_for(controller='/admin')     =>  '/admin',
-         url_for(controller='admin')      =>  '/admin/index/4'
-         url_for(action='edit')           =>  '/blog/post/4',
-         url_for(action='list', id=None)  =>  '/blog/list'
+    url_for(id=4)                    =>  '/blog/view/4',
+    url_for(controller='/admin')     =>  '/admin',
+    url_for(controller='admin')      =>  '/admin/index/4'
+    url_for(action='edit')           =>  '/blog/post/4',
+    url_for(action='list', id=None)  =>  '/blog/list'
     
     If there is a string present as the first argument, it is assumed to be a Route Name, and
     a lookup will be done on the Routes Mapper instance to see if there is a set of keyword
@@ -101,11 +102,11 @@ def url_for(*args, **kargs):
 def redirect_to(*args, **kargs):
     """
     Redirects based on the arguments. This can be one of three formats:
-        - (Keyword Args) Lookup the best URL using the same keyword args
-                         as url_for and redirect to it
-        - (String starting with protocol) Redirect to the string exactly as is
-        - (String without protocol) Prepend the string with the current protocol
-                                    and host, then redirect to it.
+    - (Keyword Args) Lookup the best URL using the same keyword args
+    as url_for and redirect to it
+    - (String starting with protocol) Redirect to the string exactly as is
+    - (String without protocol) Prepend the string with the current protocol
+    and host, then redirect to it.
     Redirect's *should* occur as a "302 Moved" header, however the web framework
     may utilize a different method.
     """

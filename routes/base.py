@@ -28,7 +28,7 @@ class Route(object):
         newroute = Route(':controller/:action/:id')
         newroute = Route('date/:year/:month/:day', controller="blog", action="view")
         newroute = Route('archives/:page', controller="blog", action="by_page",
-                         requirements = { 'page':'\d{1,2}' })
+        requirements = { 'page':'\d{1,2}' })
         
         Note: Route is generally not called directly, a Mapper instance connect method should
         be used to add routes.
@@ -343,9 +343,9 @@ class Mapper(object):
         m.connect(':controller/:action/:id')
         m.connect('date/:year/:month/:day', controller="blog", action="view")
         m.connect('archives/:page', controller="blog", action="by_page",
-                  requirements = { 'page':'\d{1,2}' })
+        requirements = { 'page':'\d{1,2}' })
         m.connect('category_list', 'archives/category/:section', controller='blog', action='category',
-                  section='home', type='list')
+        section='home', type='list')
         m.connect('home', '', controller='blog', action='view', section='home')
         """
         routename = None
