@@ -2,28 +2,7 @@
 Utility functions for use in templates / controllers
 
 *PLEASE NOTE*: Many of these functions expect an initialized RequestConfig object. This is 
-expected to have been initialized for EACH REQUEST by the web framework
-like so:
-
-config = routes.request_config()
-    Retrieve the thread-local request_config object
-config.mapper = mapper
-    mapper should be a Mapper instance thats ready for use
-config.host = host
-    host is the hostname of the webapp
-config.protocol = protocol
-    protocol is the protocol of the current request
-config.mapper_dict = mapdict
-    mapdict should be the dict returned by mapper.match()
-config.redirect = redir_func
-    redir_func should be a function that issues a redirect, 
-    and takes a url as the sole argument
-config.prefix
-    Set if the application is moved under a URL prefix. Prefix
-    will be stripped before matching, and prepended on generation
-config.environ
-    Set to the WSGI environ for automatic prefix support if the
-    webapp is underneath a 'SCRIPT_NAME'
+expected to have been initialized for EACH REQUEST by the web framework.
 
 """
 import urllib
@@ -109,17 +88,33 @@ def url_for(*args, **kargs):
 
 def redirect_to(*args, **kargs):
     """
-    Redirects based on the arguments. This can be one of three formats:
+    Issues a redirect based on the arguments. 
     
-    Keyword Args
-        Lookup the best URL using the same keyword args as url_for and redirect to it
-    String starting with protocol
-        Redirect to the string exactly as is
-    String without protocol
-        Prepend the string with the current protocol and host, then redirect to it.
-       
     Redirect's *should* occur as a "302 Moved" header, however the web framework
     may utilize a different method.
+    
+    Three formats for the arguments are possible:
+    
+    Keyword Args
+        Lookup the best URL using the same keyword args as the url_for function.
+    String starting with protocol
+        Redirect to the string exactly as is given.
+    String without protocol
+        Prepend the string with the current protocol and host, then redirect to
+        it. The protocol and host is prepended because not all redirect functions
+        can handle relative URL's.
+        
+    Examples::
+    
+        # Keyword args
+        redirect_to(controller='blog', action='view')
+        
+        # String starting with protocol
+        redirect_to('https://www.gmail.com/')
+        
+        # String without protocol
+        redirect_to('/blog/view/4')
+    
     """
     
     config = request_config()
