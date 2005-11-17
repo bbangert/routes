@@ -26,7 +26,7 @@ def request_config():
     """
     Returns the Routes RequestConfig object.
     
-    This object is a thread-local singleton that should be initialized by
+    The Routes RequestConfig object is a thread-local singleton that should be initialized by
     the web framework that is utilizing Routes.
     
     To get the Routes RequestConfig:

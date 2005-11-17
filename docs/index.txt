@@ -2,4 +2,27 @@ Routes
 ++++++
 
 Routes is a Python re-implementation of the `Rails routes system <http://manuals.rubyonrails.com/read/book/9>`_
-for mapping URL's to Controllers/Actions and generating URL's. 
+for mapping URL's to Controllers/Actions and generating URL's. Routes makes it easy to create pretty and concise URL's that are RESTful with little effort.
+
+Speedy and dynamic URL generation means you get a URL with minimal cruft (no big dangling query args). Shortcut features like Named Routes cut down on repetitive typing.
+
+Current features:
+
+* Named Routes
+* Sophisticated Route lookup and URL generation
+* Wildcard path's before and after static parts
+* Extensive unit tests
+
+Buzzword Compliance: *REST*, *DRY*
+
+Documentation
+=============
+
+For users:
+
+* `An Introduction to Routes <intro.html>`_ (Start here!)
+* `Advanced Route Usage <advanced_usage.html>`_
+
+For Python web framework creators:
+
+* `Integrating Routes with your Python web framework <integration.html>`_

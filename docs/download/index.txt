@@ -1,0 +1,17 @@
+Download
+========
+
+Download `ez_setup.py </files/ez_setup.py>`_ then run::
+    
+    python ez_setup.py Routes
+    
+Or if you already have Easy Install::
+    
+    easy_install Routes
+    
+Development Version
+-------------------
+
+You can checkout the latest Routes code from the svn repository with::
+    
+    svn co http://routes.groovie.org/svn/trunk routes
