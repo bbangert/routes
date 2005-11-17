@@ -1,3 +1,58 @@
 An Introduction to Routes
 =========================
 
+Routes tackles an interesting problem that comes up frequently in web development, *how do you map a URL to your code?* While there are many solutions to this problem, that range from using the URL paths as an object publishing hierarchy, to regular expression matching; Routes goes a slightly different way.
+
+Using Routes, you specify parts of the URL path and how to match them to your **Controllers** and **Actions**. The specific web framework you're using may actually call them by slightly different names, but for the sake of consistency we will use these names.
+
+Routes lets you have multiple ways to get to the same Controller and Action, and uses an intelligent lookup mechanism to try and guarantee you the URL with the **least cruft when generating the URL**.
+
+URL Cruft
+    Shorthand reference to what will occur if a Route can't handle all the arguments we want to send it.
+    Those arguments become HTTP query args (/something*?query=arg&another=arg*), which we try to avoid when
+    generating a URL.
+    
+Setting Up Routes
+-----------------
+
+To setup Routes, it is assumed that you are using a web framework that has the Routes mechanism integrated for
+you. The web framework should have somewhere setup for you to add a Route to your Mapper.
+
+Route
+    A Route is a mapping of a URL to a controller, action, and/or additional variables. Matching a Route will
+    *always* result in a controller and action. Route objects are typically created and managed by the Mapper.
+
+Mapper
+    The Mapper is the main class used to hold, organize, and match Routes. While you can create a Route
+    object independently of the Mapper, its not nearly as useful. The Mapper is what you will use to add
+    Route's and what the web framework uses to match incoming URL's.
+
+We will also assume for this introduction that your Mapper instance is exposed to you as ``m``, for example::
+
+    m = Mapper()
+    m.connect(':controller/:action/:id')
+
+The above example covers one of the most common routes that is typically considered the *default route*. This
+very flexible route allows virtually all of your controllers and actions to be called. Adding more routes is
+done in a similar manner, by calling ``m.connect(...)`` and giving the Mapper instance a set of arguments.
+
+Now that we know how to add Routes to our Mapper, lets break down the parts of a new Route.
+
+Anatomy of a Route
+------------------
+
+The following are all valid examples of adding routes::
+
+    m.connect('archives/:year/:month/:day', controller='archives', action='view', year=2004)
+    m.connect('feeds/:category/atom.xml', controller='feeds', action='atom')
+    m.connect('history', 'archives/by_eon/:century', controller='archives', 
+              action='aggregate', century=1800)
+    m.connect(':controller/:action/:id)
+    m.connect('', controller='blog', action='index')
+    
+
+
+Adding a Root/Default Page
+--------------------------
+
+Despite being considered the default route, ``m.connect(':controller/:action/:id')`` *won't actually call any of your controllers if you give it a URL like '/'*. When many people think of their *default page*, they're thinking about what happens when you go to ``http://somehost.com/``.
