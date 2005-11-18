@@ -158,7 +158,10 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual(None, m.match('/archive'))
         self.assertEqual(None, m.match('/archive/2004/ab'))
         self.assertEqual({'controller':'blog','action':'view','id':None}, m.match('/blog/view'))
-        self.assertEqual({'controller':'blog','action':'view','month':None,'day':None,'year':'2004'}, m.match('/archive/2004'))
+        self.assertEqual({'controller':'blog','action':'view','month':None,'day':None,'year':'2004'}, 
+                         m.match('/archive/2004'))
+        self.assertEqual({'controller':'blog','action':'view', 'month':'4', 'day':None,'year':'2004'}, 
+                         m.match('/archive/2004/4'))
         
     def test_dynamic_with_regexp_defaults_and_gaps(self):
         m = Mapper()
@@ -199,6 +202,22 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual(None, m.match('/view/4/super'))
         self.assertEqual({'controller':'blog','action':'view','id':'2'}, m.match('/view/2/blog/super'))
         self.assertEqual({'controller':'admin/user','action':'view','id':'4'}, m.match('/view/4/admin/user/super'))
+    
+    def test_dynamic_with_trailing_dyanmic_defaults(self):
+        m = Mapper()
+        m.connect('archives/:action/:article', controller='blog')
+        m.create_regs(['blog'])
+        
+        self.assertEqual(None, m.match('/'))
+        self.assertEqual(None, m.match('/archives'))
+        self.assertEqual(None, m.match('/archives/introduction'))
+        self.assertEqual(None, m.match('/archives/sample'))
+        self.assertEqual(None, m.match('/view/super'))
+        self.assertEqual(None, m.match('/view/4/super'))
+        self.assertEqual({'controller':'blog','action':'view','article':'introduction'}, 
+                         m.match('/archives/view/introduction'))
+        self.assertEqual({'controller':'blog','action':'edit','article':'recipes'}, 
+                         m.match('/archives/edit/recipes'))
     
     def test_path(self):
         m = Mapper()

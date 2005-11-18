@@ -39,6 +39,10 @@ class Route(object):
         # reserved keys that don't count
         reserved_keys = ['requirements']
         
+        # Strip preceding '/' if present
+        if routepath.startswith('/'):
+            routepath = routepath[1:]
+        
         # Build our routelist, and the keys used in the route
         self.routelist = routelist = routepath.split('/')
         routekeys = frozenset([key[1:] for key in routelist \
@@ -160,6 +164,9 @@ class Route(object):
                 partreg = '(?P<' + var + '>[^/]+)'
             
             if self.reqs.has_key(var): noreqs = False
+            if not self.defaults.has_key(var): 
+                allblank = False
+                noreqs = False
             
             # Now we determine if its optional, or required. This changes depending on what is in
             # the rest of the match. If noreqs is true, then its possible the entire thing is optional
