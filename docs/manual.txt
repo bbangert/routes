@@ -1,6 +1,6 @@
-=========================
-An Introduction to Routes
-=========================
+=============
+Routes Manual
+=============
 
 Routes tackles an interesting problem that comes up frequently in web development, *how do you map a URL to your code?* While there are many solutions to this problem, that range from using the URL paths as an object publishing hierarchy, to regular expression matching; Routes goes a slightly different way.
 
@@ -236,6 +236,7 @@ the wildcard::
     /some/long/url/user/george             /some/long/url            george
     /some/other/stuff/user/fred            /some/other/stuff         fred
 
+------------
 Using Routes
 ------------
 
@@ -251,7 +252,7 @@ To save you from repeating things, Routes has two mechanisms to reduce the amoun
 supply the url_for or redirect_to function.
 
 Named Routes
-============
+------------
 
 We saw earlier how the `route name`_ ties a set of `defaults`_ to a name. We can use this name with our Route
 functions and its as if we used that set of defaults::
@@ -267,7 +268,7 @@ You can also specify keyword arguments and it will override defaults associated 
 As you can see, the amount of typing you save yourself by setting up some `route name`_'s is quite handy.
 
 Route Memory
-============
+------------
 
 When your controller and action is matched up from the URL, the variables it set to get there are preserved. This
 lets you update small bits of the keywords that got you there without specifying the entire thing::
@@ -283,8 +284,18 @@ lets you update small bits of the keywords that got you there without specifying
     url_for()                           =>          /archives/2005/10/4
     url_for(controller='/archives')     =>          /archives
     
-The route memory is always used for values with the following two conditions:
+The route memory is always used for values with the following conditions:
 
 * If the controller name begins with a ``/``, no values from the Route dict are used
 * If the controller name changes and no action is specified, action will be set to 'index'
+* If you use `named routes`_, no values from the Route dict are used
 
+
+--------------------
+Additional Resources
+--------------------
+
+*These resources may refer to Ruby/Rails route setup*
+
+* `Rails Routes book <http://manuals.rubyonrails.com/read/book/9>`_
+* `Rails Named Routes How-To <http://wiki.rubyonrails.com/rails/pages/NamedRoutes>`_

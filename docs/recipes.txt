@@ -9,7 +9,7 @@ Adding a Root/Default Page
 
 Despite being considered the default route, ``m.connect(':controller/:action/:id')`` *won't actually call any of your controllers if you give it a URL like '/'*. When many people think of their *default page*, they're thinking about what happens when you go to ``http://somehost.com/``.
 
-To setup a controller/action to handle this case, the `route path <intro.html#route-path>`_ will actually be
+To setup a controller/action to handle this case, the `route path <manual.html#route-path>`_ will actually be
 empty. Here's an example::
 
     m.connect('', controller='blog', action='index')
