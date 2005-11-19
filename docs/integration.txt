@@ -113,3 +113,6 @@ Distributing
 You should now be ready to use Routes with your framework. If you're using setuptools, the easiest way
 to make sure that Routes is installed along with your framework is to add it to your package
 requirements.
+
+
+Please send comments/question/suggestions to `Ben Bangert <mailto:ben@groovie.org>`_
