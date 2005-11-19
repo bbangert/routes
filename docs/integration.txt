@@ -1,4 +1,115 @@
+==================
 Integrating Routes
 ==================
 
-Routes is built to function with any Python web framework that utilizes a MVC style approach to design. Though it can be used completely outside of a MVC context as well.
+Routes is built to function with any Python web framework that utilizes a MVC style
+approach to design. Though it can be used completely outside of a MVC context as well.
+
+For full integration with a web framework, several steps should be done during different
+phases of the request cycle. The web framework developer should also have a way to
+add routes to the mapper.
+
+**Terminology**:
+
+Framework Integrator
+    Typically the person who is working to integrate routes into a web framework
+    
+Web/Framework Developer
+    The web application developer using the web framework
+
+-----------
+Route Setup
+-----------
+
+The web framework developer will need a place to add routes that will be used during the
+`url resolution`_ phase. Commonly the mapper object will be directly exposed in a configuration
+file::
+
+    # some_config.py
+    from routes import *
+    
+    m = Mapper()
+    m.connect(':controller/:action/:id')
+    
+The developer can then add additional routes as they see fit. The Framework Integrator should
+make sure that their code takes care of using the Mapper instance and preserving it somewhere
+for use by the framework.
+
+---------------------------
+Pre-Loading the Controllers
+---------------------------
+
+Due to the way Routes makes use of regular expressions for URL recognition, Routes requires a
+valid list of Controller's before it can match URL's. Controller names can contain any
+character including ``/``. Once the controller list is created, the Mapper method
+`create_regs <class-routes.base.Mapper.html#create_regs>`_ should be called::
+
+    m.create_regs(['content','admin/comments','blog'])
+    
+After this step, the Mapper object is now ready to match URL's.
+
+--------------
+URL Resolution
+--------------
+
+When the URL is looked up, it should be matched against the Mapper. When matching an incoming URL, it
+is assumed that the URL path is the only string being matched. All query args should be stripped before
+matching::
+
+    m.connect('articles/:year/:month', controller='blog', action='view', year=None)
+
+    m.match('/articles/2003/10')
+    # {'controller':'blog', 'action':'view', 'year':'2003', 'month':'10'}
+
+Matching a URL will return a dict of the match results, if you'd like to differentiate between *where*
+the argument came from you can use routematch which will return the Route object that has all these
+details::
+
+    m.connect('articles/:year/:month', controller='blog', action='view', year=None)
+    
+    result = m.routematch('/articles/2003/10')
+    # result is a tuple of the match dict, and the Route object
+    
+    # result[0] - {'controller':'blog', 'action':'view', 'year':'2003', 'month':'10'}
+    # result[1] - Route object
+    # result[1].defaults - {'controller':'blog', 'action':'view', 'year':None}
+    # result[1].hardcoded - ['controller', 'action']
+    
+Your integration code is then expected to dispatch to a controller and action in the dict. How it does
+this is entirely up to the framework integrator. Your integration should also typically provide the
+web developer a mechanism to access the additional dict values.
+
+Setting up the Request Configuration
+====================================
+
+Before you dispatch the request to the Controller, a few things need to be configured to ensure that the
+`redirect_to <module-routes.html#redirect_to>`_ and `url_for <module-routes.html#url_for>`_ function
+properly.
+
+A special `thread-safe singleton class <module-routes.html#request_config>`_ is used to hold this
+information::
+
+    from routes import request_config
+    
+    config = request_config()
+    
+    config.mapper = m                  # Your mapper object
+    config.mapper_dict = result        # The dict from m.match for this URL request
+    config.host = hostname             # The server hostname
+    config.protocol = port             # Protocol used, http, https, etc.
+    config.redirect = redir_func       # A redirect function used by your framework, that is
+                                       # expected to take as the first non-keyword arg a single 
+                                       # full or relative URL
+
+Reference the `docs for request_config <module-routes.html#request_config>`_ when setting this object up
+to ensure you've initialized everything needed.
+
+This object needs to be configured for every request before controller dispatch.
+
+------------
+Distributing
+------------
+
+You should now be ready to use Routes with your framework. If you're using setuptools, the easiest way
+to make sure that Routes is installed along with your framework is to add it to your package
+requirements.
