@@ -1,3 +1,4 @@
+=========================
 An Introduction to Routes
 =========================
 
@@ -9,9 +10,10 @@ Routes lets you have multiple ways to get to the same Controller and Action, and
 
 URL Cruft
     Shorthand reference to what will occur if a Route can't handle all the arguments we want to send it.
-    Those arguments become HTTP query args (/something*?query=arg&another=arg*), which we try to avoid when
+    Those arguments become HTTP query args (/something *?query=arg&another=arg* ), which we try to avoid when
     generating a URL.
     
+-----------------
 Setting Up Routes
 -----------------
 
@@ -43,16 +45,246 @@ Anatomy of a Route
 
 The following are all valid examples of adding routes::
 
-    m.connect('archives/:year/:month/:day', controller='archives', action='view', year=2004)
+    m.connect('archives/:year/:month/:day', controller='archives', action='view', year=2004,
+              requirements=dict(year='\d{2,4}', month='\d{2}'))
     m.connect('feeds/:category/atom.xml', controller='feeds', action='atom')
     m.connect('history', 'archives/by_eon/:century', controller='archives', 
               action='aggregate', century=1800)
-    m.connect(':controller/:action/:id)
-    m.connect('', controller='blog', action='index')
+    m.connect(':controller/:action/:id')
+    m.connect('home', '', controller='blog', action='index')
     
+In the following sections, we'll highlight the section of the Route we're referring to
+in the first example.
+
+Route Name
+==========
+
+*Optional*
+
+    ``m.connect(`` 'history' ``, 'archives/by_eon/:century', controller='archives...``
+
+A Route can have a name, this is also referred to as **Named Routes** and lets you quickly reference the `Defaults`_ that the route was configured with. This is the first non-keyword argument, and if not present
+the first non-keyword argument is assumed to be the `route path`_.
+
+Route Names are mainly used when generating routes, and have no other effect on matching a URL.
+
+Route Path
+==========
+
+*Required*
+
+    ``m.connect(``'feeds/:category/atom.xml'``, controller='feeds', action='atom')``
+    
+The Route Path determines the URL mapping for the Route. In the above example a URL like
+``/feeds/electronics/atom.xml`` will match this route.
+
+A Route Path is separated into parts that you define, the naming used when referencing the different
+types of route parts are:
+ 
+_`Static Part`
+    ``m.connect('`` feeds ``/:category/`` atom.xml ``', controller='feeds', action='atom')``
+
+    A plain-text part of the URL, this doesn't result in any Route variables.
+
+_`Dynamic Part`
+    ``m.connect('feeds/`` :category ``/atom.xml', controller='feeds', action='atom')``
+    
+    A dynamic part matches text in that part of the URL, and assigns what it finds to the name
+    after the ``:`` mark.
+
+_`Wildcard Part`
+    ``m.connect('file/`` \*url ``', controller='file', action='serve')``
+    
+    A wildcard part will match *everything* except the other parts around it.
+
+Defaults
+========
+
+*Optional* 
+
+    ``m.connect('history', 'archives/by_eon/:century',``
+    controller='archives', action='aggregate', century=1800 ``)``
+
+The keyword options in a route (not including the `requirements`_ keyword arg) that can determine the default
+for a route. If a default is specified for a variable that is not a `dynamic part`_, then its not only a default
+but is also a *hardcoded variable*. The ``controller`` and ``action`` are hardcoded variables in the example
+above because despite the URL, they will always be 'archives' and 'aggregate' respectively.
+
+_`Hardcoded Variable`
+    Default keyword that does not exist in the `route path`_. This keyword variable cannot be changed by the
+    URL coming in.
+
+Requirements
+============
+
+*Optional*
+
+    ``m.connect('archives/:year/:month/:day', controller='archives', action='view', year=2004,``
+    requirements=dict(year='\\d{2,4}', month='\\d{2}') ``)``
+
+Requirements is a special keyword used by Routes to enforce a regular expression restriction on the
+`dynamic part`_ or `wildcard part`_ of a `route path`_.
 
 
-Adding a Root/Default Page
---------------------------
+The Nitty Gritty of Route Setup
+-------------------------------
 
-Despite being considered the default route, ``m.connect(':controller/:action/:id')`` *won't actually call any of your controllers if you give it a URL like '/'*. When many people think of their *default page*, they're thinking about what happens when you go to ``http://somehost.com/``.
+Minimum URL's
+=============
+
+Routes will use your `defaults`_ to try and minimize the required length of your URL whenever possible. For
+example::
+    
+    m.connect(':controller/:action/:id', action='view', id=4)
+    
+    # Will match all of the following
+    /content/view/4
+    /content/view
+    /content
+
+Trailing `dynamic part`_'s of a `route path`_ that have `defaults`_ setup are not required to exist in
+the URL being matched. This means that each of the URL examples shown above will result in the same
+set of keyword arguments being sent to the same controller and action.
+
+If a `dynamic part`_ with a default is followed by either `static part`_'s or `dynamic part`_'s without `defaults`_, that `dynamic part`_ will be required despite having a default::
+
+    # Remember that :action has an implicit default
+    m.connect('archives/:action/:article', controller='blog')
+    
+    # Matches:
+    # /archives/view/introduction
+    # /archives/edit/recipes
+    
+    # Does Not Match:
+    # /archives/introduction
+    # /archives/recipes
+    
+This way, the URL coming in maps up to the `route path`_ you created, part for part.
+
+Implicit Defaults
+=================
+
+The above rule regarding `minimum url's`_ has two built-in implicit `defaults`_. If you use either ``action`` or
+``id`` in your `route path`_ and don't specify `defaults`_ for them, Routes will automatically assign the
+following defaults to them for you::
+
+    action='index', id=None
+    
+This is why using the following setup doesn't require an action or id in the URL::
+
+    m.connect(':controller/:action/:id')
+    
+    # '/blog'  -> controller='blog', action='index', id=None
+    
+Search Order
+============
+
+When setting up your routes, remember that when `using routes`_ the order in which you set them
+up can affect the URL that's generated. Routes will try and use all the keyword args during route generation
+and if multiple routes can be generated given the set of keyword args, the **first and shortest route that was connected to the mapper will be used**. `Hardcoded variable`_'s are also used first if available as they typically
+result in shorter URL's.
+
+For example::
+
+    # Route Setup
+    m.connect('archives/:year', controller='blog', action='view', year=None)
+    m.connect(':controller/:action/:id')
+    
+    # Route Usage
+    url_for(controller='blog', action='view')      ->        '/archives'
+    
+You will typically want your specific and detailed routes at the top of your Route setup and the more
+generic route's at the bottom.
+
+Wildcard Limitations and Gotchas
+================================
+
+Due to the nature of `wildcard part`_'s, using wildcards in your route path can result in URL matches that you
+didn't expect. `Wildcard part`_'s are extremely powerful and when combined with `dynamic part`_'s that
+have `defaults`_ can confuse the new Routes user.
+
+When you have `dynamic part`_'s with `defaults`_, you should never place them directly next to a
+`wildcard part`_. This can result in the `wildcard part`_ eating the part in the URL that was
+intended as the `dynamic part`_. 
+
+For example::
+
+    m.connect('*url/:username', controller='blog', action='view', username='george')
+    
+    # When matching                        url variable              username variable
+    /some/long/url/george                  /some/long/url/george     george
+    /some/other/stuff/fred                 /some/other/stuff/fred    george
+    
+This occurs because when Routes sees the default as being optional, and the `wildcard part`_ attempts
+to gobble as much of the URL as possible before a required section of the `route path`_ is found. By
+having a trailing `dynamic part`_ with a default, that section gets dropped everytime.
+
+Notice how removing the `dynamic part`_'s default results in the variables we expect::
+
+    m.connect('*url/:username', controller='blog', action='view')
+
+    # When matching                        url variable              username variable
+    /some/long/url/george                  /some/long/url            george
+    /some/other/stuff/fred                 /some/other/stuff         fred
+
+Let's try one more time, but put in a `static part`_ between the `dynamic part`_ with a default and
+the wildcard::
+
+    m.connect('*url/user/:username', controller='blog', action='view', username='george')
+
+    # When matching                        url variable              username variable
+    /some/long/url/user/george             /some/long/url            george
+    /some/other/stuff/user/fred            /some/other/stuff         fred
+
+Using Routes
+------------
+
+Once you have setup the Routes to map URL's to your controllers and actions, you will likely want to generate URL's from within your web application. Routes includes two functions for use in your web application that are commonly desired.
+
+* `redirect_to <module-routes.html#redirect_to>`_
+* `url_for <module-routes.html#url_for>`_
+
+Both of these functions take a similar set of arguments. The most important being a set of keyword arguments
+that describes the controller, action, and additional variables you'd like present for the URL that's created.
+
+To save you from repeating things, Routes has two mechanisms to reduce the amount of information you need to
+supply the url_for or redirect_to function.
+
+Named Routes
+============
+
+We saw earlier how the `route name`_ ties a set of `defaults`_ to a name. We can use this name with our Route
+functions and its as if we used that set of defaults::
+
+    m.connect('category_home', 'category/:section', controller='blog', action='view', section='home')
+    
+    url_for('category_home')  ==  url_for(controller='blog', action='view', section='home')
+    
+You can also specify keyword arguments and it will override defaults associated with the `route name`_::
+
+    url_for('category_home', action='index')  ==  url_for(controller='blog',action='index',section='home')
+    
+As you can see, the amount of typing you save yourself by setting up some `route name`_'s is quite handy.
+
+Route Memory
+============
+
+When your controller and action is matched up from the URL, the variables it set to get there are preserved. This
+lets you update small bits of the keywords that got you there without specifying the entire thing::
+
+    m.connect('archives/:year/:month/:day', controller='archives', action='view', year=2004,
+              requirements=dict(year='\d{2,4}', month='\d{2}'))
+
+    # URL used: /archives/2005/10/4
+    # Route dict: {'controller':'archives','action':'view','year':'2005','month':'10','day':'4'}
+    
+    url_for(day=6)                      =>          /archives/2005/10/6
+    url_for(month=4)                    =>          /archives/2005/4/4
+    url_for()                           =>          /archives/2005/10/4
+    url_for(controller='/archives')     =>          /archives
+    
+The route memory is always used for values with the following two conditions:
+
+* If the controller name begins with a ``/``, no values from the Route dict are used
+* If the controller name changes and no action is specified, action will be set to 'index'
+

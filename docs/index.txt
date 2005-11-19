@@ -20,8 +20,8 @@ Documentation
 
 For users:
 
-* `An Introduction to Routes <intro.html>`_ (Start here!)
-* `Advanced Route Usage <advanced_usage.html>`_
+* `Routes Manual <intro.html>`_ (Start here!)
+* `Route Recipes - Common Tasks in Routes <recipes.html>`_
 
 For Python web framework creators:
 
