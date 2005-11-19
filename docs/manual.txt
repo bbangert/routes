@@ -255,15 +255,19 @@ Named Routes
 ------------
 
 We saw earlier how the `route name`_ ties a set of `defaults`_ to a name. We can use this name with our Route
-functions and its as if we used that set of defaults::
+functions and its as if we used that set of keyword args::
 
     m.connect('category_home', 'category/:section', controller='blog', action='view', section='home')
     
-    url_for('category_home')  ==  url_for(controller='blog', action='view', section='home')
+    url_for('category_home')
+    # is equivalent to
+    url_for(controller='blog', action='view', section='home')
     
-You can also specify keyword arguments and it will override defaults associated with the `route name`_::
+You can also specify keyword arguments and it will override `defaults`_ associated with the `route name`_::
 
-    url_for('category_home', action='index')  ==  url_for(controller='blog',action='index',section='home')
+    url_for('category_home', action='index')
+    #is equivalent to
+    url_for(controller='blog',action='index',section='home')
     
 As you can see, the amount of typing you save yourself by setting up some `route name`_'s is quite handy.
 
