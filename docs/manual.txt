@@ -215,9 +215,9 @@ For example::
     /some/long/url/george                  /some/long/url/george     george
     /some/other/stuff/fred                 /some/other/stuff/fred    george
     
-This occurs because when Routes sees the default as being optional, and the `wildcard part`_ attempts
+This occurs because Routes sees the default as being optional, and the `wildcard part`_ attempts
 to gobble as much of the URL as possible before a required section of the `route path`_ is found. By
-having a trailing `dynamic part`_ with a default, that section gets dropped everytime.
+having a trailing `dynamic part`_ with a default, that section gets dropped.
 
 Notice how removing the `dynamic part`_'s default results in the variables we expect::
 
