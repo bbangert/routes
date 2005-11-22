@@ -26,3 +26,15 @@ For users:
 For Python web framework creators:
 
 * `Integrating Routes with your Python web framework <integration.html>`_
+
+Credits
+=======
+
+Many thanks to `Nicholas Seckar <http://wiki.rubyonrails.com/rails/show/NicholasSeckar>`_ for his insight and explanation of many aspects of the Rails Route system.
+
+Author
+======
+
+`Ben Bangert <http://www.groovie.org/>`_ (`e-mail <mailto:ben@groovie.org>`_)
+
+Development sponsored by `Parachute LLC. <http://www.parachute.com/>`_
