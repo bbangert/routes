@@ -54,8 +54,7 @@ def request_config(original=False):
         Set to the WSGI environ for automatic prefix support if the
         webapp is underneath a 'SCRIPT_NAME'
     
-    Using your own requst local
-    +++++++++++++++++++++++++++
+    **Using your own requst local**
     
     If you have your own request local object that you'd like to use instead of the default
     thread local provided by Routes, you can configure Routes to use it::
