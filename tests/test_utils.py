@@ -43,8 +43,22 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('/archive/2004/10', url_for(month=10))
         self.assertEqual('/archive/2004/9/2', url_for(month=9, day=2))
         self.assertEqual('/blog', url_for(controller='blog', year=None))
-
-
+    
+    def test_url_for_with_more_defaults(self):
+        con = self.con
+        con.mapper_dict = {'controller':'blog','action':'view','id':4}
+        
+        self.assertEqual('/blog/view/4', url_for())
+        self.assertEqual('/post/index/4', url_for(controller='post'))
+        self.assertEqual('/blog/view/2', url_for(id=2))
+        self.assertEqual('/viewpost/4', url_for(controller='post', action='view', id=4))
+        
+        con.mapper_dict = {'controller':'blog','action':'view','year':2004}
+        self.assertEqual('/archive/2004/10', url_for(month=10))
+        self.assertEqual('/archive/2004/9/2', url_for(month=9, day=2))
+        self.assertEqual('/blog', url_for(controller='blog', year=None))
+        self.assertEqual('/archive/2004', url_for())
+        
     def test_with_route_names(self):
         m = self.con.mapper
         self.con.mapper_dict = {}
@@ -60,6 +74,19 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('/category', url_for('home', action='view', section='home'))
         self.assertEqual('/content/splash', url_for('home', controller='content'))
         self.assertEqual('/', url_for('home'))
+        
+    def test_with_route_names_and_defaults(self):
+        m = self.con.mapper
+        self.con.mapper_dict = {}
+        m.connect('home', '', controller='blog', action='splash')
+        m.connect('category_home', 'category/:section', controller='blog', action='view', section='home')
+        m.connect('building', 'building/:campus/:building/alljacks', controller='building', action='showjacks')
+        m.create_regs(['content','blog','admin/comments','building'])
+
+        self.con.mapper_dict = dict(controller='building', action='showjacks', campus='wilma', building='port')
+        self.assertEqual('/building/wilma/port/alljacks', url_for())
+        self.assertEqual('/', url_for('home'))
+        
 
     def test_redirect_to(self):
         m = self.con.mapper
