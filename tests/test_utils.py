@@ -103,6 +103,8 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('/content/lookup/4', redirect_to.result)
         redirect_to(controller='admin/comments',action='splash')
         self.assertEqual('/admin/comments/splash', redirect_to.result)
+        redirect_to('http://www.example.com/')
+        self.assertEqual('http://www.example.com/', redirect_to.result)
 
     def test_redirect_to_with_route_names(self):
         m = self.con.mapper
