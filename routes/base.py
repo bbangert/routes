@@ -288,17 +288,34 @@ class Route(object):
         for part in routelist:
             if part.startswith(':'):
                 arg = part[1:]
-                if self.defaults.has_key(arg) and not kargs.has_key(arg) and not gaps:
-                    continue                
-                if str(self.defaults.get(arg, 'bla1h')) == str(kargs.get(arg, 'hoop94')) and not gaps: 
+                
+                # For efficiency, check these just once
+                has_arg = kargs.has_key(arg)
+                has_default = self.defaults.has_key(arg)
+                
+                # Determine if we can leave this part off
+                # First check if the default exists and wasn't provided in the call (also no gaps)
+                if has_default and not has_arg and not gaps:
                     continue
-                val = kargs.get(arg) or self.defaults.get(arg)
-                if val is None and not gaps:
+                    
+                # Now check to see if there's a default and it matches the incoming call arg
+                if (has_default and has_arg) and str(kargs[arg]) == str(self.defaults[arg]) and not gaps: 
                     continue
-                if val is None:
+                
+                # We need to pull the value to append, if the arg is None and we have a default, use that
+                if has_arg and kargs[arg] is None and has_default:
+                    val = self.defaults[arg]
+                
+                # Otherwise if we do have an arg, use that
+                elif has_arg:
+                    val = kargs[arg]
+                
+                # No arg at all? This won't work
+                else:
                     return False
+                
                 urllist.append(url_quote(val))
-                if kargs.has_key(arg): del kargs[arg]
+                if has_arg: del kargs[arg]
                 gaps = True
             elif part.startswith('*'):
                 arg = part[1:]

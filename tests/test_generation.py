@@ -34,6 +34,17 @@ class TestGeneration(unittest.TestCase):
         self.assertEqual('/hi/list+people', m.generate(action='list people'))
         self.assertEqual('/hi', m.generate())
     
+    def test_dynamic_with_false_equivs(self):
+        m = Mapper()
+        m.connect(':controller/:action/:id')
+        
+        self.assertEqual('/blog/view/0', m.generate(controller="blog", action="view", id="0"))
+        self.assertEqual('/blog/view/0', m.generate(controller="blog", action="view", id=0))
+        self.assertEqual('/blog/view/False', m.generate(controller="blog", action="view", id=False))
+        self.assertEqual('/blog/view/False', m.generate(controller="blog", action="view", id='False'))
+        self.assertEqual('/blog/view', m.generate(controller="blog", action="view", id=None))
+        self.assertEqual('/blog/view', m.generate(controller="blog", action="view", id='None'))
+    
     def test_dynamic_with_regexp_condition(self):
         m = Mapper()
         m.connect('hi/:name', requirements = {'name':'[a-z]+'})
