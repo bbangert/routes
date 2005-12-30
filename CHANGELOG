@@ -1,6 +1,22 @@
 Routes Changelog
 ========================
 
+1.0.2 (????)
+----------------
+
+*Backwards Incompatibilities*
+
+* None
+
+
+*Bug Fixes*
+
+* Routes where a default was present but None were filling in improper values.
+* Passing a 0 would evaluate to None during generation, resulting in missing
+  URL parts
+
+
+
 1.0.1 (Dec. 18th, 2005)
 -----------------------
 
