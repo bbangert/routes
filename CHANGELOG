@@ -1,8 +1,26 @@
 Routes Changelog
 ========================
 
+1.0.1 (Dec. 18th, 2005)
+-----------------------
+
+*Backwards Incompatibilities*
+
+* None
+
+
+*New Features*
+
+* Request Local Callable - You can now designate your own callable function that
+  should then be used to store the request_config data. This is most useful for
+  environments where its possible multiple requests might be running in a single
+  thread. The callable should return a request specific object for attributes to
+  be attached. See routes.__init__.py for more information.
+
+
+
 1.0 (Nov. 21st, 2005)
-------------------
+---------------------
 
 *Backwards Incompatibilities*
 
