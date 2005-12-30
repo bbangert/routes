@@ -36,6 +36,7 @@ class TestGeneration(unittest.TestCase):
     
     def test_dynamic_with_false_equivs(self):
         m = Mapper()
+        m.connect('article/:page', page=False)
         m.connect(':controller/:action/:id')
         
         self.assertEqual('/blog/view/0', m.generate(controller="blog", action="view", id="0"))
@@ -44,6 +45,18 @@ class TestGeneration(unittest.TestCase):
         self.assertEqual('/blog/view/False', m.generate(controller="blog", action="view", id='False'))
         self.assertEqual('/blog/view', m.generate(controller="blog", action="view", id=None))
         self.assertEqual('/blog/view', m.generate(controller="blog", action="view", id='None'))
+        self.assertEqual('/article', m.generate(page=None))
+        
+        m = Mapper()
+        m.connect('view/:home/:area', home="austere", area=None)
+        
+        self.assertEqual('/view/sumatra', m.generate(home='sumatra'))
+        self.assertEqual('/view/austere/chicago', m.generate(area='chicago'))
+        
+        m = Mapper()
+        m.connect('view/:home/:area', home=None, area=None)
+        
+        self.assertEqual('/view/None/chicago', m.generate(home=None, area='chicago'))
     
     def test_dynamic_with_regexp_condition(self):
         m = Mapper()

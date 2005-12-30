@@ -303,12 +303,15 @@ class Route(object):
                     continue
                 
                 # We need to pull the value to append, if the arg is None and we have a default, use that
-                if has_arg and kargs[arg] is None and has_default:
-                    val = self.defaults[arg]
+                if has_arg and kargs[arg] is None and has_default and not gaps:
+                    continue
                 
                 # Otherwise if we do have an arg, use that
                 elif has_arg:
                     val = kargs[arg]
+                
+                elif has_default and self.defaults[arg] is not None:
+                    val = self.defaults[arg]
                 
                 # No arg at all? This won't work
                 else:
