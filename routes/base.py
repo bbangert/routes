@@ -44,10 +44,8 @@ class Route(object):
             routepath = routepath[1:]
         
         # Build our routelist, and the keys used in the route
-        self.routelist = routelist = routepath.split('/')
-        routekeys = frozenset([key[1:] for key in routelist \
-            if (key.startswith(':') or key.startswith('*')) and key not in reserved_keys])
-        
+        self.routelist = routelist = self._pathkeys(routepath)
+        routekeys = frozenset([key['name'] for key in routelist if isinstance(key, dict)])
         
         # Build a req list with all the regexp requirements for our args
         self.reqs = kargs.get('requirements', {})
@@ -64,6 +62,49 @@ class Route(object):
         self.hardcoded = frozenset([key for key in self.maxkeys \
             if key not in routekeys and self.defaults[key] is not None])
     
+    def _pathkeys(self, routepath):
+        """
+        Utility function to walk the route, and pull out the valid dynamic/wildcard
+        keys
+        """
+        collecting = False
+        current = ''
+        done_on = ''
+        var_type = ''
+        just_started = False
+        routelist = []
+        for char in routepath:
+            if char in [':', '*'] and not collecting:
+                just_started = True
+                collecting = True
+                var_type = char
+                if len(current) > 0:
+                    routelist.append(current)
+                    current = ''
+            elif collecting and just_started:
+                just_started = False
+                if char == '(':
+                    done_on = ')'
+                else:
+                    current = char
+                    done_on = '/'
+            elif collecting and char != done_on:
+                current += char
+            elif collecting:
+                collecting = False
+                routelist.append(dict(type=var_type, name=current))
+                if done_on == '/':
+                    routelist.append(done_on)
+                done_on = var_type = current = ''
+            else:
+                current += char
+        if collecting:
+            routelist.append(dict(type=var_type, name=current))
+        elif current:
+            routelist.append(current)
+        return routelist
+                
+        
     def _minkeys(self, routelist):
         """
         Utility function to walk the route backwards, and determine the minimum
@@ -77,10 +118,12 @@ class Route(object):
         gaps = False
         backcheck.reverse()
         for part in backcheck:
-            if not part.startswith(':'):
+            if not isinstance(part, dict) and part != '/':
                 gaps = True
                 continue
-            key = part[1:]
+            elif not isinstance(part, dict):
+                continue
+            key = part['name']
             if self.defaults.has_key(key) and not gaps:
                 continue
             minkeys.append(key)
@@ -130,7 +173,10 @@ class Route(object):
         (reg, noreqs, allblank) = self.buildnextreg(self.routelist, clist)
         
         if not reg: reg = '/'
-        reg = '^' + reg + '(/)?' + '$'
+        reg = reg + '(/)?' + '$'
+        if not reg.startswith('/'):
+            reg = '/' + reg
+        reg = '^' + reg
         
         self.regexp = reg
         self.regmatch = re.compile(reg)
@@ -142,7 +188,10 @@ class Route(object):
         Returns the regular expression string, and two booleans that can be ignored as
         they're only used internally by buildnextreg
         """
-        part = path[0]
+        if path:
+            part = path[0]
+        else:
+            part = ''
         reg = ''
         
         # noreqs will remember whether the remainder has either a string match, or a non-defaulted
@@ -150,9 +199,9 @@ class Route(object):
         (rest, noreqs, allblank) = ('', True, True)
         if len(path[1:]) > 0:
             (rest, noreqs, allblank) = self.buildnextreg(path[1:], clist)
-            
-        if part.startswith(':'):
-            var = part[1:]
+        
+        if isinstance(part, dict) and part['type'] == ':':
+            var = part['name']
             partreg = ''
             
             # First we plug in the proper part matcher
@@ -161,7 +210,10 @@ class Route(object):
             elif var == 'controller':
                 partreg = '(?P<' + var + '>' + '|'.join(clist) + ')'
             else:
-                partreg = '(?P<' + var + '>[^/]+)'
+                if len(path) > 1:
+                    partreg = '(?P<' + var + '>[^' + path[1][0] +']+)'
+                else:
+                    partreg = '(?P<' + var + '>[^/]+)'
             
             if self.reqs.has_key(var): noreqs = False
             if not self.defaults.has_key(var): 
@@ -176,22 +228,22 @@ class Route(object):
                 # anything, we match our regexp first. It's still possible we could be completely blank as we have
                 # a default
                 if self.reqs.has_key(var) and self.defaults.has_key(var):
-                    reg = '(/' + partreg + rest + ')?'
+                    reg = '(' + partreg + rest + ')?'
                 
                 # Or we have a regexp match with no default, so now being completely blank form here on out isn't
                 # possible
                 elif self.reqs.has_key(var):
                     allblank = False
-                    reg = '/' + partreg + rest
+                    reg = partreg + rest
                 
                 # Or we have a default with no regexp, don't touch the allblank
                 elif self.defaults.has_key(var):
-                    reg = '(/' + partreg + ')?' + rest
+                    reg = partreg + '?' + rest
                 
                 # Or we have a key with no default, and no reqs. Not possible to be all blank from here
                 else:
                     allblank = False
-                    reg = '/' + partreg + rest
+                    reg = partreg + rest
             # In this case, we have something dangling that might need to be matched
             else:
                 # If they can all be blank, and we have a default here, we know its
@@ -199,35 +251,42 @@ class Route(object):
                 # the chain does have req's though, we have to make the partreg here
                 # required to continue matching
                 if allblank and self.defaults.has_key(var):
-                    reg = '(/' + partreg + rest + ')?'
+                    reg = '(' + partreg + rest + ')?'
                     
                 # Same as before, but they can't all be blank, so we have to require it all to ensure
                 # our matches line up right
                 else:
-                    reg = '/' + partreg + rest
-        elif part.startswith('*'):
-            var = part[1:]
+                    reg = partreg + rest
+        elif isinstance(part, dict) and part['type'] == '*':
+            var = part['name']
             if noreqs:
                 if self.defaults.has_key(var):
-                    reg = '(/' + '(?P<' + var + '>.*))*' + rest
+                    reg = '(?P<' + var + '>.*)' + rest
                 else:
-                    reg = '/' + '(?P<' + var + '>.*)' + rest
+                    reg = '(?P<' + var + '>.*)' + rest
                     allblank = False
                     noreqs = False
             else:
                 if allblank and self.defaults.has_key(var):
-                    reg = '(/' + '(?P<' + var + '>.*))*' + rest
+                    reg = '(?P<' + var + '>.*)' + rest
                 elif self.defaults.has_key(var):
-                    reg = '(/' + '(?P<' + var + '>.*))*' + rest
+                    reg = '(?P<' + var + '>.*)' + rest
                 else:
                     allblank = False
                     noreqs = False
-                    reg = '/' + '(?P<' + var + '>.*)' + rest
+                    reg = '(?P<' + var + '>.*)' + rest
+        elif part.endswith('/'):
+            if allblank:
+                reg = part[:-1] + '(/' + rest + ')?'
+            else:
+                allblank = False
+                reg = part + rest
+        
         # We have a normal string here, this is a req, and it prevents us from being all blank
         else:
             noreqs = False
             allblank = False
-            reg = '/' + part + rest
+            reg = part + rest
         
         return (reg, noreqs, allblank)
     
@@ -286,8 +345,8 @@ class Route(object):
         urllist = []
         gaps = False
         for part in routelist:
-            if part.startswith(':'):
-                arg = part[1:]
+            if isinstance(part, dict) and part['type'] == ':':
+                arg = part['name']
                 
                 # For efficiency, check these just once
                 has_arg = kargs.has_key(arg)
@@ -320,17 +379,28 @@ class Route(object):
                 urllist.append(url_quote(val))
                 if has_arg: del kargs[arg]
                 gaps = True
-            elif part.startswith('*'):
-                arg = part[1:]
+            elif isinstance(part, dict) and part['type'] == '*':
+                arg = part['name']
                 kar = kargs.get(arg)
                 if kar is not None:
                     urllist.append(url_quote(kar))
                     gaps = True
+            elif part.endswith('/'):
+                if not gaps and part == '/':
+                    continue
+                elif not gaps:
+                    urllist.append(part[:-1])
+                    gaps = True
+                else:
+                    gaps = True
+                    urllist.append(part)
             else:
                 gaps = True
                 urllist.append(part)
         urllist.reverse()
-        url = '/' + '/'.join(urllist)
+        url = ''.join(urllist)
+        if not url.startswith('/'):
+            url = '/' + url
         extras = frozenset(kargs.keys()) - self.maxkeys
         if extras:
             url += '?'

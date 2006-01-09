@@ -3,10 +3,12 @@ use_setuptools()
 from setuptools import setup, find_packages
 
 setup(name="Routes",
-      version='1.0.2',
+      version='1.1',
       description='Routing Recognition and Generation Tools',
       long_description="""
 A Routing package for Python that matches URL's to dicts and vice versa
+
+`Dev version available <http://routes.groovie.org/svn/trunk#egg=Routes-dev>`_
 """,
       classifiers=["Development Status :: 5 - Production/Stable",
                    "Intended Audience :: Developers",

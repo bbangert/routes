@@ -5,35 +5,50 @@ Provides common classes and functions most users will want access to.
 
 import threadinglocal, sys
 
-if sys.version < '2.4':
-    class _RequestConfig(object):
-        __shared_state = threadinglocal.local()
-        def __getattr__(self, name):
-            return self.__shared_state.__getattr__(name)
-
-        def __setattr__(self, name, value):
-            return self.__shared_state.__setattr__(name, value)
-        
-        def __delattr__(self, name):
-            self.__shared_state.__delattr__(name)
-else:
-    class _RequestConfig(object):
-        __shared_state = threadinglocal.local()
-        def __getattr__(self, name):
-            return self.__shared_state.__getattribute__(name)
-
-        def __setattr__(self, name, value):
-            return self.__shared_state.__setattr__(name, value)
-        
-        def __delattr__(self, name):
-            self.__shared_state.__delattr__(name)
-  
-def request_config(original=False):
+class _RequestConfig(object):
     """
-    Returns the Routes RequestConfig object.
+    RequestConfig thread-local singleton
     
     The Routes RequestConfig object is a thread-local singleton that should be initialized by
     the web framework that is utilizing Routes.
+    """
+    __shared_state = threadinglocal.local()
+    def __getattr__(self, name):
+        return getattr(self.__shared_state, name)
+
+    def __setattr__(self, name, value):
+        """
+        If the name is environ, load the wsgi envion with load_wsgi_environ
+        and set the environ
+        """
+        if name == 'environ':
+            self.load_wsgi_environ(value)
+            return self.__shared_state.__setattr__(name, value)
+        return self.__shared_state.__setattr__(name, value)
+        
+    def __delattr__(self, name):
+        delattr(self.__shared_state, name)
+    
+    def load_wsgi_environ(self, environ):
+        """
+        Load the protocol/server info from the environ and store it.
+        Also, match the incoming URL if there's already a mapper, and
+        store the resulting match dict in mapper_dict.
+        """
+        if 'wsgi.scheme' in environ:
+            self.__shared_state.protocol = environ['wsgi.scheme']
+        if 'PATH_INFO' in environ and hasattr(self.__shared_state, 'mapper'):
+            mapper = self.__shared_state.mapper
+            path = environ['PATH_INFO']
+            self.__shared_state.mapper_dict = mapper.match(path)
+        if 'SERVER_NAME' in environ:
+            host = environ['SERVER_NAME']
+            if environ.get('SERVER_PORT', 80) != 80:
+                host += ':' + environ['SERVER_PORT']
+    
+def request_config(original=False):
+    """
+    Returns the Routes RequestConfig object.
     
     To get the Routes RequestConfig:
     

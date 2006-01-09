@@ -17,22 +17,24 @@ class TestGeneration(unittest.TestCase):
         self.assertEqual('/hello/world', m.generate())
     
     def test_basic_dynamic(self):
-        m = Mapper()
-        m.connect('hi/:fred')
+        for path in ['hi/:fred', 'hi/:(fred)']:
+            m = Mapper()
+            m.connect(path)
         
-        self.assertEqual('/hi/index', m.generate(fred='index'))
-        self.assertEqual('/hi/show', m.generate(fred='show'))
-        self.assertEqual('/hi/list+people', m.generate(fred='list people'))
-        self.assertEqual(None, m.generate())
+            self.assertEqual('/hi/index', m.generate(fred='index'))
+            self.assertEqual('/hi/show', m.generate(fred='show'))
+            self.assertEqual('/hi/list+people', m.generate(fred='list people'))
+            self.assertEqual(None, m.generate())
     
     def test_dynamic_with_default(self):
-        m = Mapper()
-        m.connect('hi/:action')
+        for path in ['hi/:action', 'hi/:(action)']:
+            m = Mapper()
+            m.connect(path)
         
-        self.assertEqual('/hi', m.generate(action='index'))
-        self.assertEqual('/hi/show', m.generate(action='show'))
-        self.assertEqual('/hi/list+people', m.generate(action='list people'))
-        self.assertEqual('/hi', m.generate())
+            self.assertEqual('/hi', m.generate(action='index'))
+            self.assertEqual('/hi/show', m.generate(action='show'))
+            self.assertEqual('/hi/list+people', m.generate(action='list people'))
+            self.assertEqual('/hi', m.generate())
     
     def test_dynamic_with_false_equivs(self):
         m = Mapper()
@@ -58,61 +60,91 @@ class TestGeneration(unittest.TestCase):
         
         self.assertEqual('/view/None/chicago', m.generate(home=None, area='chicago'))
     
-    def test_dynamic_with_regexp_condition(self):
+    def test_dynamic_with_false_equivs_and_splits(self):
         m = Mapper()
-        m.connect('hi/:name', requirements = {'name':'[a-z]+'})
+        m.connect('article/:(page)', page=False)
+        m.connect(':(controller)/:(action)/:(id)')
         
-        self.assertEqual('/hi/index', m.generate(name='index'))
-        self.assertEqual(None, m.generate(name='fox5'))
-        self.assertEqual(None, m.generate(name='something_is_up'))
-        self.assertEqual('/hi/abunchofcharacter', m.generate(name='abunchofcharacter'))
-        self.assertEqual(None, m.generate())
+        self.assertEqual('/blog/view/0', m.generate(controller="blog", action="view", id="0"))
+        self.assertEqual('/blog/view/0', m.generate(controller="blog", action="view", id=0))
+        self.assertEqual('/blog/view/False', m.generate(controller="blog", action="view", id=False))
+        self.assertEqual('/blog/view/False', m.generate(controller="blog", action="view", id='False'))
+        self.assertEqual('/blog/view', m.generate(controller="blog", action="view", id=None))
+        self.assertEqual('/blog/view', m.generate(controller="blog", action="view", id='None'))
+        self.assertEqual('/article', m.generate(page=None))
+        
+        m = Mapper()
+        m.connect('view/:(home)/:(area)', home="austere", area=None)
+        
+        self.assertEqual('/view/sumatra', m.generate(home='sumatra'))
+        self.assertEqual('/view/austere/chicago', m.generate(area='chicago'))
+        
+        m = Mapper()
+        m.connect('view/:(home)/:(area)', home=None, area=None)
+        
+        self.assertEqual('/view/None/chicago', m.generate(home=None, area='chicago'))
+
+    def test_dynamic_with_regexp_condition(self):
+        for path in ['hi/:name', 'hi/:(name)']:
+            m = Mapper()
+            m.connect(path, requirements = {'name':'[a-z]+'})
+        
+            self.assertEqual('/hi/index', m.generate(name='index'))
+            self.assertEqual(None, m.generate(name='fox5'))
+            self.assertEqual(None, m.generate(name='something_is_up'))
+            self.assertEqual('/hi/abunchofcharacter', m.generate(name='abunchofcharacter'))
+            self.assertEqual(None, m.generate())
     
     def test_dynamic_with_default_and_regexp_condition(self):
-        m = Mapper()
-        m.connect('hi/:action', requirements = {'action':'[a-z]+'})
+        for path in ['hi/:action', 'hi/:(action)']:
+            m = Mapper()
+            m.connect(path, requirements = {'action':'[a-z]+'})
         
-        self.assertEqual('/hi', m.generate(action='index'))
-        self.assertEqual(None, m.generate(action='fox5'))
-        self.assertEqual(None, m.generate(action='something_is_up'))
-        self.assertEqual(None, m.generate(action='list people'))
-        self.assertEqual('/hi/abunchofcharacter', m.generate(action='abunchofcharacter'))
-        self.assertEqual('/hi', m.generate())
+            self.assertEqual('/hi', m.generate(action='index'))
+            self.assertEqual(None, m.generate(action='fox5'))
+            self.assertEqual(None, m.generate(action='something_is_up'))
+            self.assertEqual(None, m.generate(action='list people'))
+            self.assertEqual('/hi/abunchofcharacter', m.generate(action='abunchofcharacter'))
+            self.assertEqual('/hi', m.generate())
     
     def test_path(self):
-        m = Mapper()
-        m.connect('hi/*file')
+        for path in ['hi/*file', 'hi/*(file)']:
+            m = Mapper()
+            m.connect(path)
         
-        self.assertEqual('/hi', m.generate(file=None))
-        self.assertEqual('/hi/books/learning_python.pdf', m.generate(file='books/learning_python.pdf'))
-        self.assertEqual('/hi/books/development%26whatever/learning_python.pdf', m.generate(file='books/development&whatever/learning_python.pdf'))
+            self.assertEqual('/hi', m.generate(file=None))
+            self.assertEqual('/hi/books/learning_python.pdf', m.generate(file='books/learning_python.pdf'))
+            self.assertEqual('/hi/books/development%26whatever/learning_python.pdf', m.generate(file='books/development&whatever/learning_python.pdf'))
     
     def test_path_backwards(self):
-        m = Mapper()
-        m.connect('*file/hi')
+        for path in ['*file/hi', '*(file)/hi']:
+            m = Mapper()
+            m.connect(path)
 
-        self.assertEqual('/hi', m.generate(file=None))
-        self.assertEqual('/books/learning_python.pdf/hi', m.generate(file='books/learning_python.pdf'))
-        self.assertEqual('/books/development%26whatever/learning_python.pdf/hi', m.generate(file='books/development&whatever/learning_python.pdf'))
+            self.assertEqual('/hi', m.generate(file=None))
+            self.assertEqual('/books/learning_python.pdf/hi', m.generate(file='books/learning_python.pdf'))
+            self.assertEqual('/books/development%26whatever/learning_python.pdf/hi', m.generate(file='books/development&whatever/learning_python.pdf'))
     
     def test_controller(self):
-        m = Mapper()
-        m.connect('hi/:controller')
+        for path in ['hi/:controller', 'hi/:(controller)']:
+            m = Mapper()
+            m.connect(path)
         
-        self.assertEqual('/hi/content', m.generate(controller='content'))
-        self.assertEqual('/hi/admin/user', m.generate(controller='admin/user'))
+            self.assertEqual('/hi/content', m.generate(controller='content'))
+            self.assertEqual('/hi/admin/user', m.generate(controller='admin/user'))
     
     def test_standard_route(self):
-        m = Mapper()
-        m.connect(':controller/:action/:id')
+        for path in [':controller/:action/:id', ':(controller)/:(action)/:(id)']:
+            m = Mapper()
+            m.connect(path)
         
-        self.assertEqual('/content', m.generate(controller='content', action='index'))
-        self.assertEqual('/content/list', m.generate(controller='content', action='list'))
-        self.assertEqual('/content/show/10', m.generate(controller='content', action='show', id ='10'))
+            self.assertEqual('/content', m.generate(controller='content', action='index'))
+            self.assertEqual('/content/list', m.generate(controller='content', action='list'))
+            self.assertEqual('/content/show/10', m.generate(controller='content', action='show', id ='10'))
         
-        self.assertEqual('/admin/user', m.generate(controller='admin/user', action='index'))
-        self.assertEqual('/admin/user/list', m.generate(controller='admin/user', action='list'))
-        self.assertEqual('/admin/user/show/10', m.generate(controller='admin/user', action='show', id='10'))
+            self.assertEqual('/admin/user', m.generate(controller='admin/user', action='index'))
+            self.assertEqual('/admin/user/list', m.generate(controller='admin/user', action='list'))
+            self.assertEqual('/admin/user/show/10', m.generate(controller='admin/user', action='show', id='10'))
     
     def test_multiroute(self):
         m = Mapper()
@@ -126,7 +158,20 @@ class TestGeneration(unittest.TestCase):
         self.assertEqual('/archive/2004/11', m.generate(controller='blog', action='view', year=2004, month='11'))
         self.assertEqual('/archive/2004', m.generate(controller='blog', action='view', year=2004))
         self.assertEqual('/viewpost/3', m.generate(controller='post', action='view', id=3))
+    
+    def test_multiroute_with_splits(self):
+        m = Mapper()
+        m.connect('archive/:(year)/:(month)/:(day)', controller='blog', action='view', month=None, day=None,
+                            requirements={'month':'\d{1,2}','day':'\d{1,2}'})
+        m.connect('viewpost/:(id)', controller='post', action='view')
+        m.connect(':(controller)/:(action)/:(id)')
         
+        self.assertEqual('/blog/view?year=2004&month=blah', m.generate(controller='blog', action='view', year=2004, month='blah'))
+        self.assertEqual('/archive/2004/11', m.generate(controller='blog', action='view', year=2004, month=11))
+        self.assertEqual('/archive/2004/11', m.generate(controller='blog', action='view', year=2004, month='11'))
+        self.assertEqual('/archive/2004', m.generate(controller='blog', action='view', year=2004))
+        self.assertEqual('/viewpost/3', m.generate(controller='post', action='view', id=3))
+    
     def test_big_multiroute(self):
         m = Mapper()
         m.connect('', controller='articles', action='index')
@@ -167,6 +212,46 @@ class TestGeneration(unittest.TestCase):
         self.assertEqual(None, m.generate(controller='admin/comments', id=2))
         self.assertEqual(None, m.generate(controller='articles', action='find_by_date', year=2004))
     
+    def test_big_multiroute_with_splits(self):
+        m = Mapper()
+        m.connect('', controller='articles', action='index')
+        m.connect('admin', controller='admin/general', action='index')
+
+        m.connect('admin/comments/article/:(article_id)/:(action)/:(id).html', controller = 'admin/comments', action=None, id=None)
+        m.connect('admin/trackback/article/:(article_id)/:action/:(id).html', controller='admin/trackback', action=None, id=None)
+        m.connect('admin/content/:(action)/:(id)', controller='admin/content')
+
+        m.connect('xml/:action/feed.xml', controller='xml')
+        m.connect('xml/articlerss/:id/feed.xml', controller='xml', action='articlerss')
+        m.connect('index.rdf', controller='xml', action='rss')
+
+        m.connect('articles', controller='articles', action='index')
+        m.connect('articles/page/:(page).myt', controller='articles', action='index', requirements = {'page':'\d+'})
+
+        m.connect('articles/:(year)/:month/:day/page/:page', controller='articles', action='find_by_date', month = None, day = None,
+                            requirements = {'year':'\d{4}', 'month':'\d{1,2}','day':'\d{1,2}'})
+        m.connect('articles/category/:id', controller='articles', action='category')
+        m.connect('pages/*name', controller='articles', action='view_page')
+        
+        
+        self.assertEqual('/pages/the/idiot/has/spoken', m.generate(controller='articles', action='view_page',
+                            name='the/idiot/has/spoken'))
+        self.assertEqual('/', m.generate(controller='articles', action='index'))
+        self.assertEqual('/xml/articlerss/4/feed.xml', m.generate(controller='xml', action='articlerss', id=4))
+        self.assertEqual('/xml/rss/feed.xml', m.generate(controller='xml', action='rss'))
+        self.assertEqual('/admin/comments/article/4/view/2.html', m.generate(controller='admin/comments', action='view', article_id=4, id=2))
+        self.assertEqual('/admin', m.generate(controller='admin/general'))
+        self.assertEqual('/admin/comments/article/4/edit/3.html', m.generate(controller='admin/comments', article_id=4, action='edit', id=3))
+        self.assertEqual(None, m.generate(controller='admin/comments', action=None, article_id=4))
+        self.assertEqual('/articles/2004/2/20/page/1', m.generate(controller='articles', action='find_by_date', 
+                    year=2004, month=2, day=20, page=1))
+        self.assertEqual('/articles/category', m.generate(controller='articles', action='category'))
+        self.assertEqual('/xml/index/feed.xml', m.generate(controller='xml'))
+        self.assertEqual('/xml/articlerss/feed.xml', m.generate(controller='xml', action='articlerss'))
+        
+        self.assertEqual(None, m.generate(controller='admin/comments', id=2))
+        self.assertEqual(None, m.generate(controller='articles', action='find_by_date', year=2004))
+
     def test_no_extras(self):
         m = Mapper()
         m.connect(':controller/:action/:id')
