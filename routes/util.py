@@ -135,7 +135,7 @@ def redirect_to(*args, **kargs):
         target = url_for(**kargs)
     config.redirect(target)
 
-def controller_scan(directory):
+def controller_scan(directory, prefix=''):
     """
     Scan a directory for python files and use them as controllers
     """
