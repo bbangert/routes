@@ -1,6 +1,25 @@
 Routes Changelog
 ========================
 
+1.1 (Jan. 12th, 2006)
+----------------
+
+*Backwards Incompatibilities*
+
+* None
+
+
+*New Features*
+
+* Routes Mapper now takes several optional arguments that determine how it
+  will generate the regexp's.
+* Routes Mapper can now hold a function for use when determining what the
+  available controllers are
+* Syntax available for splitting routes to allow more complex route paths, such
+  as ':controller/:(action)-:(id).html'
+
+
+
 1.0.2 (Dec. 30th, 2005)
 ----------------
 
