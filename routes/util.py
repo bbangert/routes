@@ -23,7 +23,7 @@ def _screenargs(new):
     elif conval and not new.has_key('action'):
         new['action'] = 'index'
     config = request_config()
-    old = config.mapper_dict.copy()
+    old = getattr(config, 'mapper_dict', {}).copy()
     for key in [key for key in new.keys() if new[key] is None]:
         del new[key]
         if old.has_key(key): del old[key]
