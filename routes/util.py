@@ -5,6 +5,8 @@ Utility functions for use in templates / controllers
 expected to have been initialized for EACH REQUEST by the web framework.
 
 """
+import os
+import re
 import urllib
 from routes import request_config
 
@@ -133,32 +135,19 @@ def redirect_to(*args, **kargs):
         target = url_for(**kargs)
     config.redirect(target)
 
-
-"""
-Copyright (c) 2005 Ben Bangert <ben@groovie.org>, Parachute
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions
-are met:
-1. Redistributions of source code must retain the above copyright
-   notice, this list of conditions and the following disclaimer.
-2. Redistributions in binary form must reproduce the above copyright
-   notice, this list of conditions and the following disclaimer in the
-   documentation and/or other materials provided with the distribution.
-3. The name of the author or contributors may not be used to endorse or
-   promote products derived from this software without specific prior
-   written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-SUCH DAMAGE.
-"""
+def controller_scan(directory):
+    """
+    Scan a directory for python files and use them as controllers
+    """
+    def find_controllers(dirname):
+        controllers = []
+        for fname in os.listdir(dirname):
+            filename = dirname + '/' + fname
+            if os.path.isfile(filename) and re.match('^[^_]{1,1}.*\.py$', fname):
+                controllers.append(fname)
+            elif os.path.isdir(filename):
+                controllers.extend(find_controllers(filename, prefix=fname+'/'))
+        return controllers
+    
+    controllers = find_controllers(directory)
+    return controllers

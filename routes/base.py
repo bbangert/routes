@@ -5,6 +5,7 @@ Route and Mapper core classes
 
 import re, sys
 from util import _url_quote as url_quote
+from util import controller_scan
 from routes import request_config
 
 if sys.version < '2.4':
@@ -419,7 +420,8 @@ class Mapper(object):
     returned.
     """
     
-    def __init__(self):
+    def __init__(self, controller_scan=controller_scan, directory=None, 
+                 always_scan=False, register=True):
         """
         Create a new Mapper instance
         """
@@ -431,8 +433,14 @@ class Mapper(object):
         self._created_gens = False
         self.prefix = None
         self.environ = None
+        self.directory = directory
+        self.always_scan = always_scan
+        self.controller_scan = controller_scan
         self._regprefix = None
         self._routenames = {}
+        if register:
+            config = request_config()
+            config.mapper = self
     
     def connect(self, *args, **kargs):
         """
@@ -507,11 +515,17 @@ class Mapper(object):
         self._gendict = gendict
         self._created_gens = True
     
-    def create_regs(self, clist):
+    def create_regs(self, clist=None):
         """
         Iterate through all connected Routes with our controller list (clist), and
         generate regexp's for every route.
         """
+        if clist is None:
+            if self.directory:
+                clist = self.controller_scan(self.directory)
+            else:
+                clist = self.controller_scan()
+            
         for key,val in self.maxkeys.iteritems():
             for route in val:
                 route.makeregexp(clist)
@@ -530,9 +544,14 @@ class Mapper(object):
         
         For internal use only.
         """
-        if not self._created_regs:
-            raise Exception, "Must created regexps first"
-            
+        if not self._created_regs and self.controller_scan:
+            self.create_regs()
+        elif not self._created_regs:
+            raise Exception, "Must create regexps first"
+        
+        if self.always_scan:
+            self.create_regs()
+        
         for route in self.matchlist:
             if self.prefix:
                 if re.match(self._regprefix, url):

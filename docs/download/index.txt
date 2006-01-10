@@ -4,7 +4,7 @@ Download
 Latest Release
 --------------
 
-**Release 1.0.2** : Dec 30th. 2005
+**Release 1.1** : . 2006
 
 Download `ez_setup.py </files/ez_setup.py>`_ then run::
     
