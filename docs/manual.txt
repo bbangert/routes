@@ -50,6 +50,7 @@ The following are all valid examples of adding routes::
     m.connect('feeds/:category/atom.xml', controller='feeds', action='atom')
     m.connect('history', 'archives/by_eon/:century', controller='archives', 
               action='aggregate', century=1800)
+    m.connect('article', 'article/:section/:slug/:page.html', controller='article', action='view')
     m.connect(':controller/:action/:id')
     m.connect('home', '', controller='blog', action='index')
     
@@ -92,6 +93,12 @@ _`Dynamic Part`
     A dynamic part matches text in that part of the URL, and assigns what it finds to the name
     after the ``:`` mark.
 
+_`Dynamic Grouping`
+    ``m.connect('article', 'article/:section/:slug/`` :(page) ``.html', ...``
+    
+    A dynamic grouping matches text like a Dynamic Part, however it's boundaries are defined
+    by the () characters so that it can be used next to static parts.
+    
 _`Wildcard Part`
     ``m.connect('file/`` \*url ``', controller='file', action='serve')``
     
