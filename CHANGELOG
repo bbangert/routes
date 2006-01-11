@@ -11,12 +11,17 @@ Routes Changelog
 
 *New Features*
 
-* Routes Mapper now takes several optional arguments that determine how it
-  will generate the regexp's.
-* Routes Mapper can now hold a function for use when determining what the
-  available controllers are
+* Routes Mapper additions:
+  - Now takes several optional arguments that determine how it will 
+    generate the regexp's.
+  - Can now hold a function for use when determining what the available
+    controllers are. Comes with a default directory scanner
+  - Given a directory for the default scanner or a function, the Mapper
+    will now automatically run it to get the controller list when needed
 * Syntax available for splitting routes to allow more complex route paths, such
   as ':controller/:(action)-:(id).html'
+* Easier setup/integration with Routes per request. Setting the environ in a
+  WSGI environ will run match, and setup everything needed for url_for/etc.
 
 
 
