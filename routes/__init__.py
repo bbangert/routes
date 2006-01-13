@@ -13,9 +13,11 @@ class _RequestConfig(object):
     the web framework that is utilizing Routes.
     """
     __shared_state = threadinglocal.local()
+    __shared_glob = {}
+    
     def __getattr__(self, name):
         if name == 'mapper':
-            return self.mapper
+            return self.__shared_glob[name]
         return getattr(self.__shared_state, name)
 
     def __setattr__(self, name, value):
@@ -27,7 +29,7 @@ class _RequestConfig(object):
             self.load_wsgi_environ(value)
             return self.__shared_state.__setattr__(name, value)
         elif name == 'mapper':
-            self.mapper = value
+            self.__shared_glob[name] = value
             return
         return self.__shared_state.__setattr__(name, value)
         
@@ -42,8 +44,8 @@ class _RequestConfig(object):
         """
         if 'wsgi.scheme' in environ:
             self.__shared_state.protocol = environ['wsgi.scheme']
-        if 'PATH_INFO' in environ and hasattr(self.__shared_state, 'mapper'):
-            mapper = self.__shared_state.mapper
+        if 'PATH_INFO' in environ and hasattr(self, 'mapper'):
+            mapper = self.mapper
             path = environ['PATH_INFO']
             self.__shared_state.mapper_dict = mapper.match(path)
         if 'SERVER_NAME' in environ:
