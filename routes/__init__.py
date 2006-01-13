@@ -77,6 +77,10 @@ def request_config(original=False):
     environ (optional)
         Set to the WSGI environ for automatic prefix support if the
         webapp is underneath a 'SCRIPT_NAME'
+        
+        Setting the environ will use information in environ to try and
+        populate the host/protocol/mapper_dict options if you've already
+        set a mapper.
     
     **Using your own requst local**
     
