@@ -13,11 +13,8 @@ class _RequestConfig(object):
     the web framework that is utilizing Routes.
     """
     __shared_state = threadinglocal.local()
-    __shared_glob = {}
     
     def __getattr__(self, name):
-        if name == 'mapper':
-            return self.__shared_glob[name]
         return getattr(self.__shared_state, name)
 
     def __setattr__(self, name, value):
@@ -28,9 +25,6 @@ class _RequestConfig(object):
         if name == 'environ':
             self.load_wsgi_environ(value)
             return self.__shared_state.__setattr__(name, value)
-        elif name == 'mapper':
-            self.__shared_glob[name] = value
-            return
         return self.__shared_state.__setattr__(name, value)
         
     def __delattr__(self, name):
