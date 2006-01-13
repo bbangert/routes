@@ -11,9 +11,20 @@ Current features:
 * Named Routes
 * Sophisticated Route lookup and URL generation
 * Wildcard path's before and after static parts
+* Groupings syntax to allow flexible URL's to accommodate almost any need
 * Extensive unit tests
 
 Buzzword Compliance: *REST*, *DRY*
+
+News
+====
+
+*January 13th, 2006*
+
+Routes 1.1 released with:
+
+* Easier integration
+* Powerful Groupings syntax for more flexibility
 
 Documentation
 =============

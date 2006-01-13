@@ -93,16 +93,20 @@ _`Dynamic Part`
     A dynamic part matches text in that part of the URL, and assigns what it finds to the name
     after the ``:`` mark.
 
-_`Dynamic Grouping`
-    ``m.connect('article', 'article/:section/:slug/`` :(page) ``.html', ...``
-    
-    A dynamic grouping matches text like a Dynamic Part, however it's boundaries are defined
-    by the () characters so that it can be used next to static parts.
-    
 _`Wildcard Part`
     ``m.connect('file/`` \*url ``', controller='file', action='serve')``
     
     A wildcard part will match *everything* except the other parts around it.
+
+_`Groupings`
+    ``m.connect('article', 'article/:section/:slug/`` :(page) ``.html', ...``
+    
+    ``m.connect('file/`` \*(url) ``.html', controller='file', action='serve')``
+    
+    Groupings let you define boundries for the match with the () characters. This allows you to
+    match wildcards and dynamics next to other static and dynamic parts. Care should be taken
+    when using Groupings next to each other.
+    
 
 Defaults
 ========
@@ -167,6 +171,41 @@ If a `dynamic part`_ with a default is followed by either `static part`_'s or `d
     # /archives/recipes
     
 This way, the URL coming in maps up to the `route path`_ you created, part for part.
+
+When using `Groupings`_, parts will still be left off, but only if the remainder of the URL has no
+static after it. This can lead to some odd looking URL's being generated if you aren't careful about
+your requirements and defaults. For example::
+
+    # Groupings without requirements
+    m.connect(':controller/:(action)-:(id)')
+    
+    # Matches:
+    # /archives/view-3
+    # /archives/view-
+    
+    # Generation:
+    url_for(controller='archives', action='view')
+    # /archives/view-
+
+It's unlikely you want such a URL, and would prefer to ensure that there's always an id supplied. To
+enforce this behavior we will use `Requirements`_::
+
+    # Groupings without requirements
+    m.connect(':controller/:(action)-:(id)', requirements=dict(id='\d+'))
+    
+    # Matches:
+    # /archives/view-3
+    # /archives/view-2
+    
+    # Does Not Match:
+    # /archives/view-
+    
+    # Generation:
+    url_for(controller='archives', action='view', id=2)
+    # /archives/view-2
+
+If you end up with URL's missing parts you'd like left on when using `Groupings`_, add a requirement
+to that part.
 
 Implicit Defaults
 =================
