@@ -221,14 +221,14 @@ class TestGeneration(unittest.TestCase):
         m.connect('admin/trackback/article/:(article_id)/:action/:(id).html', controller='admin/trackback', action=None, id=None)
         m.connect('admin/content/:(action)/:(id)', controller='admin/content')
 
-        m.connect('xml/:action/feed.xml', controller='xml')
-        m.connect('xml/articlerss/:id/feed.xml', controller='xml', action='articlerss')
+        m.connect('xml/:(action)/feed.xml', controller='xml')
+        m.connect('xml/articlerss/:(id)/feed.xml', controller='xml', action='articlerss')
         m.connect('index.rdf', controller='xml', action='rss')
 
         m.connect('articles', controller='articles', action='index')
         m.connect('articles/page/:(page).myt', controller='articles', action='index', requirements = {'page':'\d+'})
 
-        m.connect('articles/:(year)/:month/:day/page/:page', controller='articles', action='find_by_date', month = None, day = None,
+        m.connect('articles/:(year)/:month/:(day)/page/:page', controller='articles', action='find_by_date', month = None, day = None,
                             requirements = {'year':'\d{4}', 'month':'\d{1,2}','day':'\d{1,2}'})
         m.connect('articles/category/:id', controller='articles', action='category')
         m.connect('pages/*name', controller='articles', action='view_page')
@@ -258,19 +258,35 @@ class TestGeneration(unittest.TestCase):
         m.connect('archive/:year/:month/:day', controller='blog', action='view', month=None, day=None)
         
         self.assertEqual('/archive/2004', m.generate(controller='blog', action='view', year=2004))
-        
-    def test_the_smallest_route(self):
+    
+    def test_no_extras_with_splits(self):
         m = Mapper()
-        m.connect('', controller='page', action='view', title='HomePage')
-        m.connect('pages/:title', controller='page', action='view')
+        m.connect(':(controller)/:(action)/:(id)')
+        m.connect('archive/:(year)/:(month)/:(day)', controller='blog', action='view', month=None, day=None)
         
-        self.assertEqual('/', m.generate(controller='page', action='view', title='HomePage'))
-        self.assertEqual('/pages/joe', m.generate(controller='page', action='view', title='joe'))
+        self.assertEqual('/archive/2004', m.generate(controller='blog', action='view', year=2004))
+    
+    def test_the_smallest_route(self):
+        for path in ['pages/:title', 'pages/:(title)']:
+            m = Mapper()
+            m.connect('', controller='page', action='view', title='HomePage')
+            m.connect(path, controller='page', action='view')
         
+            self.assertEqual('/', m.generate(controller='page', action='view', title='HomePage'))
+            self.assertEqual('/pages/joe', m.generate(controller='page', action='view', title='joe'))
+    
     def test_extras(self):
         m = Mapper()
         m.connect('viewpost/:id', controller='post', action='view')
         m.connect(':controller/:action/:id')
+        
+        self.assertEqual('/blog?extra=3', m.generate(controller='blog', action='index', extra=3))
+        self.assertEqual('/viewpost/2?extra=3', m.generate(controller='post', action='view', id=2, extra=3))
+    
+    def test_extras_with_splits(self):
+        m = Mapper()
+        m.connect('viewpost/:(id)', controller='post', action='view')
+        m.connect(':(controller)/:(action)/:(id)')
         
         self.assertEqual('/blog?extra=3', m.generate(controller='blog', action='index', extra=3))
         self.assertEqual('/viewpost/2?extra=3', m.generate(controller='post', action='view', id=2, extra=3))
@@ -284,30 +300,20 @@ class TestGeneration(unittest.TestCase):
         
         self.assertEqual(None, m.generate(known='foo'))
     
-    def test_dynamic(self):
-        m = Mapper()
-        m.connect('hello/:name', controller='content', action='show_person')
-        
-        self.assertEqual('/hello/rails', m.generate(controller='content', action='show_person',name='rails'))
-        self.assertEqual('/hello/Alfred+Hitchcock', m.generate(controller='content', action='show_person',name='Alfred Hitchcock'))
-        
-        self.assertEqual(None, m.generate(controller='content', action='show_dude', name='rails'))
-        self.assertEqual(None, m.generate(controller='content', action='show_person'))
-        self.assertEqual(None, m.generate(controller='admin/user', action='show_person', name='rails'))
-    
     def test_typical(self):
-        m = Mapper()
-        m.connect(':controller/:action/:id', action = 'index', id = None)
+        for path in [':controller/:action/:id', ':(controller)/:(action)/:(id)']:
+            m = Mapper()
+            m.connect(path, action = 'index', id = None)
         
-        self.assertEqual('/content', m.generate(controller='content', action='index'))
-        self.assertEqual('/content/list', m.generate(controller='content', action='list'))
-        self.assertEqual('/content/show/10', m.generate(controller='content', action='show', id=10))
+            self.assertEqual('/content', m.generate(controller='content', action='index'))
+            self.assertEqual('/content/list', m.generate(controller='content', action='list'))
+            self.assertEqual('/content/show/10', m.generate(controller='content', action='show', id=10))
         
-        self.assertEqual('/admin/user', m.generate(controller='admin/user', action='index'))
-        self.assertEqual('/admin/user', m.generate(controller='admin/user'))
-        self.assertEqual('/admin/user/show/10', m.generate(controller='admin/user', action='show', id=10))
+            self.assertEqual('/admin/user', m.generate(controller='admin/user', action='index'))
+            self.assertEqual('/admin/user', m.generate(controller='admin/user'))
+            self.assertEqual('/admin/user/show/10', m.generate(controller='admin/user', action='show', id=10))
         
-        self.assertEqual('/content', m.generate(controller='content'))
+            self.assertEqual('/content', m.generate(controller='content'))
     
     def test_route_with_fixnum_default(self):
         m = Mapper()
@@ -324,20 +330,44 @@ class TestGeneration(unittest.TestCase):
         self.assertEqual('/page/4', m.generate(controller='content', action='show_page',id=4))
         self.assertEqual('/content/show', m.generate(controller='content', action='show'))
     
-    def test_uppercase_recognition(self):
+    def test_route_with_fixnum_default_with_splits(self):
         m = Mapper()
-        m.connect(':controller/:action/:id')
+        m.connect('page/:(id)', controller='content', action='show_page', id =1)
+        m.connect(':(controller)/:(action)/:(id)')
+        
+        self.assertEqual('/page', m.generate(controller='content', action='show_page'))
+        self.assertEqual('/page', m.generate(controller='content', action='show_page', id=1))
+        self.assertEqual('/page', m.generate(controller='content', action='show_page', id='1'))
+        self.assertEqual('/page/10', m.generate(controller='content', action='show_page', id=10))
+        
+        self.assertEqual('/blog/show/4', m.generate(controller='blog', action='show', id=4))
+        self.assertEqual('/page', m.generate(controller='content', action='show_page'))
+        self.assertEqual('/page/4', m.generate(controller='content', action='show_page',id=4))
+        self.assertEqual('/content/show', m.generate(controller='content', action='show'))
+    
+    def test_uppercase_recognition(self):
+        for path in [':controller/:action/:id', ':(controller)/:(action)/:(id)']:
+            m = Mapper()
+            m.connect(path)
 
-        self.assertEqual('/Content', m.generate(controller='Content', action='index'))
-        self.assertEqual('/Content/list', m.generate(controller='Content', action='list'))
-        self.assertEqual('/Content/show/10', m.generate(controller='Content', action='show', id='10'))
+            self.assertEqual('/Content', m.generate(controller='Content', action='index'))
+            self.assertEqual('/Content/list', m.generate(controller='Content', action='list'))
+            self.assertEqual('/Content/show/10', m.generate(controller='Content', action='show', id='10'))
 
-        self.assertEqual('/Admin/NewsFeed', m.generate(controller='Admin/NewsFeed', action='index'))
+            self.assertEqual('/Admin/NewsFeed', m.generate(controller='Admin/NewsFeed', action='index'))
     
     def test_backwards(self):
         m = Mapper()
         m.connect('page/:id/:action', controller='pages', action='show')
         m.connect(':controller/:action/:id')
+
+        self.assertEqual('/page/20', m.generate(controller='pages', action='show', id=20))
+        self.assertEqual('/pages/boo', m.generate(controller='pages', action='boo'))
+
+    def test_backwards_with_splits(self):
+        m = Mapper()
+        m.connect('page/:(id)/:(action)', controller='pages', action='show')
+        m.connect(':(controller)/:(action)/:(id)')
 
         self.assertEqual('/page/20', m.generate(controller='pages', action='show', id=20))
         self.assertEqual('/pages/boo', m.generate(controller='pages', action='boo'))
@@ -405,7 +435,26 @@ class TestGeneration(unittest.TestCase):
         self.assertEqual('/blog/content/view', m.generate(controller='content', action='view'))
         self.assertEqual('/blog/content', m.generate(controller='content'))
         self.assertEqual('/blog/admin/comments', m.generate(controller='admin/comments'))
-
+    
+    def test_route_with_odd_leftovers(self):
+        m = Mapper()
+        m.connect(':controller/:(action)-:(id)')
+        m.create_regs(['content','blog','admin/comments'])
+        
+        self.assertEqual('/content/view-', m.generate(controller='content', action='view'))
+        self.assertEqual('/content/index-', m.generate(controller='content'))
+    
+    def test_route_with_end_extension(self):
+        m = Mapper()
+        m.connect(':controller/:(action)-:(id).html')
+        m.create_regs(['content','blog','admin/comments'])
+        
+        self.assertEqual(None, m.generate(controller='content', action='view'))
+        self.assertEqual(None, m.generate(controller='content'))
+        
+        self.assertEqual('/content/view-3.html', m.generate(controller='content', action='view', id=3))
+        self.assertEqual('/content/index-2.html', m.generate(controller='content', id=2))
+    
 
 if __name__ == '__main__':
     unittest.main()
