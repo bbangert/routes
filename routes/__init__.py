@@ -40,6 +40,8 @@ class _RequestConfig(object):
             self.__shared_state.protocol = 'https'
         else:
             self.__shared_state.protocol = 'http'
+        if hasattr(self, 'mapper'):
+            self.mapper.environ = environ
         if 'PATH_INFO' in environ and hasattr(self, 'mapper'):
             mapper = self.mapper
             path = environ['PATH_INFO']

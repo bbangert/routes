@@ -134,6 +134,34 @@ class TestUtils(unittest.TestCase):
         redirect_to('home')
         self.assertEqual('/', redirect_to.result)
     
+    def test_static_route(self):
+        m = self.con.mapper
+        self.con.mapper_dict = {}
+        m.connect(':controller/:action/:id')
+        m.connect('home', 'http://www.groovie.org/', _static=True)
+        m.connect('space', '/nasa/images', _static=True)
+        m.create_regs(['content', 'blog'])
+        
+        self.assertEqual('http://www.groovie.org/', url_for('home'))
+        self.assertEqual('http://www.groovie.org/?s=stars', url_for('home', s='stars'))
+        self.assertEqual('/content/view', url_for(controller='content', action='view'))
+        self.assertEqual('/nasa/images?search=all', url_for('space', search='all'))
+    
+    def test_static_route_with_script(self):
+        m = self.con.mapper
+        self.con.mapper_dict = {}
+        self.con.environ = dict(SCRIPT_NAME='/webapp', SERVER_NAME='bob')
+        m.connect(':controller/:action/:id')
+        m.connect('home', 'http://www.groovie.org/', _static=True)
+        m.connect('space', '/nasa/images', _static=True)
+        m.create_regs(['content', 'blog'])
+        
+        self.assertEqual('http://www.groovie.org/', url_for('home'))
+        self.assertEqual('http://www.groovie.org/?s=stars', url_for('home', s='stars'))
+        self.assertEqual('/webapp/content/view', url_for(controller='content', action='view'))
+        self.assertEqual('/webapp/nasa/images?search=all', url_for('space', search='all'))
+        
+
 
 if __name__ == '__main__':
     unittest.main()

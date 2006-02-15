@@ -76,8 +76,8 @@ def url_for(*args, **kargs):
     static = False
     if len(args) > 0:
         route = config.mapper._routenames.get(args[0])
+        url = ''
         
-        # If its a static route
         if route and route.defaults.has_key('_static'):
             static = True
             url = route.routepath
@@ -86,10 +86,11 @@ def url_for(*args, **kargs):
         if not route:
             static = True
             url = args[0]
-            if hasattr(config, 'environ') and config.environ.get('SCRIPT_NAME'):
-                url = config.environ.get('SCRIPT_NAME') + url
         
-        # Return the static URL
+        if url.startswith('/') and hasattr(config, 'environ') \
+                and config.environ.get('SCRIPT_NAME'):
+            url = config.environ.get('SCRIPT_NAME') + url
+        
         if static:
             if kargs:
                 url += '?'
