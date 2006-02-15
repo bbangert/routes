@@ -137,6 +137,7 @@ class TestUtils(unittest.TestCase):
     def test_static_route(self):
         m = self.con.mapper
         self.con.mapper_dict = {}
+        self.con.environ = dict(SCRIPT_NAME='', SERVER_NAME='example.com')
         m.connect(':controller/:action/:id')
         m.connect('home', 'http://www.groovie.org/', _static=True)
         m.connect('space', '/nasa/images', _static=True)
@@ -161,8 +162,34 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('/webapp/content/view', url_for(controller='content', action='view'))
         self.assertEqual('/webapp/nasa/images?search=all', url_for('space', search='all'))
         self.assertEqual('http://example.com/webapp/nasa/images', url_for('space', protocol='http'))
+    
+    def test_no_named_path(self):
+        m = self.con.mapper
+        self.con.mapper_dict = {}
+        self.con.environ = dict(SCRIPT_NAME='', SERVER_NAME='example.com')
+        m.connect(':controller/:action/:id')
+        m.connect('home', 'http://www.groovie.org/', _static=True)
+        m.connect('space', '/nasa/images', _static=True)
+        m.create_regs(['content', 'blog'])
         
+        self.assertEqual('http://www.google.com/search', url_for('http://www.google.com/search'))
+        self.assertEqual('http://www.google.com/search?q=routes', url_for('http://www.google.com/search', q='routes'))
+        self.assertEqual('/delicious.jpg', url_for('/delicious.jpg'))
+        self.assertEqual('/delicious/search?v=routes', url_for('/delicious/search', v='routes'))
 
+    def test_no_named_path_with_script(self):
+        m = self.con.mapper
+        self.con.mapper_dict = {}
+        self.con.environ = dict(SCRIPT_NAME='/webapp', SERVER_NAME='example.com')
+        m.connect(':controller/:action/:id')
+        m.connect('home', 'http://www.groovie.org/', _static=True)
+        m.connect('space', '/nasa/images', _static=True)
+        m.create_regs(['content', 'blog'])
+        
+        self.assertEqual('http://www.google.com/search', url_for('http://www.google.com/search'))
+        self.assertEqual('http://www.google.com/search?q=routes', url_for('http://www.google.com/search', q='routes'))
+        self.assertEqual('/webapp/delicious.jpg', url_for('/delicious.jpg'))
+        self.assertEqual('/webapp/delicious/search?v=routes', url_for('/delicious/search', v='routes'))
 
 if __name__ == '__main__':
     unittest.main()
