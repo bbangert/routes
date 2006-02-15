@@ -1,27 +1,24 @@
-"""
-Route and Mapper core classes
-
-"""
+"""Route and Mapper core classes"""
 
 import re, sys
 from util import _url_quote as url_quote
-from util import controller_scan
+from util import controller_scan, RouteException
 from routes import request_config
 
 if sys.version < '2.4':
     from sets import ImmutableSet as frozenset
 
 class Route(object):
-    """
-    The Route object holds a route recognition and generation routine.
+    """The Route object holds a route recognition and generation routine.
     
     See Route.__init__ docs for usage.
+    
     """
     
     def __init__(self, routepath, **kargs):
-        """
-        Initialize a route, with a given routepath for matching/generation, and a set of keyword
-        args that setup defaults.
+        """Initialize a route, with a given routepath for matching/generation
+        
+        The set of keyword args will be used as defaults.
         
         Usage:
         
@@ -73,10 +70,7 @@ class Route(object):
             if key not in routekeys and self.defaults[key] is not None])
     
     def _pathkeys(self, routepath):
-        """
-        Utility function to walk the route, and pull out the valid dynamic/wildcard
-        keys
-        """
+        """Utility function to walk the route, and pull out the valid dynamic/wildcard keys"""
         collecting = False
         current = ''
         done_on = ''
@@ -116,12 +110,13 @@ class Route(object):
                 
         
     def _minkeys(self, routelist):
-        """
-        Utility function to walk the route backwards, and determine the minimum
-        keys we can handle to generate a working route.
+        """Utility function to walk the route backwards
+        
+        Will also determine the minimum keys we can handle to generate a working route.
         
         routelist is a list of the '/' split route path
         defaults is a dict of all the defaults provided for the route
+        
         """
         minkeys = []
         backcheck = routelist[:]
@@ -141,13 +136,15 @@ class Route(object):
         return  (frozenset(minkeys), backcheck)
     
     def _defaults(self, routekeys, reserved_keys, kargs):
-        """
+        """Creates default set with values stringified
+        
         Put together our list of defaults, stringify non-None values
         and add in our action/id default if they use it and didn't specify it
         
         defaultkeys is a list of the currently assumed default keys
         routekeys is a list of the keys found in the route path
-        reserved_keys is a list of keys that are not 
+        reserved_keys is a list of keys that are not
+        
         """
         defaults = {}
         # Add in a controller/action default if they don't exist
@@ -171,13 +168,14 @@ class Route(object):
         return (defaults, newdefaultkeys)
         
     def makeregexp(self, clist):
-        """
-        Create a regular expression for matching purposes, this MUST be called before match
-        can function properly.
+        """Create a regular expression for matching purposes
+        
+        Note: This MUST be called before match can function properly.
         
         clist should be a list of valid controller strings that can be matched, for this reason
         makeregexp should be called by the web framework after it knows all available controllers
         that can be utilized
+        
         """
         
         if self.static:
@@ -195,11 +193,11 @@ class Route(object):
         self.regmatch = re.compile(reg)
     
     def buildnextreg(self, path, clist):
-        """
-        Recursively build our regexp given a path, and a controller list.
+        """Recursively build our regexp given a path, and a controller list.
         
         Returns the regular expression string, and two booleans that can be ignored as
         they're only used internally by buildnextreg
+        
         """
         if path:
             part = path[0]
@@ -304,16 +302,17 @@ class Route(object):
         return (reg, noreqs, allblank)
     
     def match(self, url):
-        """
-        Match a url to our regexp. While the regexp might match, this operation isn't
+        """Match a url to our regexp. 
+        
+        While the regexp might match, this operation isn't
         guaranteed as there's other factors that can cause a match to fail even though
         the regexp succeeds (Default that was relied on wasn't given, requirement regexp
         doesn't pass, etc.).
         
         Therefore the calling function shouldn't assume this will return a valid dict, the
         other possible return is False if a match doesn't work out.
-        """
         
+        """
         # Static routes don't match, they generate only
         if self.static:
             return False
@@ -347,11 +346,12 @@ class Route(object):
             return False
     
     def generate(self,**kargs):
-        """
-        Generate a URL from ourself given a set of keyword arguments, toss an exception if this
-        set of keywords would cause a gap in the url.
-        """
+        """Generate a URL from ourself given a set of keyword arguments
         
+        Toss an exception if this
+        set of keywords would cause a gap in the url.
+        
+        """
         # Verify that our args pass any regexp requirements
         for key in self.reqs.keys():
             val = kargs.get(key)
@@ -426,21 +426,18 @@ class Route(object):
     
 
 class Mapper(object):
-    """
-    Mapper handles URL generation and URL recognition in a web application.
+    """Mapper handles URL generation and URL recognition in a web application.
     
     Mapper is built handling dictionary's. It is assumed that the web application will handle
     the dictionary returned by URL recognition to dispatch appropriately.
     
     URL generation is done by passing keyword parameters into the generate function, a URL is then
     returned.
-    """
     
+    """
     def __init__(self, controller_scan=controller_scan, directory=None, 
                  always_scan=False, register=True):
-        """
-        Create a new Mapper instance
-        """
+        """Create a new Mapper instance"""
         self.matchlist = []
         self.maxkeys = {}
         self.minkeys = {}
@@ -459,8 +456,8 @@ class Mapper(object):
             config.mapper = self
     
     def connect(self, *args, **kargs):
-        """
-        Create and connect a new Route to the Mapper. 
+        """Create and connect a new Route to the Mapper.
+        
         Usage:
         
         m = Mapper()
@@ -471,6 +468,7 @@ class Mapper(object):
         m.connect('category_list', 'archives/category/:section', controller='blog', action='category',
         section='home', type='list')
         m.connect('home', '', controller='blog', action='view', section='home')
+        
         """
         routename = None
         if len(args) > 1:
@@ -493,10 +491,7 @@ class Mapper(object):
         self._created_gens = False
     
     def _create_gens(self):
-        """
-        Create the generation hashes for route lookups
-        """
-        
+        """Create the generation hashes for route lookups"""
         # Use keys temporailly to assemble the list to avoid excessive
         # list iteration testing with "in"
         controllerlist = {}
@@ -536,10 +531,7 @@ class Mapper(object):
         self._created_gens = True
     
     def create_regs(self, clist=None):
-        """
-        Iterate through all connected Routes with our controller list (clist), and
-        generate regexp's for every route.
-        """
+        """Creates regular expressions for all connected routes"""
         if clist is None:
             if self.directory:
                 clist = self.controller_scan(self.directory)
@@ -557,17 +549,18 @@ class Mapper(object):
         self._created_regs = True
     
     def _match(self, url):
-        """
-        Matches a URL against a route, and returns a tuple of
-        the match dict and the route object if a match is
-        successfull, otherwise it returns empty.
+        """Internal Route matcher
+        
+        Matches a URL against a route, and returns a tuple of the match dict
+        and the route object if a match is successfull, otherwise it returns empty.
         
         For internal use only.
+        
         """
         if not self._created_regs and self.controller_scan:
             self.create_regs()
         elif not self._created_regs:
-            raise Exception, "Must create regexps first"
+            raise RouteException, "Must create regexps first"
         
         if self.always_scan:
             self.create_regs()
@@ -584,12 +577,12 @@ class Mapper(object):
         return None
         
     def match(self, url):
-        """
-        Match a URL against against one of the routes contained.
+        """Match a URL against against one of the routes contained.
         
         Will return None if no valid match is found.
         
         resultdict = m.match('/joe/sixpack')
+        
         """
         result = self._match(url)
         if result:
@@ -597,13 +590,13 @@ class Mapper(object):
         return None
         
     def routematch(self, url):
-        """
-        Match a URL against against one of the routes contained.
+        """Match a URL against against one of the routes contained.
         
         Will return None if no valid match is found, otherwise a
         result dict and a route object is returned.
                 
         resultdict, route_obj = m.match('/joe/sixpack')
+        
         """
         result = self._match(url)
         if result:
@@ -612,13 +605,13 @@ class Mapper(object):
         
     
     def generate(self, controller='content', action='index', **kargs):
-        """
-        Generate a route from a set of keywords and return the url text, or None if no
-        URL could be generated.
+        """Generate a route from a set of keywords
+        
+        Returns the url text, or None if no URL could be generated.
         
         m.generate(controller='content',action='view',id=10)
-        """
         
+        """
         # Generate ourself if we haven't already
         if not self._created_gens:
             self._create_gens()
@@ -708,32 +701,3 @@ class Mapper(object):
             else:
                 continue
         return None
-    
-"""
-Copyright (c) 2005 Ben Bangert <ben@groovie.org>, Parachute
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions
-are met:
-1. Redistributions of source code must retain the above copyright
-   notice, this list of conditions and the following disclaimer.
-2. Redistributions in binary form must reproduce the above copyright
-   notice, this list of conditions and the following disclaimer in the
-   documentation and/or other materials provided with the distribution.
-3. The name of the author or contributors may not be used to endorse or
-   promote products derived from this software without specific prior
-   written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-SUCH DAMAGE.
-"""
