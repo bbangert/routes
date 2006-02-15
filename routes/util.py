@@ -72,11 +72,31 @@ def url_for(*args, **kargs):
     for key in ['anchor', 'host', 'protocol']:
         if kargs.get(key): del kargs[key]
     config = request_config()
-    newdict = None
+    route = None
+    static = False
     if len(args) > 0:
-        newdict = config.mapper._routenames.get(args[0])
-    if newdict:
-        newargs = newdict.copy()
+        route = config.mapper._routenames.get(args[0])
+        
+        # If its a static route
+        if route and route.defaults.has_key('_static'):
+            static = True
+            url = route.routepath
+        
+        # No named route found, assume the argument is a relative path
+        if not route:
+            static = True
+            url = args[0]
+            if hasattr(config, 'environ') and config.environ.get('SCRIPT_NAME'):
+                url = config.environ.get('SCRIPT_NAME') + url
+        
+        # Return the static URL
+        if static:
+            if kargs:
+                url += '?'
+                url += '&'.join([_url_quote(key)+'='+_url_quote(kargs[key]) for key in kargs.keys()])
+            return url
+    if route:
+        newargs = route.defaults.copy()
         newargs.update(kargs)
     else:
         newargs = _screenargs(kargs)
@@ -126,9 +146,9 @@ def redirect_to(*args, **kargs):
         if target.startswith('/'):
             target = config.protocol + '://' + config.host + _url_quote(target)
         elif not target.startswith('http://'):
-            newdict = config.mapper._routenames.get(args[0])
-            if newdict:
-                newargs = newdict.copy()
+            route = config.mapper._routenames.get(args[0])
+            if route:
+                newargs = route.defaults.copy()
                 newargs.update(kargs)
                 target = url_for(**newargs)
     elif kargs:

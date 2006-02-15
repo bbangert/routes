@@ -36,7 +36,16 @@ class Route(object):
         
         Note: Route is generally not called directly, a Mapper instance connect method should
         be used to add routes.
+        
         """
+        
+        self.static = False
+        self.routepath = routepath
+        
+        # Don't bother forming stuff we don't need if its a static route
+        if kargs.has_key('_static'):
+            self.static = True
+        
         # reserved keys that don't count
         reserved_keys = ['requirements']
         
@@ -171,6 +180,9 @@ class Route(object):
         that can be utilized
         """
         
+        if self.static:
+            return
+        
         (reg, noreqs, allblank) = self.buildnextreg(self.routelist, clist)
         
         if not reg: reg = '/'
@@ -301,6 +313,10 @@ class Route(object):
         Therefore the calling function shouldn't assume this will return a valid dict, the
         other possible return is False if a match doesn't work out.
         """
+        
+        # Static routes don't match, they generate only
+        if self.static:
+            return False
         
         if url.endswith('/') and len(url) > 1:
             url = url[:-1]
@@ -463,7 +479,9 @@ class Mapper(object):
         route = Route(*args, **kargs)
         self.matchlist.append(route)
         if routename:
-            self._routenames[routename] = route.defaults.copy()
+            self._routenames[routename] = route
+        if route.static:
+            return
         exists = False
         for key in self.maxkeys:
             if key == route.maxkeys:
@@ -486,6 +504,7 @@ class Mapper(object):
         
         # Assemble all the hardcoded/defaulted actions/controllers used
         for route in self.matchlist:
+            if route.static: continue
             if route.defaults.has_key('controller'):
                 controllerlist[route.defaults['controller']] = True
             if route.defaults.has_key('action'):
@@ -502,6 +521,7 @@ class Mapper(object):
         # Otherwise we add it to every hardcode since it can be changed.
         gendict = {} # Our generated two-deep hash
         for route in self.matchlist:
+            if route.static: continue
             clist = controllerlist
             alist = actionlist
             if 'controller' in route.hardcoded:
