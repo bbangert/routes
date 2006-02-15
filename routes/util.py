@@ -69,14 +69,19 @@ def url_for(*args, **kargs):
     anchor = kargs.get('anchor')
     host = kargs.get('host')
     protocol = kargs.get('protocol')
+    
+    # Remove special words from kargs, convert placeholders
     for key in ['anchor', 'host', 'protocol']:
         if kargs.get(key): del kargs[key]
+        if kargs.has_key(key+'_'):
+            kargs[key] = kargs[key+'_']
+            del kargs[key+'_']
     config = request_config()
     route = None
     static = False
+    url = ''
     if len(args) > 0:
         route = config.mapper._routenames.get(args[0])
-        url = ''
         
         if route and route.defaults.has_key('_static'):
             static = True
@@ -95,13 +100,13 @@ def url_for(*args, **kargs):
             if kargs:
                 url += '?'
                 url += '&'.join([_url_quote(key)+'='+_url_quote(kargs[key]) for key in kargs.keys()])
-            return url
-    if route:
-        newargs = route.defaults.copy()
-        newargs.update(kargs)
-    else:
-        newargs = _screenargs(kargs)
-    url = config.mapper.generate(**newargs)
+    if not static:
+        if route:
+            newargs = route.defaults.copy()
+            newargs.update(kargs)
+        else:
+            newargs = _screenargs(kargs)
+        url = config.mapper.generate(**newargs)
     if anchor: url += '#' + _url_quote(anchor)
     if host or protocol:
         if not host: host = config.host
