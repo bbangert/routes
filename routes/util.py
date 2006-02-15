@@ -34,9 +34,7 @@ def _url_quote(string):
     return urllib.quote_plus(str(string), '/')
 
 def url_for(*args, **kargs):
-    """
-    Returns a url that has been rewritten according to the keyword args and the defined
-    Routes in the mapper. 
+    """Generates a URL 
     
     All keys given to url_for are sent to the Routes Mapper instance for generation except for::
         
@@ -61,10 +59,16 @@ def url_for(*args, **kargs):
         url_for(action='edit')           =>  '/blog/post/4',
         url_for(action='list', id=None)  =>  '/blog/list'
     
-    If there is a string present as the first argument, it is assumed to be a Route Name, and
-    a lookup will be done on the Routes Mapper instance to see if there is a set of keyword
-    defaults associated with that name. If so, the keyword args passed in will override default
-    ones that were retrieved.  
+    **Static and Named Routes**
+    
+    If there is a string present as the first argument, a lookup is done against the named
+    routes table to see if there's any matching routes. The keyword defaults used with static
+    routes will be sent in as GET query arg's if a route matches.
+    
+    If no route by that name is found, the string is assumed to be a raw URL. Should the raw
+    URL begin with ``/`` then appropriate SCRIPT_NAME data will be added if present, otherwise
+    the string will be used as the url with keyword args becoming GET query args.
+    
     """
     anchor = kargs.get('anchor')
     host = kargs.get('host')
