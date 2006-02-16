@@ -181,3 +181,6 @@ def controller_scan(directory):
     
     controllers = find_controllers(directory)
     return controllers
+
+class RouteException(Exception):
+    pass

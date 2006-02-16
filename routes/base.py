@@ -584,6 +584,8 @@ class Mapper(object):
         resultdict = m.match('/joe/sixpack')
         
         """
+        if not self._created_regs:
+            raise RouteException, "You must generate the regular expressions before matching."
         result = self._match(url)
         if result:
             return result[0]
