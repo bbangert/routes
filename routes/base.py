@@ -324,16 +324,6 @@ class Route(object):
             matchdict = m.groupdict()
             result = {}
             extras = frozenset(self.defaults.keys()) - frozenset(matchdict.keys())
-            for key in self.reqs.keys():
-                if key not in matchdict.keys() or matchdict[key] is None:
-                    try:
-                        result[key] = self.defaults[key]
-                    except:
-                        return False
-                else:
-                    value = matchdict[key] or (self.defaults.has_key(key) and self.defaults[key]) or ''
-                    if not re.compile('^' + self.reqs[key] + '$').match(value):
-                        return False
             for key,val in matchdict.iteritems():
                 if not val and self.defaults.has_key(key) and self.defaults[key]:
                     result[key] = self.defaults[key]
@@ -566,16 +556,21 @@ class Mapper(object):
         if self.always_scan:
             self.create_regs()
         
+        matchlog = []
         for route in self.matchlist:
+            if route.static:
+                if self.debug: matchlog.append(dict(route=route, static=True))
+                continue
             if self.prefix:
                 if re.match(self._regprefix, url):
                     url = re.sub(self._regprefix, r'\1', url)
                 else:
                     continue
             match = route.match(url)
-            if match: 
-                return (match, route)
-        return None
+            if self.debug: matchlog.append(dict(route=route, regexp=bool(match)))
+            if match:
+                return (match, route, matchlog)
+        return (None, None, matchlog)
         
     def match(self, url):
         """Match a URL against against one of the routes contained.
@@ -586,7 +581,9 @@ class Mapper(object):
         
         """
         result = self._match(url)
-        if result:
+        if self.debug:
+            return result[0], result[1], result[2]
+        if result[0]:
             return result[0]
         return None
         
@@ -600,7 +597,9 @@ class Mapper(object):
         
         """
         result = self._match(url)
-        if result:
+        if self.debug:
+            return result[0], result[1], result[2]
+        if result[0]:
             return result[0], result[1]
         return None
         
