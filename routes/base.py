@@ -451,6 +451,7 @@ class Mapper(object):
         self.controller_scan = controller_scan
         self._regprefix = None
         self._routenames = {}
+        self.debug = False
         if register:
             config = request_config()
             config.mapper = self
@@ -560,7 +561,7 @@ class Mapper(object):
         if not self._created_regs and self.controller_scan:
             self.create_regs()
         elif not self._created_regs:
-            raise RouteException, "Must create regexps first"
+            raise RouteException, "You must generate the regular expressions before matching."
         
         if self.always_scan:
             self.create_regs()
@@ -584,8 +585,6 @@ class Mapper(object):
         resultdict = m.match('/joe/sixpack')
         
         """
-        if not self._created_regs:
-            raise RouteException, "You must generate the regular expressions before matching."
         result = self._match(url)
         if result:
             return result[0]
