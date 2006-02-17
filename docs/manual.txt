@@ -69,6 +69,16 @@ the first non-keyword argument is assumed to be the `route path`_.
 
 Route Names are mainly used when generating routes, and have no other effect on matching a URL.
 
+Static Named Routes
+-------------------
+
+With the release of 1.2, Routes now supports static named routes. These are routes that do not involve actual URL generation, but instead allow you to quickly alias common URL's. For example:
+
+    ``m.connect('google_search',`` 'http://www.google.com/search', _static=True ``)``
+
+Static Named Routes are ignored entirely when matching a URL.
+
+
 Route Path
 ==========
 
@@ -316,6 +326,28 @@ You can also specify keyword arguments and it will override `defaults`_ associat
     url_for(controller='blog',action='index',section='home')
     
 As you can see, the amount of typing you save yourself by setting up some `route name`_'s is quite handy.
+
+Using the recently introduced `static named routes`_ feature allows you to quickly use common URL's and
+easily add query arguments::
+
+    m.connect('google_search', 'http://www.google.com/search', _static=True)
+    
+    url_for('google_search', q='routes')
+    # will result in
+    # http://www.google.com/search?q=routes
+
+**None-Existing Route Names**
+
+If you supply a `route name`_ that does not exist, ``url_for`` will assume that you intend to use the name as
+the actual URL. It will also prepend it with the proper WSGI ``SCRIPT_NAME`` if applicable::
+
+    url_for('/css/source.css')
+    # if running underneath a 'mount' point of /myapp will become
+    # /myapp/css/source.css
+
+For portable web applications, it's highly encouraged that you use ``url_for`` for all your URL's, even those
+that are static resources and images. This will ensure that the URL's are properly handled in various deployment
+cases.
 
 Route Memory
 ------------

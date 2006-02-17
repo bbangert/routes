@@ -1,6 +1,43 @@
 Routes Changelog
 ========================
 
+1.2 (Feb. 17th, 2006)
+----------------
+
+*Backwards Incompatibilities*
+
+* If a named route doesn't exist, and a url_for call is used, instead of using the
+  keyword arguments to generate a URL, they will be used as query args for the raw
+  URL supplied.
+
+
+*New Features*
+
+* Routes Mapper additions:
+  - If Mapper has debug=True, using match will return two additional values, the route
+    that matched, if one did match. And a list of routes that were tried, and information
+    about why they didn't pass.
+* url_for enhancements:
+  - Can now be used with 'raw' URL's to generate proper url's for static content that
+    will then automatically include SCRIPT_NAME if necessary
+  - Static named routes can now be used to shortcut common path information as desired.
+
+
+*Enhancements*
+
+* Controller Scanner will now sort controller names so that the longest one is first. This
+  ensures that the deepest nested controller is executed first before more shallow ones to
+  increase predictability.
+
+
+*Bug Fixes*
+
+* Controller Scanner now scans directories properly, the version in 1.1 left off the
+  directory prefix when created the list of controllers.
+    (Thanks to Justin for drawing my attention to it)
+
+
+
 1.1 (Jan. 13th, 2006)
 ----------------
 
