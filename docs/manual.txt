@@ -70,7 +70,7 @@ the first non-keyword argument is assumed to be the `route path`_.
 Route Names are mainly used when generating routes, and have no other effect on matching a URL.
 
 Static Named Routes
--------------------
++++++++++++++++++++
 
 With the release of 1.2, Routes now supports static named routes. These are routes that do not involve actual URL generation, but instead allow you to quickly alias common URL's. For example:
 
@@ -336,7 +336,8 @@ easily add query arguments::
     # will result in
     # http://www.google.com/search?q=routes
 
-**None-Existing Route Names**
+Non-Existing Route Names
+========================
 
 If you supply a `route name`_ that does not exist, ``url_for`` will assume that you intend to use the name as
 the actual URL. It will also prepend it with the proper WSGI ``SCRIPT_NAME`` if applicable::

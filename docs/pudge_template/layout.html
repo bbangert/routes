@@ -1,0 +1,126 @@
+<?xml version="1.0"?>
+<?python
+import pudge
+
+def initialize(t):
+    g = t.generator
+    if not hasattr(t, 'title'):
+        t.title = 'Untitled'
+    t.doc_title = g.index_document['title']
+    t.home_url = g.organization_url or g.blog_url or g.trac_url
+    t.home_title = g.organization
+    if hasattr(t, 'parts'):
+        t.docroot = t.parts.get('docroot', '')
+    else:
+        t.docroot = ''
+    links = []
+    for name, value in t.settings.items():
+        if name.startswith('link'):
+            if len(value.split()) == 1:
+                print "Bad link: should be URL<space>title: %r" % value
+                continue
+            url, title = value.split(None, 1)
+            links.append((name, url.strip(), title.strip()))
+    links.sort()
+    t.links = [(u, title) for (n, u, title) in links]
+?>
+<html xmlns="http://www.w3.org/1999/xhtml" 
+      xmlns:py="http://purl.org/kid/ns#"
+      py:def="layout">
+  
+  <head>
+    <title>${title}</title>
+    <link rel="stylesheet" type="text/css" href="${docroot}layout.css"/>
+    <link py:if="generator.syndication_url" 
+          rel="alternate" 
+          type="application/rss+xml" 
+          title="RSS 2.0" href="${generator.syndication_url}"/>
+
+  </head>
+  <body>
+    <div id="page">
+      <h1 class="doc-title"><a href="${home_url}">${home_title}</a></h1>
+      <div id="navcontainer">
+		    <ul id="navlist">
+          <li class="pagenav">
+            <ul>
+              <li class="page_item">
+                <a href="${docroot}index.html"
+                   title="Project Home / Index">${doc_title}</a>
+              </li>
+              <li class="page_item">
+                <a href="${docroot}module-index.html" 
+                   title="${doc_title.lower()} package and module reference">Modules</a>
+              </li>
+              <?python 
+              trac_url = generator.trac_url 
+              mailing_list_url = generator.mailing_list_url
+              ?>
+              <li py:if="trac_url">
+                <a href="${trac_url}"
+                   title="Wiki / Subversion / Roadmap / Bug Tracker"
+                   >Trac</a>
+              </li>
+              <li py:if="generator.blog_url">
+                <a href="${generator.blog_url}">Blog</a>
+              </li>
+              <li py:if="mailing_list_url">
+                <a href="${mailing_list_url}"
+                   title="Mailing List">Discuss</a>
+              </li>
+              <li class="page_item"
+                  py:if="not self.settings.get('no_about')">
+                <a href="${home_url}about">about ${home_title}
+                </a>
+              </li>
+	      <li py:for="url, title in links">
+	        <a href="${url}">${title}</a>
+	      </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+      
+      <hr />
+      
+      <div id="content" py:content="content()"/>
+      
+      <div id="footer">
+        <?python license = generator.get_document('doc-license') ?>
+        
+        <p style="float: left;">
+          <span py:if="license" py:strip="1">
+          This documentation is licensed under the 
+          <a href="${license['basename']}.html" 
+             title="Documentation License"
+             >${license['title']}</a>
+          <br/>
+          </span>
+          built with 
+          <a href="http://lesscode.org/projects/pudge/"
+             >pudge/${pudge.__version__}</a> |
+		      original design by 
+          <a href="http://blog.ratterobert.com/"
+             >ratter / robert</a>
+	  <span py:if="self.settings.get('extra_credits')">
+	   | <span py:replace="XML(self.settings['extra_credits'])"/>
+	  </span>
+	      </p>
+        <div>
+        <br/> <!--
+        <a name="search">
+          <form method="get" id="searchform" 
+                action="http://lesscode.org/blog/index.php">
+            <div>
+              <input type="text" value="" name="s" id="s" />
+              <input type="submit" id="searchsubmit" value="Search" />
+            </div>
+          </form>
+        </a> -->
+        <br/>
+        </div>
+      </div>
+    </div>
+  </body>
+
+</html>

@@ -1,0 +1,290 @@
+/* This is a generated, using these settings:
+   {'extra_credits': 'Development Sponsored by <a href="http://www.parachute.com/">Parachute LLC.</a>', 'link2': '/download/ Download', 'link1': '/community/ Community', 'no_about': 'true'} */
+i, em {
+  font-family: Times New Roman,Times,serif;
+}
+
+a, a:link {
+color: #234cb5;
+text-decoration: none;
+border-bottom: 1px dotted #234cb5;
+}
+
+a:hover { color: #479ec6; 
+    border-bottom: 1px solid #479ec6; }
+
+/*
+Theme Name: Almodovar
+Theme URI: http://blog.ratterobert.com/archiv/2005/03/09/almodovar/
+Description: Das Theme basiert im Ursprung auf Michael Heilemanns Kubrick-Template und ist von dem einen oder anderen Gimmick anderer sehr guter Templates inspiriert worden.
+Version: 0.7
+Author: ratte / robert
+Author URI: http://blog.ratterobert.com/
+*/
+
+/* Begin Typography & Colors */
+body {
+	font-family: 'Lucida Grande', 'Trebuchet MS', 'Bitstream Vera Sans', Sans-Serif;
+	background: #c6c9ce url(/images/backdrop.gif) repeat-x;
+	text-align: center;
+	font-size: 92%;
+}
+
+#page {
+	background-color: #fff;
+	border: 1px solid #000;
+	text-align: left;
+}
+
+#content {
+	margin: 0;
+	}
+
+#content p,
+#content ul,
+#content blockquote { 
+  line-height: 1.6em;
+}
+
+#footer {
+  border-top: 1px solid #000;
+  margin-top: 2em;
+  color: #666;
+  font-size: 75%;
+}
+
+#footer a:link, #footer a:visited {
+  font-weight: normal;
+}
+
+small {
+	font-family: 'Trebuchet MS', Arial, Helvetica, Sans-Serif;
+	font-size: 0.9em;
+	line-height: 1.5em;
+	}
+
+h1, h2, h3 {
+	font-family: Verdana, sans-serif;
+	font-weight: bold;
+  margin-top: .7em;
+  margin-bottom: .7em;
+	}
+
+h1 { 
+  text-decoration: none;
+  text-shadow: #ccc 3px 3px 3px;
+  border: none;
+  font-size: 2.0em;
+}
+h2 {
+  font-size: 1.75em;
+}
+h3 {
+  font-size: 1.25em;
+}
+
+div#content h1, div#content h2, div#content h3 {
+	color: #234cb5;
+        border-bottom: 2px solid #f95_;
+}
+
+h1 a, h2 a, h3 a {
+	color: #234cb5;
+}
+
+h1, h1 a, h1 a:hover, h1 a:visited, 
+h2, h2 a, h2 a:hover, h2 a:visited, 
+h3, h3 a, h3 a:hover, h3 a:visited, 
+cite {
+	text-decoration: none;
+}
+
+small, blockquote, strike {
+	color: #555;
+}
+
+#links ul ul li, #links li {
+	list-style: none;
+}
+
+code {
+	font: 1.1em 'Courier', 'Courier New', Fixed;
+}
+
+acronym, abbr, span.caps {
+	font-size: 0.9em;
+	letter-spacing: .07em;
+}
+
+/* Special case doc-title */
+h1.doc-title { 
+	font-family: Verdana, sans-serif;
+  font-size: 2.4em;
+  margin: 0;
+  text-shadow: #444 -2px -2px 2px; 
+}
+h1.doc-title a { 
+  display: block;
+  padding-left: 0.8em;
+  padding-bottom: .2em;
+  padding-top: .5em;
+  margin: 0;
+  border-bottom: 1px #fff solid;
+}
+h1.doc-title, 
+h1.doc-title a, 
+h1.doc-title a:visited,
+h1.doc-title a:hover {
+	text-decoration: none;
+	color: #4A72D9;
+}
+/* End Typography & Colors */
+
+
+/* Begin Structure */
+body {
+	margin: 0;
+	padding: 0;
+}
+
+#page {
+	background-color: white;
+	margin: 0 auto 0 5em;
+	padding: 0;
+        max-width: 60em;
+	border: 1px solid #000;
+}
+* html #page { 
+  width: 60em;
+}
+
+#content {
+	margin: 0 1em 0 3em;
+}
+
+#content h1 { 
+  margin-left: 0;
+}
+
+#footer {
+	padding: 0 0 0 1px;
+	margin: 0;
+  margin-top: 1.5em;
+	clear: both;
+	}
+
+#footer p {
+	margin: 1em;
+	}
+
+/* End Structure */
+
+
+
+/*	Begin Headers */
+.description {
+	text-align: center;
+	}
+
+/* End Headers */
+
+
+/* Begin Form Elements */
+#searchform {
+	margin: 1em auto;
+	text-align: right;
+	}
+
+#searchform #s {
+	width: 100px;
+	padding: 2px;
+	}
+
+#searchsubmit {
+	padding: 1px;
+	}
+/* End Form Elements */
+
+
+/* Begin Various Tags & Classes */
+acronym, abbr, span.caps {
+	cursor: help;
+}
+
+acronym, abbr {
+	border-bottom: 1px dashed #999;
+}
+
+blockquote {
+	margin: 15px 30px 0 10px;
+	padding-left: 20px;
+	border-left: 5px solid #ccc;
+}
+
+blockquote cite {
+	margin: 5px 0 0;
+	display: block;
+}
+
+hr {
+	display: none;
+}
+
+a img {
+	border: none;
+}
+
+.navigation {
+	display: block;
+	text-align: center;
+	margin-top: 10px;
+	margin-bottom: 60px;
+}
+/* End Various Tags & Classes*/
+
+span a { color: #CCC; }
+
+span a:hover { color: #FF5000; }
+
+#navcontainer {
+	margin-top: 0px;
+	padding-top: 0px;
+	width: 100%;
+	border-bottom: 1px solid black;
+}
+
+#navlist {
+   margin: 0;
+   margin-top: 8px;
+}
+
+#navlist ul {
+	margin-left: 0;
+	margin-right: 5px;
+	padding-left: 0;
+	white-space: nowrap;
+}
+
+#navlist li {
+	display: inline;
+	list-style-type: none;
+}
+
+#navlist a {
+  padding: 0px 10px;
+  margin-right: 5px;
+  margin-bottom: 0px;
+  color: #fff;
+	background-color: #7D9AE3;
+	text-decoration: none;
+	border: 1px solid #000;
+	border-width: 1px 1px 0px 1px;
+  font-weight: normal;
+}
+
+#navlist a:hover {
+	color: #000;
+	background-color: #fff;
+	text-decoration: none;
+  font-weight: normal;
+}

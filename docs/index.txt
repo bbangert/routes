@@ -19,7 +19,16 @@ Buzzword Compliance: *REST*, *DRY*
 News
 ====
 
-*January 13th, 2006*
+**Febuary 17th, 2006**
+
+Routes 1.2 released with:
+
+* Mapper debugging capabilities
+* URL generation enhancements for application portability
+* Static named routes
+
+
+**January 13th, 2006**
 
 Routes 1.1 released with:
 
