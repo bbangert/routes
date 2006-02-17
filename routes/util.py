@@ -178,8 +178,10 @@ def controller_scan(directory):
             elif os.path.isdir(filename):
                 controllers.extend(find_controllers(filename, prefix=prefix+fname+'/'))
         return controllers
-    
+    def longest_first(a, b):
+        return cmp(len(b), len(a))
     controllers = find_controllers(directory)
+    controllers.sort(cmp=longest_first)
     return controllers
 
 class RouteException(Exception):
