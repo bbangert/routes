@@ -191,6 +191,44 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('/webapp/delicious.jpg', url_for('/delicious.jpg'))
         self.assertEqual('/webapp/delicious/search?v=routes', url_for('/delicious/search', v='routes'))
 
+    def test_route_filter(self):
+        def article_filter(kargs):
+            article = kargs.pop('article', None)
+            if article is not None:
+                kargs.update(
+                    dict(year=article.get('year', 2004),
+                         month=article.get('month', 12),
+                         day=article.get('day', 20),
+                         slug=article.get('slug', 'default')
+                    )
+                )
+            return kargs
+        
+        self.con.mapper_dict = {}
+        self.con.environ = dict(SCRIPT_NAME='', SERVER_NAME='example.com')
+
+        m = Mapper()
+        m.connect(':controller/:(action)-:(id).html')
+        m.connect('archives', 'archives/:year/:month/:day/:slug', controller='archives', action='view',
+                  _filter=article_filter)
+        m.create_regs(['content','archives','admin/comments'])
+        self.con.mapper = m
+        
+        self.assertEqual(None, url_for(controller='content', action='view'))
+        self.assertEqual(None, url_for(controller='content'))
+        
+        self.assertEqual('/content/view-3.html', url_for(controller='content', action='view', id=3))
+        self.assertEqual('/content/index-2.html', url_for(controller='content', id=2))
+        
+        self.assertEqual('/archives/2005/10/5/happy', 
+            url_for('archives',year=2005, month=10, day=5, slug='happy'))
+        story = dict(year=2003, month=8, day=2, slug='woopee')
+        empty = {}
+        
+        self.assertEqual('/archives/2003/8/2/woopee', url_for('archives', article=story))
+        self.assertEqual('/archives/2004/12/20/default', url_for('archives', article=empty))
+    
+
 if __name__ == '__main__':
     unittest.main()
 else:

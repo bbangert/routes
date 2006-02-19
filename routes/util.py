@@ -108,6 +108,10 @@ def url_for(*args, **kargs):
         if route:
             newargs = route.defaults.copy()
             newargs.update(kargs)
+            
+            # If this route has a filter, apply it
+            if route.filter:
+                newargs.update(route.filter(newargs))
         else:
             newargs = _screenargs(kargs)
         url = config.mapper.generate(**newargs)

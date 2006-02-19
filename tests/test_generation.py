@@ -454,7 +454,7 @@ class TestGeneration(unittest.TestCase):
         
         self.assertEqual('/content/view-3.html', m.generate(controller='content', action='view', id=3))
         self.assertEqual('/content/index-2.html', m.generate(controller='content', id=2))
-    
+        
 
 if __name__ == '__main__':
     unittest.main()

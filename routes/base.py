@@ -43,6 +43,8 @@ class Route(object):
         if kargs.has_key('_static'):
             self.static = True
         
+        self.filter = kargs.get('_filter')
+        
         # reserved keys that don't count
         reserved_keys = ['requirements']
         
