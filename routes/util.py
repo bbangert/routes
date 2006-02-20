@@ -185,7 +185,7 @@ def controller_scan(directory):
     def longest_first(a, b):
         return cmp(len(b), len(a))
     controllers = find_controllers(directory)
-    controllers.sort(cmp=longest_first)
+    controllers.sort(longest_first)
     return controllers
 
 class RouteException(Exception):
