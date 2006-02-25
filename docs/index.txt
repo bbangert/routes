@@ -19,7 +19,15 @@ Buzzword Compliance: *REST*, *DRY*
 News
 ====
 
-**Febuary 17th, 2006**
+**February 25th, 2006**
+
+Routes 1.3 released with:
+
+* Filter functionality when using named routes
+* Fixed Python 2.3 incompatibility issue with 1.2
+
+
+**February 17th, 2006**
 
 Routes 1.2 released with:
 

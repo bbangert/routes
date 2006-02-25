@@ -1,6 +1,28 @@
 Routes Changelog
 ========================
 
+1.3 (Feb. 25th, 2006)
+
+*Backwards Incompatibilities*
+
+* None
+
+
+*New Features*
+
+* url_for keyword filters:
+  - Named routes can now have a _filter argument that should specify a function that takes
+    a dict as its sole argument. The dict will contain the full set of keywords passed to
+    url_for, which the function can then modify as it pleases. The new dict will then be
+    used as if it was the original set of keyword args given to url_for.
+
+*Bug Fixes*
+
+* Fixed Python 2.3 incompatibility due to using keyword arg for a sort statement
+  when using the built-in controller scanner.
+
+
+
 1.2 (Feb. 17th, 2006)
 ----------------
 
