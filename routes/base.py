@@ -566,6 +566,8 @@ class Mapper(object):
             if self.prefix:
                 if re.match(self._regprefix, url):
                     url = re.sub(self._regprefix, r'\1', url)
+                    if not url:
+                        url = '/'
                 else:
                     continue
             match = route.match(url)
