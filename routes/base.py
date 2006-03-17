@@ -444,6 +444,7 @@ class Mapper(object):
         self._regprefix = None
         self._routenames = {}
         self.debug = False
+        self.append_slash = False
         if register:
             config = request_config()
             config.mapper = self

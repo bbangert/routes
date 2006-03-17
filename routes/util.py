@@ -115,6 +115,8 @@ def url_for(*args, **kargs):
         else:
             newargs = _screenargs(kargs)
         url = config.mapper.generate(**newargs)
+        if config.mapper.append_slash and not url.endswith('/'):
+            url += '/'
     if anchor: url += '#' + _url_quote(anchor)
     if host or protocol:
         if not host: host = config.host

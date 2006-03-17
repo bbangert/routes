@@ -176,6 +176,22 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('http://www.google.com/search?q=routes', url_for('http://www.google.com/search', q='routes'))
         self.assertEqual('/delicious.jpg', url_for('/delicious.jpg'))
         self.assertEqual('/delicious/search?v=routes', url_for('/delicious/search', v='routes'))
+    
+    def test_append_slash(self):
+        m = self.con.mapper
+        self.con.mapper_dict = {}
+        m.append_slash = True
+        self.con.environ = dict(SCRIPT_NAME='', SERVER_NAME='example.com')
+        m.connect(':controller/:action/:id')
+        m.connect('home', 'http://www.groovie.org/', _static=True)
+        m.connect('space', '/nasa/images', _static=True)
+        m.create_regs(['content', 'blog'])
+        
+        self.assertEqual('http://www.google.com/search', url_for('http://www.google.com/search'))
+        self.assertEqual('http://www.google.com/search?q=routes', url_for('http://www.google.com/search', q='routes'))
+        self.assertEqual('/delicious.jpg', url_for('/delicious.jpg'))
+        self.assertEqual('/delicious/search?v=routes', url_for('/delicious/search', v='routes'))
+        self.assertEqual('/content/list/', url_for(controller='/content', action='list'))
 
     def test_no_named_path_with_script(self):
         m = self.con.mapper
