@@ -246,6 +246,17 @@ class TestRecognition(unittest.TestCase):
             self.assertEqual({'controller':'blog','action':'view','id':'2'}, m.match('/view/2/blog/super'))
             self.assertEqual({'controller':'admin/user','action':'view','id':'4'}, m.match('/view/4/admin/user/super'))
     
+    def test_dynamic_with_trailing_non_keyword_strings(self):
+        m = Mapper()
+        m.connect('somewhere/:over/rainbow', controller='blog')
+        m.connect('somewhere/:over', controller='post')
+        m.create_regs(['post','blog','admin/user'])
+    
+        self.assertEqual(None, m.match('/'))
+        self.assertEqual(None, m.match('/somewhere'))
+        self.assertEqual({'controller':'blog','action':'index','over':'near'}, m.match('/somewhere/near/rainbow'))
+        self.assertEqual({'controller':'post','action':'index','over':'tomorrow'}, m.match('/somewhere/tomorrow'))
+        
     def test_dynamic_with_trailing_dyanmic_defaults(self):
         for path in ['archives/:action/:article', 'archives/:(action)/:(article)']:
             m = Mapper()
