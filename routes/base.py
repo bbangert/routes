@@ -425,11 +425,35 @@ class Mapper(object):
     
     URL generation is done by passing keyword parameters into the generate function, a URL is then
     returned.
-    
+        
     """
     def __init__(self, controller_scan=controller_scan, directory=None, 
                  always_scan=False, register=True):
-        """Create a new Mapper instance"""
+        """Create a new Mapper instance
+        
+        All keyword arguments are optional.
+
+        ``controller_scan``
+            Function reference that will be used to return a list of valid controllers used
+            during URL matching. If ``directory`` keyword arg is present, it will be passed
+            into the function during its call. This option defaults to a function that will
+            scan a directory for controllers.
+
+        ``directory``
+            Passed into controller_scan for the directory to scan. It should be an absolute
+            path if using the default ``controller_scan`` function.
+
+        ``always_scan``
+            Whether or not the ``controller_scan`` function should be run during every URL
+            match. This is typically a good idea during development so the server won't need
+            to be restarted anytime a controller is added.
+        
+        ``register``
+            Boolean used to determine if the Mapper should use ``request_config`` to register
+            itself as the mapper. Since it's done on a thread-local basis, this is typically
+            best used during testing though it won't hurt in other cases.
+        
+        """
         self.matchlist = []
         self.maxkeys = {}
         self.minkeys = {}
