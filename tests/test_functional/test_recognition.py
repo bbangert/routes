@@ -438,6 +438,27 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual({'controller':'archive','action':'index','id':None}, m.match('/blog/archive'))
         self.assertEqual({'controller':'archive','action':'view', 'id':'4'}, m.match('/blog/archive/view/4'))
     
+    def test_dynamic_with_multiple_and_prefix(self):
+        m = Mapper()
+        m.prefix = '/blog'
+        m.connect(':controller/:action/:id')
+        m.connect('home/:action', controller='archive')
+        m.connect('', controller='content')
+        m.create_regs(['content', 'archive', 'admin/comments'])
+
+        self.assertEqual(None, m.match('/x'))
+        self.assertEqual(None, m.match('/admin/comments'))
+        self.assertEqual(None, m.match('/content/view'))
+        self.assertEqual(None, m.match('/archive/view/4'))
+        
+        self.assertEqual({'controller':'content', 'action':'index'}, m.match('/blog/'))
+        self.assertEqual({'controller':'archive', 'action':'view'}, m.match('/blog/home/view'))
+        self.assertEqual({'controller':'content','action':'index','id':None}, m.match('/blog/content'))
+        self.assertEqual({'controller':'admin/comments','action':'view','id':None}, m.match('/blog/admin/comments/view'))
+        self.assertEqual({'controller':'archive','action':'index','id':None}, m.match('/blog/archive'))
+        self.assertEqual({'controller':'archive','action':'view', 'id':'4'}, m.match('/blog/archive/view/4'))
+        
+    
     def test_splits_with_extension(self):
         m = Mapper()
         m.connect('hi/:(action).html', controller='content')

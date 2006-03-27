@@ -560,17 +560,17 @@ class Mapper(object):
             self.create_regs()
         
         matchlog = []
+        if self.prefix:
+            if re.match(self._regprefix, url):
+                url = re.sub(self._regprefix, r'\1', url)
+                if not url:
+                    url = '/'
+            else:
+                return (None, None, matchlog)
         for route in self.matchlist:
             if route.static:
                 if self.debug: matchlog.append(dict(route=route, static=True))
                 continue
-            if self.prefix:
-                if re.match(self._regprefix, url):
-                    url = re.sub(self._regprefix, r'\1', url)
-                    if not url:
-                        url = '/'
-                else:
-                    continue
             match = route.match(url)
             if self.debug: matchlog.append(dict(route=route, regexp=bool(match)))
             if match:
