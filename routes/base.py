@@ -29,7 +29,7 @@ class Route(object):
         >>> newroute = Route('date/:year/:month/:day', controller="blog", action="view")
         >>> newroute = Route('archives/:page', controller="blog", action="by_page", requirements = { 'page':'\d{1,2}' })
         >>> newroute.reqs
-        {'page': '\\d{1,2}'}
+        {'page': '\\\d{1,2}'}
         
         Note: Route is generally not called directly, a Mapper instance connect method should
         be used to add routes.

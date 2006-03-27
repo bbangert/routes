@@ -58,7 +58,7 @@ def request_config(original=False):
     To get the Routes RequestConfig:
     
     >>> from routes import *
-    >>> config = routes.request_config()
+    >>> config = request_config()
     
     The following attributes must be set on the config object every request:
     
