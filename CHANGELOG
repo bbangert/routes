@@ -9,12 +9,15 @@ Routes Changelog
 
 *New Features*
 
-* None
+* Mapper has an optional attribute ``append_slash``. When set to ``True``, any URL's
+  generated will have a slash appended to the end. 
 
 *Bug Fixes*
 
 * Fixed prefix option so that if the PATH_INFO is empty after prefix regexp, its set to
   '/' so the match proceeds ok.
+* Fixed prefix bug that caused routes after the initial one to not see the proper url
+  for matching. Caught by Jochen Kupperschmidt.
 
 
 
