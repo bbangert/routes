@@ -57,18 +57,6 @@ Routes 1.1 released with:
 * Easier integration
 * Powerful Groupings syntax for more flexibility
 
-Documentation
-=============
-
-For users:
-
-* `Routes Manual <manual.html>`_
-* `Route Recipes - Common Tasks in Routes <recipes.html>`_
-
-For Python web framework creators:
-
-* `Integrating Routes with your Python web framework <integration.html>`_
-
 Credits
 =======
 
