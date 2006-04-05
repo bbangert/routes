@@ -240,7 +240,8 @@ class TestUtils(unittest.TestCase):
             url_for('archives',year=2005, month=10, day=5, slug='happy'))
         story = dict(year=2003, month=8, day=2, slug='woopee')
         empty = {}
-        
+        self.assertEqual({'controller':'archives','action':'view','year':'2005',
+            'month':'10','day':'5','slug':'happy'}, m.match('/archives/2005/10/5/happy'))
         self.assertEqual('/archives/2003/8/2/woopee', url_for('archives', article=story))
         self.assertEqual('/archives/2004/12/20/default', url_for('archives', article=empty))
     

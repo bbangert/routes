@@ -333,6 +333,8 @@ class Route(object):
                     result[key] = val
             for key in extras:
                 result[key] = self.defaults[key]
+            if self.filter:
+                result.pop('_filter')
             return result
         else:
             return False
