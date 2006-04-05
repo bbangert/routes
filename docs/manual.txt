@@ -27,7 +27,7 @@ Route
 Mapper
     The Mapper is the main class used to hold, organize, and match Routes. While you can create a Route
     object independently of the Mapper, its not nearly as useful. The Mapper is what you will use to add
-    Route's and what the web framework uses to match incoming URL's.
+    Routes and what the web framework uses to match incoming URLs.
 
 We will also assume for this introduction that your Mapper instance is exposed to you as ``m``, for example::
 
@@ -72,7 +72,7 @@ Route Names are mainly used when generating routes, and have no other effect on 
 Static Named Routes
 +++++++++++++++++++
 
-With the release of 1.2, Routes now supports static named routes. These are routes that do not involve actual URL generation, but instead allow you to quickly alias common URL's. For example:
+With the release of 1.2, Routes now supports static named routes. These are routes that do not involve actual URL generation, but instead allow you to quickly alias common URLs. For example:
 
     ``m.connect('google_search',`` 'http://www.google.com/search', _static=True ``)``
 
@@ -150,7 +150,7 @@ Requirements is a special keyword used by Routes to enforce a regular expression
 The Nitty Gritty of Route Setup
 -------------------------------
 
-Minimum URL's
+Minimum URLs
 =============
 
 Routes will use your `defaults`_ to try and minimize the required length of your URL whenever possible. For
@@ -163,11 +163,11 @@ example::
     /content/view
     /content
 
-Trailing `dynamic part`_'s of a `route path`_ that have `defaults`_ setup are not required to exist in
+Trailing `dynamic part`_s of a `route path`_ that have `defaults`_ setup are not required to exist in
 the URL being matched. This means that each of the URL examples shown above will result in the same
 set of keyword arguments being sent to the same controller and action.
 
-If a `dynamic part`_ with a default is followed by either `static part`_'s or `dynamic part`_'s without `defaults`_, that `dynamic part`_ will be required despite having a default::
+If a `dynamic part`_ with a default is followed by either `static part`_s or `dynamic part`_s without `defaults`_, that `dynamic part`_ will be required despite having a default::
 
     # Remember that :action has an implicit default
     m.connect('archives/:action/:article', controller='blog')
@@ -183,7 +183,7 @@ If a `dynamic part`_ with a default is followed by either `static part`_'s or `d
 This way, the URL coming in maps up to the `route path`_ you created, part for part.
 
 When using `Groupings`_, parts will still be left off, but only if the remainder of the URL has no
-static after it. This can lead to some odd looking URL's being generated if you aren't careful about
+static after it. This can lead to some odd looking URLs being generated if you aren't careful about
 your requirements and defaults. For example::
 
     # Groupings without requirements
@@ -214,13 +214,13 @@ enforce this behavior we will use `Requirements`_::
     url_for(controller='archives', action='view', id=2)
     # /archives/view-2
 
-If you end up with URL's missing parts you'd like left on when using `Groupings`_, add a requirement
+If you end up with URLs missing parts you'd like left on when using `Groupings`_, add a requirement
 to that part.
 
 Implicit Defaults
 =================
 
-The above rule regarding `minimum url's`_ has two built-in implicit `defaults`_. If you use either ``action`` or
+The above rule regarding `minimum URLs`_ has two built-in implicit `defaults`_. If you use either ``action`` or
 ``id`` in your `route path`_ and don't specify `defaults`_ for them, Routes will automatically assign the
 following defaults to them for you::
 
@@ -237,8 +237,8 @@ Search Order
 
 When setting up your routes, remember that when `using routes`_ the order in which you set them
 up can affect the URL that's generated. Routes will try and use all the keyword args during route generation
-and if multiple routes can be generated given the set of keyword args, the **first and shortest route that was connected to the mapper will be used**. `Hardcoded variable`_'s are also used first if available as they typically
-result in shorter URL's.
+and if multiple routes can be generated given the set of keyword args, the **first and shortest route that was connected to the mapper will be used**. `Hardcoded variable`_s are also used first if available as they typically
+result in shorter URLs.
 
 For example::
 
@@ -250,16 +250,16 @@ For example::
     url_for(controller='blog', action='view')      ->        '/archives'
     
 You will typically want your specific and detailed routes at the top of your Route setup and the more
-generic route's at the bottom.
+generic routes at the bottom.
 
 Wildcard Limitations and Gotchas
 ================================
 
-Due to the nature of `wildcard part`_'s, using wildcards in your route path can result in URL matches that you
-didn't expect. `Wildcard part`_'s are extremely powerful and when combined with `dynamic part`_'s that
+Due to the nature of `wildcard part`_s, using wildcards in your route path can result in URL matches that you
+didn't expect. `Wildcard part`_s are extremely powerful and when combined with `dynamic part`_s that
 have `defaults`_ can confuse the new Routes user.
 
-When you have `dynamic part`_'s with `defaults`_, you should never place them directly next to a
+When you have `dynamic part`_s with `defaults`_, you should never place them directly next to a
 `wildcard part`_. This can result in the `wildcard part`_ eating the part in the URL that was
 intended as the `dynamic part`_. 
 
@@ -275,7 +275,7 @@ This occurs because Routes sees the default as being optional, and the `wildcard
 to gobble as much of the URL as possible before a required section of the `route path`_ is found. By
 having a trailing `dynamic part`_ with a default, that section gets dropped.
 
-Notice how removing the `dynamic part`_'s default results in the variables we expect::
+Notice how removing the `dynamic part`_s default results in the variables we expect::
 
     m.connect('*url/:username', controller='blog', action='view')
 
@@ -296,7 +296,7 @@ the wildcard::
 Using Routes
 ------------
 
-Once you have setup the Routes to map URL's to your controllers and actions, you will likely want to generate URL's from within your web application. Routes includes two functions for use in your web application that are commonly desired.
+Once you have setup the Routes to map URLs to your controllers and actions, you will likely want to generate URLs from within your web application. Routes includes two functions for use in your web application that are commonly desired.
 
 * `redirect_to <module-routes.html#redirect_to>`_
 * `url_for <module-routes.html#url_for>`_
@@ -325,9 +325,9 @@ You can also specify keyword arguments and it will override `defaults`_ associat
     #is equivalent to
     url_for(controller='blog',action='index',section='home')
     
-As you can see, the amount of typing you save yourself by setting up some `route name`_'s is quite handy.
+As you can see, the amount of typing you save yourself by setting up some `route name`_s is quite handy.
 
-Using the recently introduced `static named routes`_ feature allows you to quickly use common URL's and
+Using the recently introduced `static named routes`_ feature allows you to quickly use common URLs and
 easily add query arguments::
 
     m.connect('google_search', 'http://www.google.com/search', _static=True)
@@ -346,8 +346,8 @@ the actual URL. It will also prepend it with the proper WSGI ``SCRIPT_NAME`` if 
     # if running underneath a 'mount' point of /myapp will become
     # /myapp/css/source.css
 
-For portable web applications, it's highly encouraged that you use ``url_for`` for all your URL's, even those
-that are static resources and images. This will ensure that the URL's are properly handled in various deployment
+For portable web applications, it's highly encouraged that you use ``url_for`` for all your URLs, even those
+that are static resources and images. This will ensure that the URLs are properly handled in various deployment
 cases.
 
 Route Memory
