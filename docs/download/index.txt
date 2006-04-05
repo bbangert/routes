@@ -6,13 +6,12 @@ Latest Release
 
 **Release 1.3.1** : Apr. 4th, 2006
 
-Download `ez_setup.py </files/ez_setup.py>`_ then run::
-    
-    python ez_setup.py Routes
-    
-Or if you already have Easy Install::
-    
-    easy_install Routes
+If you already have Easy Install::
+    sudo easy_install Routes
+
+If you don't have it yet, download `ez_setup.py </files/ez_setup.py>`_ then::
+    sudo python ez_setup.py Routes
+
     
 Development Version
 -------------------
