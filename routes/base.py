@@ -42,8 +42,7 @@ class Route(object):
         # Don't bother forming stuff we don't need if its a static route
         if kargs.has_key('_static'):
             self.static = True
-        
-        self.filter = kargs.get('_filter')
+        self.filter = kargs.pop('_filter', None)
         
         # reserved keys that don't count
         reserved_keys = ['requirements']
@@ -333,8 +332,6 @@ class Route(object):
                     result[key] = val
             for key in extras:
                 result[key] = self.defaults[key]
-            if self.filter:
-                result.pop('_filter')
             return result
         else:
             return False

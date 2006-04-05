@@ -111,7 +111,7 @@ def url_for(*args, **kargs):
             
             # If this route has a filter, apply it
             if route.filter:
-                newargs.update(route.filter(newargs))
+                newargs = route.filter(newargs)
         else:
             newargs = _screenargs(kargs)
         url = config.mapper.generate(**newargs)
