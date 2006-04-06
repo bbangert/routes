@@ -163,11 +163,11 @@ example::
     /content/view
     /content
 
-Trailing `dynamic part`_s of a `route path`_ that have `defaults`_ setup are not required to exist in
+Trailing `dynamic parts <#dynamic-part>`_ of a `route path`_ that have `defaults`_ setup are not required to exist in
 the URL being matched. This means that each of the URL examples shown above will result in the same
 set of keyword arguments being sent to the same controller and action.
 
-If a `dynamic part`_ with a default is followed by either `static part`_s or `dynamic part`_s without `defaults`_, that `dynamic part`_ will be required despite having a default::
+If a `dynamic part`_ with a default is followed by either `static parts <#static-part>`_ or `dynamic parts <#dynamic-part>`_ without `defaults`_, that `dynamic part`_ will be required despite having a default::
 
     # Remember that :action has an implicit default
     m.connect('archives/:action/:article', controller='blog')
@@ -237,8 +237,7 @@ Search Order
 
 When setting up your routes, remember that when `using routes`_ the order in which you set them
 up can affect the URL that's generated. Routes will try and use all the keyword args during route generation
-and if multiple routes can be generated given the set of keyword args, the **first and shortest route that was connected to the mapper will be used**. `Hardcoded variable`_s are also used first if available as they typically
-result in shorter URLs.
+and if multiple routes can be generated given the set of keyword args, the **first and shortest route that was connected to the mapper will be used**. `Hardcoded variables <#hardcoded-variable>`_ are also used first if available as they typically result in shorter URLs.
 
 For example::
 
@@ -255,11 +254,11 @@ generic routes at the bottom.
 Wildcard Limitations and Gotchas
 ================================
 
-Due to the nature of `wildcard part`_s, using wildcards in your route path can result in URL matches that you
-didn't expect. `Wildcard part`_s are extremely powerful and when combined with `dynamic part`_s that
+Due to the nature of `wildcard parts <#wildcard-part>`_, using wildcards in your route path can result in URL matches that you
+didn't expect. `Wildcard parts <#wildcard-part>`_ are extremely powerful and when combined with `dynamic parts <#dynamic-part>`_  that
 have `defaults`_ can confuse the new Routes user.
 
-When you have `dynamic part`_s with `defaults`_, you should never place them directly next to a
+When you have `dynamic parts <#dynamic-part>`_ with `defaults`_, you should never place them directly next to a
 `wildcard part`_. This can result in the `wildcard part`_ eating the part in the URL that was
 intended as the `dynamic part`_. 
 
@@ -275,7 +274,7 @@ This occurs because Routes sees the default as being optional, and the `wildcard
 to gobble as much of the URL as possible before a required section of the `route path`_ is found. By
 having a trailing `dynamic part`_ with a default, that section gets dropped.
 
-Notice how removing the `dynamic part`_s default results in the variables we expect::
+Notice how removing the `dynamic part`_ default results in the variables we expect::
 
     m.connect('*url/:username', controller='blog', action='view')
 
@@ -325,7 +324,7 @@ You can also specify keyword arguments and it will override `defaults`_ associat
     #is equivalent to
     url_for(controller='blog',action='index',section='home')
     
-As you can see, the amount of typing you save yourself by setting up some `route name`_s is quite handy.
+As you can see, the amount of typing you save yourself by using the `route name`_ feature is quite handy.
 
 Using the recently introduced `static named routes`_ feature allows you to quickly use common URLs and
 easily add query arguments::
