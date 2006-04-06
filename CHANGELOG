@@ -1,6 +1,22 @@
 Routes Changelog
 ========================
 
+1.3.2 (April xth, 2006)
+
+*Backwards Incompatibilities*
+
+* None
+
+*New Features*
+
+* None
+
+*Bug Fixes*
+
+* Fixed _filter bug with inclusion in match dict during matching, reported by David Creemer.
+
+
+
 1.3.1 (April 4th, 2006)
 
 *Backwards Incompatibilities*
