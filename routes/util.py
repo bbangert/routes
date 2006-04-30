@@ -103,7 +103,7 @@ def url_for(*args, **kargs):
         if static:
             if kargs:
                 url += '?'
-                url += '&'.join([_url_quote(key)+'='+_url_quote(kargs[key]) for key in kargs.keys()])
+                url += urllib.urlencode(kargs)
     if not static:
         if route:
             newargs = route.defaults.copy()

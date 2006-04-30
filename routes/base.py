@@ -1,6 +1,8 @@
 """Route and Mapper core classes"""
 
-import re, sys
+import re
+import sys
+import urllib
 from util import _url_quote as url_quote
 from util import controller_scan, RouteException
 from routes import request_config
@@ -412,7 +414,7 @@ class Route(object):
         extras = frozenset(kargs.keys()) - self.maxkeys
         if extras:
             url += '?'
-            url += '&'.join([url_quote(key)+'='+url_quote(kargs[key]) for key in extras if key != 'action' or key != 'controller'])
+            url += urllib.urlencode([(key, kargs[key]) for key in extras if key != 'action' or key != 'controller'])
         return url
     
 

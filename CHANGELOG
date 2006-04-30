@@ -14,6 +14,7 @@ Routes Changelog
 *Bug Fixes*
 
 * Fixed _filter bug with inclusion in match dict during matching, reported by David Creemer.
+* Fixed improper url quoting by using urllib.encode, patch by Jason Culverhouse.
 
 
 
