@@ -19,10 +19,18 @@ Buzzword Compliance: *REST*, *DRY*
 News
 ====
 
+**April 30th, 2006**
+
+Routes 1.3.2 released with:
+
+* Fixed _filter bug with inclusion in match dict during matching, reported by David Creemer.
+* Fixed improper url quoting by using urllib.encode, patch by Jason Culverhouse.
+
+
+
 **April 4th, 2006**
 
 Routes 1.3.1 released with:
-
 
 * Mapper has an optional attribute ``append_slash``. When set to ``True``, any URL's
   generated will have a slash appended to the end. 
