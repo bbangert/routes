@@ -280,6 +280,7 @@ class TestGeneration(unittest.TestCase):
         m.connect('viewpost/:id', controller='post', action='view')
         m.connect(':controller/:action/:id')
         
+        self.assertEqual('/viewpost/2?extra=x%2Fy', m.generate(controller='post', action='view', id=2, extra='x/y'))
         self.assertEqual('/blog?extra=3', m.generate(controller='blog', action='index', extra=3))
         self.assertEqual('/viewpost/2?extra=3', m.generate(controller='post', action='view', id=2, extra=3))
     
