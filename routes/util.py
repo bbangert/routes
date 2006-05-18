@@ -131,44 +131,12 @@ def redirect_to(*args, **kargs):
     Redirect's *should* occur as a "302 Moved" header, however the web framework
     may utilize a different method.
     
-    Three formats for the arguments are possible:
-    
-    Keyword Args
-        Lookup the best URL using the same keyword args as the url_for function.
-    String starting with protocol
-        Redirect to the string exactly as is given.
-    String without protocol
-        Prepend the string with the current protocol and host, then redirect to
-        it. The protocol and host is prepended because not all redirect functions
-        can handle relative URL's.
-        
-    Examples::
-    
-        # Keyword args
-        redirect_to(controller='blog', action='view')
-        
-        # String starting with protocol
-        redirect_to('https://www.gmail.com/')
-        
-        # String without protocol
-        redirect_to('/blog/view/4')
+    All arguments are passed to url_for to retrieve the appropriate URL, then the
+    resulting URL it sent to the redirect function as the URL.
     
     """
-    
+    target = url_for(*args, **kargs)
     config = request_config()
-    target = ''
-    if args:
-        target = args[0]
-        if target.startswith('/'):
-            target = config.protocol + '://' + config.host + _url_quote(target)
-        elif not target.startswith('http://'):
-            route = config.mapper._routenames.get(args[0])
-            if route:
-                newargs = route.defaults.copy()
-                newargs.update(kargs)
-                target = url_for(**newargs)
-    elif kargs:
-        target = url_for(**kargs)
     config.redirect(target)
 
 def controller_scan(directory):

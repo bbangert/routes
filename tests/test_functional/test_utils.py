@@ -91,6 +91,7 @@ class TestUtils(unittest.TestCase):
     def test_redirect_to(self):
         m = self.con.mapper
         self.con.mapper_dict = {}
+        self.con.environ = dict(SCRIPT_NAME='', SERVER_NAME='www.example.com')
         result = None
         def printer(echo):
             redirect_to.result = echo
@@ -105,6 +106,8 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('/admin/comments/splash', redirect_to.result)
         redirect_to('http://www.example.com/')
         self.assertEqual('http://www.example.com/', redirect_to.result)
+        redirect_to('/somewhere.html', var='keyword')
+        self.assertEqual('/somewhere.html?var=keyword', redirect_to.result)
 
     def test_redirect_to_with_route_names(self):
         m = self.con.mapper
