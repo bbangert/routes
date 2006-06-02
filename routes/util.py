@@ -146,7 +146,7 @@ def controller_scan(directory):
     def find_controllers(dirname, prefix=''):
         controllers = []
         for fname in os.listdir(dirname):
-            filename = dirname + '/' + fname
+            filename = os.path.join(dirname, fname)
             if os.path.isfile(filename) and re.match('^[^_]{1,1}.*\.py$', fname):
                 controllers.append(prefix + fname[:-3])
             elif os.path.isdir(filename):
