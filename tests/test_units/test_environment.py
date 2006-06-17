@@ -29,3 +29,6 @@ class TestEnvironment(unittest.TestCase):
         assert con.host == 'somewhere.com'
         assert con.mapper_dict.has_key('controller')
         assert con.mapper_dict['controller'] == 'content'
+
+if __name__ == '__main__':
+    unittest.main()
