@@ -46,6 +46,9 @@ class Route(object):
             self.static = True
         self.filter = kargs.pop('_filter', None)
         
+        # Pull out route conditions
+        self.conditions = kargs.pop('conditions', None)
+        
         # reserved keys that don't count
         reserved_keys = ['requirements']
         
@@ -304,7 +307,7 @@ class Route(object):
         
         return (reg, noreqs, allblank)
     
-    def match(self, url):
+    def match(self, url, environ=None):
         """Match a url to our regexp. 
         
         While the regexp might match, this operation isn't
@@ -324,6 +327,19 @@ class Route(object):
             url = url[:-1]
         m = self.regmatch.match(url)
         if m:
+            if self.conditions:
+                if not environ:
+                    environ = {}
+                if self.conditions.has_key('method') and \
+                    self.conditions['method'] != environ.get('HTTP_METHOD'):
+                    return False
+                
+                # If there's a function, call it with environ and expire if it
+                # returns False
+                if self.conditions.has_key('function') and \
+                    not self.conditions['function'](environ):
+                    return False
+                    
             matchdict = m.groupdict()
             result = {}
             extras = frozenset(self.defaults.keys()) - frozenset(matchdict.keys())
@@ -596,7 +612,7 @@ class Mapper(object):
             if route.static:
                 if self.debug: matchlog.append(dict(route=route, static=True))
                 continue
-            match = route.match(url)
+            match = route.match(url, self.environ)
             if self.debug: matchlog.append(dict(route=route, regexp=bool(match)))
             if match:
                 return (match, route, matchlog)
