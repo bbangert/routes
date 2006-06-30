@@ -326,33 +326,34 @@ class Route(object):
         if url.endswith('/') and len(url) > 1:
             url = url[:-1]
         m = self.regmatch.match(url)
-        if m:
-            if self.conditions:
-                if not environ:
-                    environ = {}
-                if self.conditions.has_key('method') and \
-                    self.conditions['method'] != environ.get('HTTP_METHOD'):
-                    return False
-                
-                # If there's a function, call it with environ and expire if it
-                # returns False
-                if self.conditions.has_key('function') and \
-                    not self.conditions['function'](environ):
-                    return False
-                    
-            matchdict = m.groupdict()
-            result = {}
-            extras = frozenset(self.defaults.keys()) - frozenset(matchdict.keys())
-            for key,val in matchdict.iteritems():
-                if not val and self.defaults.has_key(key) and self.defaults[key]:
-                    result[key] = self.defaults[key]
-                else:
-                    result[key] = val
-            for key in extras:
+        
+        if not m: return False
+            
+        if not environ: environ = {}
+        
+        if self.conditions:
+            if self.conditions.has_key('method') and \
+                self.conditions['method'] != environ.get('HTTP_METHOD'):
+                return False
+        
+        matchdict = m.groupdict()
+        result = {}
+        extras = frozenset(self.defaults.keys()) - frozenset(matchdict.keys())
+        for key,val in matchdict.iteritems():
+            if not val and self.defaults.has_key(key) and self.defaults[key]:
                 result[key] = self.defaults[key]
-            return result
-        else:
+            else:
+                result[key] = val
+        for key in extras:
+            result[key] = self.defaults[key]
+        
+        # If there's a function, call it with environ and expire if it
+        # returns False
+        if self.conditions and self.conditions.has_key('function') and \
+            not self.conditions['function'](environ, result):
             return False
+            
+        return result
     
     def generate(self,**kargs):
         """Generate a URL from ourself given a set of keyword arguments
