@@ -1,7 +1,13 @@
 Routes Changelog
 ========================
 
--- 1.3.3 (**dev**)
+-- 1.3.3 (**SVN**)
+* Added URL generation handling for a 'method' argument. If 'method' is specified, it
+  is not dropped and will be changed to '_method' for use by the framework.
+* Added conditions option to map.connect. Accepts a dict with optional keyword args
+  'method' or 'function'. Method is a list of HTTP methods that are valid for the route.
+  Function is a function that will be called with environ, matchdict where matchdict is
+  the dict created by the URL match.
 * Fixed redirect_to function for using absolute URL's. redirect_to now passes all args to
   url_for, then passes the resulting URL to the redirect function. Reported by climbus.
 

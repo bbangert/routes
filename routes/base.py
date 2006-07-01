@@ -368,6 +368,14 @@ class Route(object):
             if val and not self.req_regs[key].match(str(val)):
                 return False
         
+        # Verify that if we have a method arg, its in the method accept list. Also, method
+        # will be changed to _method for route generation
+        meth = kargs.pop('method', None)
+        if meth:
+            kargs['_method'] = meth
+            if meth not in self.conditions.get('method', [meth]):
+                return False
+        
         routelist = self.routebackwards
         urllist = []
         gaps = False
