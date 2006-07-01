@@ -333,7 +333,7 @@ class Route(object):
         
         if self.conditions:
             if self.conditions.has_key('method') and \
-                self.conditions['method'] != environ.get('HTTP_METHOD'):
+                self.conditions['method'] != environ.get('REQUEST_METHOD'):
                 return False
         
         matchdict = m.groupdict()
