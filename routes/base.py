@@ -778,6 +778,7 @@ class Mapper(object):
         def swap(dct, newdct):
             for key, val in dct.iteritems():
                 newdct.setdefault(val, []).append(key)
+            return newdct
         collection_methods = swap(collection, {})
         member_methods = swap(member, {})
         new_methods = swap(new, {})
@@ -821,7 +822,7 @@ class Mapper(object):
             collection_path + ".:(format)", action='index', 
             conditions={'method':'GET'}, **options)
         
-        for method, lst in new_methods:
+        for method, lst in new_methods.iteritems():
             route_options = requirements_for(method)
             for action in lst:
                 path = (action == 'new' and new_path) or "%s;%s" % (new_path, action)
@@ -833,7 +834,7 @@ class Mapper(object):
                     "%s.:(format);%s" % (new_path, action)
                 self.connect("formatted_" + name_prefix + name, path, **route_options)
         
-        for method, lst in member_methods:
+        for method, lst in member_methods.iteritems():
             route_options = requirements_for(method)
             primary = (method != 'GET' and lst.pop(0)) or None
             for action in lst:
