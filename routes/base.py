@@ -371,10 +371,7 @@ class Route(object):
         # Verify that if we have a method arg, its in the method accept list. Also, method
         # will be changed to _method for route generation
         meth = kargs.pop('method', None)
-        if meth:
-            kargs['_method'] = meth
-            if meth not in self.conditions.get('method', [meth]):
-                return False
+        if meth: kargs['_method'] = meth
         
         routelist = self.routebackwards
         urllist = []
@@ -792,15 +789,15 @@ class Mapper(object):
         path = path_prefix + controller
         
         collection_path = path
-        new_path = path_prefix + "/new"
-        member_path = path_prefix + "/:id"
+        new_path = path + "/new"
+        member_path = path + "/:(id)"
         
         options = {'controller':kwargs.get('controller', controller)}
         
         def requirements_for(meth):
             opts = options.copy()
             if method != 'any': 
-                opts['conditions'] = {'method':meth}
+                opts['conditions'] = {'method':[meth]}
             return opts
         
         for method, lst in collection_methods.iteritems():
@@ -810,17 +807,17 @@ class Mapper(object):
                 route_options['action'] = action
                 route_name = "%s%s_%s" % (name_prefix, action, controller)
                 self.connect(route_name, "%s;%s" % (collection_path, action), **route_options)
-                self.connect("formatted_" + route_name, "%s.:(format);%s")
+                self.connect("formatted_" + route_name, "%s\.:(format);%s")
             if primary:
                 route_options['action'] = primary
                 self.connect(collection_path, **route_options)
-                self.connect("%s.:(format)" % collection_path, **route_options)
+                self.connect("%s\.:(format)" % collection_path, **route_options)
         
         self.connect(name_prefix + controller, collection_path, action='index', 
-            conditions={'method':'GET'}, **options)
+            conditions={'method':['GET']}, **options)
         self.connect("formatted_" + name_prefix + controller, 
-            collection_path + ".:(format)", action='index', 
-            conditions={'method':'GET'}, **options)
+            collection_path + "\.:(format)", action='index', 
+            conditions={'method':['GET']}, **options)
         
         for method, lst in new_methods.iteritems():
             route_options = requirements_for(method)
@@ -830,8 +827,8 @@ class Mapper(object):
                 if action != 'new': name = action + "_" + name
                 route_options['action'] = action
                 self.connect(name_prefix + name, path, **route_options)
-                path = (action == 'new' and action + '.:(format)') or \
-                    "%s.:(format);%s" % (new_path, action)
+                path = (action == 'new' and new_path + '\.:(format)') or \
+                    "%s\.:(format);%s" % (new_path, action)
                 self.connect("formatted_" + name_prefix + name, path, **route_options)
         
         for method, lst in member_methods.iteritems():
@@ -842,7 +839,7 @@ class Mapper(object):
                 self.connect("%s%s_%s" % (name_prefix, action, controller),
                     "%s;%s" % (member_path, action), **route_options)
                 self.connect("formatted_%s%s_%s" % (name_prefix, action, controller),
-                    "%s.:(format);%s" % (member_path, action), **route_options)
+                    "%s\.:(format);%s" % (member_path, action), **route_options)
             if primary:
                 route_options['action'] = primary
                 self.connect(member_path, **route_options)
