@@ -756,3 +756,98 @@ class Mapper(object):
             else:
                 continue
         return None
+    
+    def resource(self, controller, **kwargs):
+        """Generate routes for a controller resource
+        
+        All keyword arguments are optional.
+                    
+        """
+        collection = kwargs.pop('collection', {})
+        member = kwargs.pop('member', {})
+        new = kwargs.pop('new', {})
+        path_prefix = kwargs.pop('path_prefix', '')
+        name_prefix = kwargs.pop('name_prefix', '')
+        
+        member['edit'] = 'GET'
+        
+        new.update({'new': 'GET'})
+        
+        # Make new dict's based off the old, except the old values become keys,
+        # and the old keys become items in a list as the value
+        def swap(dct, newdct):
+            for key, val in dct.iteritems():
+                newdct.setdefault(val, []).append(key)
+        collection_methods = swap(collection, {})
+        member_methods = swap(member, {})
+        new_methods = swap(new, {})
+        
+        collection_methods.setdefault('POST', []).insert(0, 'create')
+        member_methods.setdefault('PUT', []).insert(0, 'update')
+        member_methods.setdefault('DELETE', []).insert(0, 'destroy')
+        
+        if path_prefix:
+            path_prefix = '/'.join([path_prefix, controller]) + '/'
+        
+        collection_path = path_prefix
+        new_path = path_prefix + "new"
+        member_path = path_prefix + ":id"
+        
+        options = {'controller':kwargs.get('controller', controller)}
+        
+        def requirements_for(meth):
+            opts = options.copy()
+            if method != 'any': 
+                opts['conditions'] = {'method':meth}
+            return opts
+        
+        for method, lst in collection_methods.iteritems():
+            primary = (method != 'GET' and lst.pop(0)) or None
+            route_options = requirements_for(method)
+            for action in lst:
+                route_options['action'] = action
+                route_name = "%s%s_%s" % (name_prefix, action, controller)
+                self.connect(route_name, "%s;%s" % (collection_path, action), **route_options)
+                self.connect("formatted_" + route_name, "%s.:(format);%s")
+            if primary:
+                route_options['action'] = primary
+                self.connect(collection_path, **route_options)
+                self.connect("%s.:(format)" % collection_path, **route_options)
+        
+        self.connect(name_prefix + controller, collection_path, action='index', 
+            conditions={'method':'GET'}, **options)
+        self.connect("formatted_" + name_prefix + controller, 
+            collection_path + ".:(format)", action='index', 
+            conditions={'method':'GET'}, **options)
+        
+        for method, lst in new_methods:
+            route_options = requirements_for(method)
+            for action in lst:
+                path = (action == 'new' and new_path) or "%s;%s" % (new_path, action)
+                name = "new_" + controller
+                if action != 'new': name = action + "_" + name
+                route_options['action'] = action
+                self.connect(name_prefix + name, path, **route_options)
+                path = (action == 'new' and action + '.:(format)') or \
+                    "%s.:(format);%s" % (new_path, action)
+                self.connect("formatted_" + name_prefix + name, path, **route_options)
+        
+        for method, lst in member_methods:
+            route_options = requirements_for(method)
+            primary = (method != 'GET' and lst.pop(0)) or None
+            for action in lst:
+                route_options['action'] = action
+                self.connect("%s%s_%s" % (name_prefix, action, controller),
+                    "%s;%s" % (member_path, action), **route_options)
+                self.connect("formatted_%s%s_%s" % (name_prefix, action, controller),
+                    "%s.:(format);%s" % (member_path, action), **route_options)
+            if primary:
+                route_options['action'] = primary
+                self.connect(member_path, **route_options)
+        
+        route_options = requirements_for('GET')
+        route_options['action'] = 'show'
+        self.connect(name_prefix + controller, member_path, **route_options)
+        self.connect("formatted_" + name_prefix + controller, member_path + ".:(format)",
+            **route_options)
+    
