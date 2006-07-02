@@ -769,8 +769,8 @@ class Mapper(object):
         path_prefix = kwargs.pop('path_prefix', '')
         name_prefix = kwargs.pop('name_prefix', '')
         
+        # Ensure the edit and new actions are in and GET
         member['edit'] = 'GET'
-        
         new.update({'new': 'GET'})
         
         # Make new dict's based off the old, except the old values become keys,
@@ -782,16 +782,17 @@ class Mapper(object):
         member_methods = swap(member, {})
         new_methods = swap(new, {})
         
+        # Insert create, update, and destroy methods
         collection_methods.setdefault('POST', []).insert(0, 'create')
         member_methods.setdefault('PUT', []).insert(0, 'update')
         member_methods.setdefault('DELETE', []).insert(0, 'destroy')
         
-        if path_prefix:
-            path_prefix = '/'.join([path_prefix, controller]) + '/'
+        # If there's a path prefix option, use it with the controller
+        path = path_prefix + controller
         
-        collection_path = path_prefix
-        new_path = path_prefix + "new"
-        member_path = path_prefix + ":id"
+        collection_path = path
+        new_path = path_prefix + "/new"
+        member_path = path_prefix + "/:id"
         
         options = {'controller':kwargs.get('controller', controller)}
         
