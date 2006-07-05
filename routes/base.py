@@ -776,7 +776,7 @@ class Mapper(object):
             
             Example::
                 
-                map.resource('message', collection={'rss':['GET']})
+                map.resource('message', collection={'rss':'GET'})
                 # GET /message;rss (maps to the rss action)
                 # also adds named route "rss_message"
         
@@ -786,7 +786,7 @@ class Mapper(object):
             
             Example::
                 
-                map.resource('message', member={'mark':['POST']})
+                map.resource('message', member={'mark':'POST'})
                 # POST /message/1;mark (maps to the mark action)
                 # also adds named route "mark_message"
         
@@ -796,7 +796,7 @@ class Mapper(object):
             
             Example::
                 
-                map.resource('message', new={'preview':['POST']})
+                map.resource('message', new={'preview':'POST'})
                 # POST /message/new;preview (maps to the preview action)
                 # also adds a url named "preview_new_message"
         
