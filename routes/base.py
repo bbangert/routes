@@ -757,8 +757,67 @@ class Mapper(object):
     def resource(self, controller, **kwargs):
         """Generate routes for a controller resource
         
+        The controller should be the name of the controller for which a set
+        of resource-based Routes should be generated. The concept of a web
+        resource maps somewhat directly to 'CRUD' operations. The overlying
+        things to keep in mind is that mapping a resource is about handling
+        creating, viewing, and editing that resource.
+        
         All keyword arguments are optional.
-                    
+        
+        ``controller``
+            If specified in the keyword args, the controller will be the actual
+            controller used, but the rest of the naming conventions used for
+            the route names and URL paths are unchanged.
+        
+        ``collection``
+            Additional action mappings used to manipulate/view the entire set of
+            resources provided by the controller.
+            
+            Example::
+                
+                map.resource('message', collection={'rss':['GET']})
+                # GET /message;rss (maps to the rss action)
+                # also adds named route "rss_message"
+        
+        ``member``
+            Additional action mappings used to access an individual 'member'
+            of this controllers resources.
+            
+            Example::
+                
+                map.resource('message', member={'mark':['POST']})
+                # POST /message/1;mark (maps to the mark action)
+                # also adds named route "mark_message"
+        
+        ``new``
+            Action mappings that involve dealing with a new member in the
+            controller resources.
+            
+            Example::
+                
+                map.resource('message', new={'preview':['POST']})
+                # POST /message/new;preview (maps to the preview action)
+                # also adds a url named "preview_new_message"
+        
+        ``path_prefix``
+            Prepends the URL path for the Route with the path_prefix given.
+            This is most useful for cases where you want to mix resources
+            or relations between resources.
+        
+        ``name_prefix``
+            Perpends the route names that are generated with the name_prefix
+            given. Combined with the path_prefix option, it's easy to
+            generate route names and paths that represent resources that are
+            in relations.
+            
+            Example::
+                
+                map.resource('message', controller='categories', 
+                    path_prefix='/category/:category_id', name_prefix="category_")
+                # GET /category/7/message/1
+                # has named route "category_message"
+        
         """
         collection = kwargs.pop('collection', {})
         member = kwargs.pop('member', {})
