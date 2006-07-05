@@ -36,10 +36,15 @@ class _RequestConfig(object):
         Also, match the incoming URL if there's already a mapper, and
         store the resulting match dict in mapper_dict.
         """
+        port_info = ''
         if environ.get('HTTPS'):
             self.__shared_state.protocol = 'https'
+            if environ.get('SERVER_PORT') != '443':
+                port_info += ':' + environ['SERVER_PORT']
         else:
             self.__shared_state.protocol = 'http'
+            if environ.get('SERVER_PORT') != '80':
+                port_info += ':' + environ.get('SERVER_PORT', '80')
         if hasattr(self, 'mapper'):
             self.mapper.environ = environ
         if 'PATH_INFO' in environ and hasattr(self, 'mapper'):
@@ -48,8 +53,7 @@ class _RequestConfig(object):
             self.__shared_state.mapper_dict = mapper.match(path)
         host = environ.get('HTTP_HOST') or environ.get('SERVER_NAME')
         self.__shared_state.host = host.split(':')[0]
-        if environ.get('SERVER_PORT', 80) != 80:
-            self.__shared_state.host += ':' + environ['SERVER_PORT']
+        self.__shared_state.host += port_info
     
 def request_config(original=False):
     """
