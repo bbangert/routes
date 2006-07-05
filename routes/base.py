@@ -854,11 +854,14 @@ class Mapper(object):
         options = {'controller':kwargs.get('controller', controller)}
         
         def requirements_for(meth):
+            """Returns a new dict to be used for all route creation as the
+            route options"""
             opts = options.copy()
             if method != 'any': 
                 opts['conditions'] = {'method':[meth]}
             return opts
         
+        # Add the routes for handling collection methods
         for method, lst in collection_methods.iteritems():
             primary = (method != 'GET' and lst.pop(0)) or None
             route_options = requirements_for(method)
@@ -872,12 +875,15 @@ class Mapper(object):
                 self.connect(collection_path, **route_options)
                 self.connect("%s\.:(format)" % collection_path, **route_options)
         
+        # Specifically add in the built-in 'index' collection method and its formatted
+        # version
         self.connect(name_prefix + controller, collection_path, action='index', 
             conditions={'method':['GET']}, **options)
         self.connect("formatted_" + name_prefix + controller, 
             collection_path + "\.:(format)", action='index', 
             conditions={'method':['GET']}, **options)
         
+        # Add the routes that deal with new resource methods
         for method, lst in new_methods.iteritems():
             route_options = requirements_for(method)
             for action in lst:
@@ -890,6 +896,7 @@ class Mapper(object):
                     "%s\.:(format);%s" % (new_path, action)
                 self.connect("formatted_" + name_prefix + name, path, **route_options)
         
+        # Add the routes that deal with member methods of a resource
         for method, lst in member_methods.iteritems():
             route_options = requirements_for(method)
             primary = (method != 'GET' and lst.pop(0)) or None
@@ -903,6 +910,7 @@ class Mapper(object):
                 route_options['action'] = primary
                 self.connect(member_path, **route_options)
         
+        # Specifically add the member 'show' method
         route_options = requirements_for('GET')
         route_options['action'] = 'show'
         self.connect(name_prefix + controller, member_path, **route_options)
