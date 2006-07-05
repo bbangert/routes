@@ -43,7 +43,7 @@ class _RequestConfig(object):
                 port_info += ':' + environ['SERVER_PORT']
         else:
             self.__shared_state.protocol = 'http'
-            if environ.get('SERVER_PORT') != '80':
+            if environ.get('SERVER_PORT', '80') != '80':
                 port_info += ':' + environ.get('SERVER_PORT', '80')
         if hasattr(self, 'mapper'):
             self.mapper.environ = environ
