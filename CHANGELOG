@@ -2,6 +2,7 @@ Routes Changelog
 ========================
 
 -- 1.3.3 (**SVN**)
+* Fixed bug with map.resource member methods not requiring a member id.
 * Fixed bug related to handling keyword argument controller.
 * Added URL generation handling for a 'method' argument. If 'method' is specified, it
   is not dropped and will be changed to '_method' for use by the framework.

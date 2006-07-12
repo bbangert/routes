@@ -900,6 +900,7 @@ class Mapper(object):
         # Add the routes that deal with member methods of a resource
         for method, lst in member_methods.iteritems():
             route_options = requirements_for(method)
+            route_options['requirements'] = {'id':'\w+'}
             primary = (method != 'GET' and lst.pop(0)) or None
             for action in lst:
                 route_options['action'] = action
@@ -914,6 +915,7 @@ class Mapper(object):
         # Specifically add the member 'show' method
         route_options = requirements_for('GET')
         route_options['action'] = 'show'
+        route_options['requirements'] = {'id':'\w+'}
         self.connect(name_prefix + controller, member_path, **route_options)
         self.connect("formatted_" + name_prefix + controller, member_path + ".:(format)",
             **route_options)
