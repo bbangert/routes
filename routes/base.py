@@ -754,7 +754,7 @@ class Mapper(object):
                 continue
         return None
     
-    def resource(self, controller, **kwargs):
+    def resource(self, controller_name, **kwargs):
         """Generate routes for a controller resource
         
         The controller should be the name of the controller for which a set
@@ -819,6 +819,7 @@ class Mapper(object):
                 # has named route "category_message"
         
         """
+        controller = controller_name
         collection = kwargs.pop('collection', {})
         member = kwargs.pop('member', {})
         new = kwargs.pop('new', {})
