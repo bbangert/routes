@@ -901,7 +901,10 @@ class Mapper(object):
         for method, lst in member_methods.iteritems():
             route_options = requirements_for(method)
             route_options['requirements'] = {'id':'\w+'}
-            primary = (method != 'GET' and lst.pop(0)) or None
+            if method not in ['POST', 'GET', 'any']:
+                primary = lst.pop(0)
+            else:
+                primary = None
             for action in lst:
                 route_options['action'] = action
                 self.connect("%s%s_%s" % (name_prefix, action, controller),
