@@ -436,7 +436,8 @@ class Route(object):
         extras = frozenset(kargs.keys()) - self.maxkeys
         if extras:
             url += '?'
-            url += urllib.urlencode([(key, kargs[key]) for key in extras if key != 'action' or key != 'controller'])
+            url += urllib.urlencode([(key, kargs[key]) for key in kargs if key in extras and \
+                                     (key != 'action' or key != 'controller')])
         return url
     
 
