@@ -1,7 +1,10 @@
 Routes Changelog
 ========================
 
--- 1.4 (**SVN**)
+-- 1.4.1 (**SVN**)
+
+
+-- 1.4 (July 21, 2006)
 * Fixed bug with map.resource related to member methods, found in Rails version.
 * Fixed bug with map.resource member methods not requiring a member id.
 * Fixed bug related to handling keyword argument controller.
