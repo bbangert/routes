@@ -19,6 +19,25 @@ Buzzword Compliance: *REST*, *DRY*
 News
 ====
 
+**July 21, 2006**
+
+Routes 1.4 released:
+* Fixed bug with map.resource related to member methods, found in Rails version.
+* Fixed bug with map.resource member methods not requiring a member id.
+* Fixed bug related to handling keyword argument controller.
+* Added map.resource command which can automatically generate a batch of routes intended
+  to be used in a REST-ful manner by a web framework.
+* Added URL generation handling for a 'method' argument. If 'method' is specified, it
+  is not dropped and will be changed to '_method' for use by the framework.
+* Added conditions option to map.connect. Accepts a dict with optional keyword args
+  'method' or 'function'. Method is a list of HTTP methods that are valid for the route.
+  Function is a function that will be called with environ and matchdict where matchdict is
+  the dict created by the URL match.
+* Fixed redirect_to function for using absolute URL's. redirect_to now passes all args to
+  url_for, then passes the resulting URL to the redirect function. Reported by climbus.
+
+
+
 **April 30th, 2006**
 
 Routes 1.3.2 released with:
