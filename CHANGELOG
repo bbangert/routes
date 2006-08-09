@@ -2,7 +2,8 @@ Routes Changelog
 ========================
 
 -- 1.4.1 (**SVN**)
-
+* Patch applied from Ticket #28. Resolves issue with Mapper's controller_scan
+  function requiring a valid directory argument. Submitted by Zoran Isailovski.
 
 -- 1.4 (July 21, 2006)
 * Fixed bug with map.resource related to member methods, found in Rails version.

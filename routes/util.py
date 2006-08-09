@@ -139,10 +139,13 @@ def redirect_to(*args, **kargs):
     config = request_config()
     config.redirect(target)
 
-def controller_scan(directory):
+def controller_scan(directory=None):
     """
     Scan a directory for python files and use them as controllers
     """
+    if directory is None:
+        return []
+    
     def find_controllers(dirname, prefix=''):
         controllers = []
         for fname in os.listdir(dirname):
