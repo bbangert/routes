@@ -88,15 +88,7 @@ def url_for(*args, **kargs):
         
         if route and route.defaults.has_key('_static'):
             static = True
-            newargs = route.defaults.copy()
-            host = newargs.pop('host', '')
-            protocol = newargs.pop('protocol', '')
-            del newargs['_static']
-            newargs.update(kargs)
-            url = route.generate(_ignore_req_list=True, **newargs)
-            if not url: url = ''
-            kargs = None
-            #url = route.routepath
+            url = route.routepath
         
         # No named route found, assume the argument is a relative path
         if not route:
