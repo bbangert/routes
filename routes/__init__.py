@@ -1,7 +1,4 @@
-"""
-Provides common classes and functions most users will want access to.
-
-"""
+"""Provides common classes and functions most users will want access to."""
 
 import threadinglocal, sys
 

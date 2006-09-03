@@ -1,5 +1,4 @@
-"""
-Utility functions for use in templates / controllers
+"""Utility functions for use in templates / controllers
 
 *PLEASE NOTE*: Many of these functions expect an initialized RequestConfig object. This is 
 expected to have been initialized for EACH REQUEST by the web framework.
@@ -89,7 +88,15 @@ def url_for(*args, **kargs):
         
         if route and route.defaults.has_key('_static'):
             static = True
-            url = route.routepath
+            newargs = route.defaults.copy()
+            host = newargs.pop('host', '')
+            protocol = newargs.pop('protocol', '')
+            del newargs['_static']
+            newargs.update(kargs)
+            url = route.generate(_ignore_req_list=True, **newargs)
+            if not url: url = ''
+            kargs = None
+            #url = route.routepath
         
         # No named route found, assume the argument is a relative path
         if not route:

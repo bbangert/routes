@@ -22,19 +22,20 @@ class Route(object):
         
         The set of keyword args will be used as defaults.
         
-        Usage:
+        Usage::
         
-        >>> from routes.base import Route
-        >>> newroute = Route(':controller/:action/:id')
-        >>> newroute.defaults
-        {'action': 'index', 'id': None}
-        >>> newroute = Route('date/:year/:month/:day', controller="blog", action="view")
-        >>> newroute = Route('archives/:page', controller="blog", action="by_page", requirements = { 'page':'\d{1,2}' })
-        >>> newroute.reqs
-        {'page': '\\\d{1,2}'}
+            >>> from routes.base import Route
+            >>> newroute = Route(':controller/:action/:id')
+            >>> newroute.defaults
+            {'action': 'index', 'id': None}
+            >>> newroute = Route('date/:year/:month/:day', controller="blog", action="view")
+            >>> newroute = Route('archives/:page', controller="blog", action="by_page", requirements = { 'page':'\d{1,2}' })
+            >>> newroute.reqs
+            {'page': '\\\d{1,2}'}
         
-        Note: Route is generally not called directly, a Mapper instance connect method should
-        be used to add routes.
+        .. Note:: 
+            Route is generally not called directly, a Mapper instance connect method should
+            be used to add routes.
         
         """
         
@@ -355,7 +356,7 @@ class Route(object):
             
         return result
     
-    def generate(self,**kargs):
+    def generate(self, _ignore_req_list=False, **kargs):
         """Generate a URL from ourself given a set of keyword arguments
         
         Toss an exception if this
@@ -363,10 +364,11 @@ class Route(object):
         
         """
         # Verify that our args pass any regexp requirements
-        for key in self.reqs.keys():
-            val = kargs.get(key)
-            if val and not self.req_regs[key].match(str(val)):
-                return False
+        if not _ignore_req_list:
+            for key in self.reqs.keys():
+                val = kargs.get(key)
+                if val and not self.req_regs[key].match(str(val)):
+                    return False
         
         # Verify that if we have a method arg, its in the method accept list. Also, method
         # will be changed to _method for route generation
@@ -502,14 +504,16 @@ class Mapper(object):
         
         Usage:
         
-        m = Mapper()
-        m.connect(':controller/:action/:id')
-        m.connect('date/:year/:month/:day', controller="blog", action="view")
-        m.connect('archives/:page', controller="blog", action="by_page",
-        requirements = { 'page':'\d{1,2}' })
-        m.connect('category_list', 'archives/category/:section', controller='blog', action='category',
-        section='home', type='list')
-        m.connect('home', '', controller='blog', action='view', section='home')
+        .. code-block:: Python
+        
+            m = Mapper()
+            m.connect(':controller/:action/:id')
+            m.connect('date/:year/:month/:day', controller="blog", action="view")
+            m.connect('archives/:page', controller="blog", action="by_page",
+            requirements = { 'page':'\d{1,2}' })
+            m.connect('category_list', 'archives/category/:section', controller='blog', action='category',
+            section='home', type='list')
+            m.connect('home', '', controller='blog', action='view', section='home')
         
         """
         routename = None
@@ -630,7 +634,9 @@ class Mapper(object):
         
         Will return None if no valid match is found.
         
-        resultdict = m.match('/joe/sixpack')
+        .. code-block:: Python
+            
+            resultdict = m.match('/joe/sixpack')
         
         """
         result = self._match(url)
@@ -645,8 +651,10 @@ class Mapper(object):
         
         Will return None if no valid match is found, otherwise a
         result dict and a route object is returned.
-                
-        resultdict, route_obj = m.match('/joe/sixpack')
+        
+        .. code-block:: Python
+        
+            resultdict, route_obj = m.match('/joe/sixpack')
         
         """
         result = self._match(url)
@@ -662,7 +670,9 @@ class Mapper(object):
         
         Returns the url text, or None if no URL could be generated.
         
-        m.generate(controller='content',action='view',id=10)
+        .. code-block:: Python
+            
+            m.generate(controller='content',action='view',id=10)
         
         """
         # Generate ourself if we haven't already
