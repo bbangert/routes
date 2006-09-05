@@ -373,7 +373,7 @@ class Route(object):
             not self.conditions['function'](environ, result):
             return False
         
-        if sub_domain: result['sub_domain'] = sub_domain
+        if sub_domains: result['sub_domain'] = sub_domain
         return result
     
     def generate(self, _ignore_req_list=False, **kargs):
