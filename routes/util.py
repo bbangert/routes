@@ -27,6 +27,18 @@ def _screenargs(new):
         del new[key]
         if old.has_key(key): del old[key]
     old.update(new)
+    if config.mapper.sub_domains:
+        subdomain = old.pop('sub_domain', None)
+        host = config.environ['HTTP_HOST'].split(':')[0]
+        sub_match = re.compile('^.+?\.(%s)$' % config.mapper.domain_match)
+        domain = re.sub(sub_match, r'\1', host)
+        if subdomain and not host.startswith(subdomain) and \
+            subdomain not in config.mapper.sub_domains_ignore:
+            old['_host'] = subdomain + '.' + domain
+        elif (subdomain in config.mapper.sub_domains_ignore or subdomain is None) and domain != host:
+            old['_host'] = domain
+        elif subdomain and not host.startswith(subdomain):
+            old['_host'] = subdomain + '.' + domain
     return old
 
 def _url_quote(string):
@@ -113,6 +125,9 @@ def url_for(*args, **kargs):
                 newargs = route.filter(newargs)
         else:
             newargs = _screenargs(kargs)
+        anchor = newargs.pop('_anchor', None) or anchor
+        host = newargs.pop('_host', None) or host
+        protocol = newargs.pop('_protocol', None) or protocol
         url = config.mapper.generate(**newargs)
         if config.mapper.append_slash and not url.endswith('/'):
             url += '/'

@@ -22,6 +22,7 @@ News
 **July 21, 2006**
 
 Routes 1.4 released:
+
 * Fixed bug with map.resource related to member methods, found in Rails version.
 * Fixed bug with map.resource member methods not requiring a member id.
 * Fixed bug related to handling keyword argument controller.

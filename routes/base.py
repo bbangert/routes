@@ -10,6 +10,8 @@ from routes import request_config
 if sys.version < '2.4':
     from sets import ImmutableSet as frozenset
 
+import threadinglocal
+
 class Route(object):
     """The Route object holds a route recognition and generation routine.
     
@@ -41,6 +43,7 @@ class Route(object):
         
         self.static = False
         self.routepath = routepath
+        self.sub_domains = False
         
         # Don't bother forming stuff we don't need if its a static route
         if kargs.has_key('_static'):
@@ -308,7 +311,7 @@ class Route(object):
         
         return (reg, noreqs, allblank)
     
-    def match(self, url, environ=None):
+    def match(self, url, environ=None, sub_domains=False, sub_domains_ignore=None, domain_match=''):
         """Match a url to our regexp. 
         
         While the regexp might match, this operation isn't
@@ -332,9 +335,25 @@ class Route(object):
             
         if not environ: environ = {}
         
+        sub_domain = None
+        
+        if environ.get('HTTP_HOST') and sub_domains:
+            host = environ['HTTP_HOST'].split(':')[0]
+            sub_match = re.compile('^(.+?)\.%s$' % domain_match)
+            subdomain = re.sub(sub_match, r'\1', host)
+            if subdomain not in sub_domains_ignore and host != subdomain:
+                sub_domain = subdomain
+        
         if self.conditions:
             if self.conditions.has_key('method') and \
                 environ.get('REQUEST_METHOD') not in self.conditions['method']:
+                return False
+            
+            # Check sub-domains?
+            use_sd = self.conditions.get('sub_domain')
+            if use_sd and not sub_domain:
+                return False
+            if isinsance(use_sd, list) and sub_domain not in use_sd:
                 return False
         
         matchdict = m.groupdict()
@@ -353,7 +372,8 @@ class Route(object):
         if self.conditions and self.conditions.has_key('function') and \
             not self.conditions['function'](environ, result):
             return False
-            
+        
+        if sub_domain: result['sub_domain'] = sub_domain
         return result
     
     def generate(self, _ignore_req_list=False, **kargs):
@@ -488,6 +508,7 @@ class Mapper(object):
         self._created_gens = False
         self.prefix = None
         self.environ = None
+        self.req_data = threadinglocal.local()
         self.directory = directory
         self.always_scan = always_scan
         self.controller_scan = controller_scan
@@ -495,6 +516,9 @@ class Mapper(object):
         self._routenames = {}
         self.debug = False
         self.append_slash = False
+        self.sub_domains = False
+        self.sub_domains_ignore = []
+        self.domain_match = '[^\.\/]+?\.[^\.\/]+'
         if register:
             config = request_config()
             config.mapper = self
@@ -623,7 +647,8 @@ class Mapper(object):
             if route.static:
                 if self.debug: matchlog.append(dict(route=route, static=True))
                 continue
-            match = route.match(url, self.environ)
+            match = route.match(url, self.environ, self.sub_domains, 
+                self.sub_domains_ignore, self.domain_match)
             if self.debug: matchlog.append(dict(route=route, regexp=bool(match)))
             if match:
                 return (match, route, matchlog)

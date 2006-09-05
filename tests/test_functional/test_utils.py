@@ -248,6 +248,56 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('/archives/2003/8/2/woopee', url_for('archives', article=story))
         self.assertEqual('/archives/2004/12/20/default', url_for('archives', article=empty))
     
+    def test_subdomains(self):
+        base_environ = dict(SCRIPT_NAME='', PATH_INFO='/', HTTP_HOST='example.com', SERVER_NAME='example.com')
+        self.con.mapper_dict = {}
+        self.con.environ = base_environ.copy()
+
+        m = Mapper()
+        m.sub_domains = True
+        m.connect(':controller/:action/:id')
+        m.create_regs(['content','archives','admin/comments'])
+        self.con.mapper = m
+        
+        self.assertEqual('/content/view', url_for(controller='content', action='view'))
+        self.assertEqual('/content/index/2', url_for(controller='content', id=2))
+        
+        environ = base_environ.copy()
+        environ.update(dict(HTTP_HOST='sub.example.com'))
+        self.con.environ = environ
+        self.con.mapper_dict = {'sub_domain':'sub'}
+        self.assertEqual('/content/view/3', url_for(controller='content', action='view', id=3))
+        self.assertEqual('http://new.example.com/content', url_for(controller='content', sub_domain='new'))
+
+    def test_subdomains_with_exceptions(self):
+        base_environ = dict(SCRIPT_NAME='', PATH_INFO='/', HTTP_HOST='example.com', SERVER_NAME='example.com')
+        self.con.mapper_dict = {}
+        self.con.environ = base_environ.copy()
+
+        m = Mapper()
+        m.sub_domains = True
+        m.sub_domains_ignore = ['www']
+        m.connect(':controller/:action/:id')
+        m.create_regs(['content','archives','admin/comments'])
+        self.con.mapper = m
+        
+        self.assertEqual('/content/view', url_for(controller='content', action='view'))
+        self.assertEqual('/content/index/2', url_for(controller='content', id=2))
+        
+        environ = base_environ.copy()
+        environ.update(dict(HTTP_HOST='sub.example.com'))
+        self.con.environ = environ
+        self.con.mapper_dict = {'sub_domain':'sub'}
+        self.assertEqual('/content/view/3', url_for(controller='content', action='view', id=3))
+        self.assertEqual('http://new.example.com/content', url_for(controller='content', sub_domain='new'))
+        self.assertEqual('http://example.com/content', url_for(controller='content', sub_domain='www'))
+        
+        self.con.mapper_dict = {'sub_domain':'www'}
+        self.assertEqual('http://example.com/content/view/3', url_for(controller='content', action='view', id=3))
+        self.assertEqual('http://new.example.com/content', url_for(controller='content', sub_domain='new'))
+        self.assertEqual('/content', url_for(controller='content', sub_domain='sub'))
+        
+    
 
 if __name__ == '__main__':
     unittest.main()

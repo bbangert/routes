@@ -46,6 +46,7 @@ class _RequestConfig(object):
             self.mapper.environ = environ
         if 'PATH_INFO' in environ and hasattr(self, 'mapper'):
             mapper = self.mapper
+            self.mapper.req_data.environ = environ
             path = environ['PATH_INFO']
             self.__shared_state.mapper_dict = mapper.match(path)
         host = environ.get('HTTP_HOST') or environ.get('SERVER_NAME')
