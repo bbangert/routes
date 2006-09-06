@@ -19,6 +19,20 @@ Buzzword Compliance: *REST*, *DRY*
 News
 ====
 
+** Sept. 6th, 2006**
+
+Routes 1.4.1 released:
+
+* Added sub_domains option to mapper, along with sub_domains_ignore list for 
+  subdomains that are considered equivalent to the main domain. When sub_domains
+  is active, url_for will now take a sub_domain option that can alter the host
+  the route will go to.
+* Added ability for filter functions to provide a _host, _protocol, _anchor arg
+  which is then used to create the URL with the appropriate host/protocol/anchor
+  destination.
+* Patch applied from Ticket #28. Resolves issue with Mapper's controller_scan
+  function requiring a valid directory argument. Submitted by Zoran Isailovski.
+
 **July 21, 2006**
 
 Routes 1.4 released:

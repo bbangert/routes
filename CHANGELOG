@@ -1,6 +1,9 @@
 Routes Changelog
 ========================
 
+-- 1.4.2 (**svn**)
+
+
 -- 1.4.1 (Sept. 6th, 2006)
 * Added sub_domains option to mapper, along with sub_domains_ignore list for 
   subdomains that are considered equivilant to the main domain. When sub_domains
