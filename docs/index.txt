@@ -12,6 +12,9 @@ Current features:
 * Sophisticated Route lookup and URL generation
 * Wildcard path's before and after static parts
 * Groupings syntax to allow flexible URL's to accommodate almost any need
+* Sub-domain support built-in
+* Conditional matching based on domain, cookies, HTTP method (RESTful), and more
+* Easily extensible utilizing custom condition functions and route generation functions
 * Extensive unit tests
 
 Buzzword Compliance: *REST*, *DRY*
