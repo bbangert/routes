@@ -45,16 +45,20 @@ def _screenargs(kargs):
 def _subdomain_check(config, kargs):
     if config.mapper.sub_domains:
         subdomain = kargs.pop('sub_domain', None)
-        host = config.environ['HTTP_HOST'].split(':')[0]
+        hostmatch = config.environ['HTTP_HOST'].split(':')
+        host = hostmatch[0]
+        port = ''
+        if len(hostmatch) > 1:
+            port += ':' + hostmatch[1]
         sub_match = re.compile('^.+?\.(%s)$' % config.mapper.domain_match)
         domain = re.sub(sub_match, r'\1', host)
         if subdomain and not host.startswith(subdomain) and \
             subdomain not in config.mapper.sub_domains_ignore:
-            kargs['_host'] = subdomain + '.' + domain
+            kargs['_host'] = subdomain + '.' + domain + port
         elif (subdomain in config.mapper.sub_domains_ignore or subdomain is None) and domain != host:
-            kargs['_host'] = domain
+            kargs['_host'] = domain + port
         elif subdomain and not host.startswith(subdomain):
-            kargs['_host'] = subdomain + '.' + domain
+            kargs['_host'] = subdomain + '.' + domain + port
         return kargs
     else:
         return kargs

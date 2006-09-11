@@ -2,6 +2,8 @@ Routes Changelog
 ========================
 
 -- 1.4.2 (**svn**)
+* Fixed bug with sub_domain not maintaining port information in url_for and
+  added unit tests. Reported by Jonathan Rosebaugh.
 * Added unit tests to ensure sub_domain option works with named routes, cleaned
   up url_for memory argument filtering. Fixed bug with named routes and sub_domain
   option not working together, reported by Jonathan Rosebaugh.
