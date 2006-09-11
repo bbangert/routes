@@ -22,7 +22,7 @@ Buzzword Compliance: *REST*, *DRY*
 News
 ====
 
-** Sept. 6th, 2006**
+**Sept. 6th, 2006**
 
 Routes 1.4.1 released:
 
