@@ -367,13 +367,15 @@ class Route(object):
         for key in extras:
             result[key] = self.defaults[key]
         
+        # Add the sub-domain if there is one
+        if sub_domains: result['sub_domain'] = sub_domain
+        
         # If there's a function, call it with environ and expire if it
         # returns False
         if self.conditions and self.conditions.has_key('function') and \
             not self.conditions['function'](environ, result):
             return False
         
-        if sub_domains: result['sub_domain'] = sub_domain
         return result
     
     def generate(self, _ignore_req_list=False, **kargs):

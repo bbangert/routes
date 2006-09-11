@@ -2,7 +2,8 @@ Routes Changelog
 ========================
 
 -- 1.4.2 (**svn**)
-
+* Changed order in which sub-domain is added to match-dict so it can be used
+  in a conditions function.
 
 -- 1.4.1 (Sept. 6th, 2006)
 * Added sub_domains option to mapper, along with sub_domains_ignore list for 
