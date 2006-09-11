@@ -9,37 +9,56 @@ import re
 import urllib
 from routes import request_config
 
-def _screenargs(new):
+def _screenargs(kargs):
     """
     Private function that takes a dict, and screens it against the current request dict
     to determine what the dict should look like that is used. This is responsible for
     the requests "memory" of the current.
     """
-    conval = new.get('controller')
-    if conval and conval.startswith('/'):
-        new['controller'] = new['controller'][1:]
-        return new
-    elif conval and not new.has_key('action'):
-        new['action'] = 'index'
+    controller_name = kargs.get('controller')
+    
+    if controller_name and controller_name.startswith('/'):
+        # If the controller name starts with '/', ignore route memory
+        kargs['controller'] = kargs['controller'][1:]
+        return kargs
+    elif controller_name and not kargs.has_key('action'):
+        # Fill in an action if we don't have one, but have a controller
+        kargs['action'] = 'index'
+    
     config = request_config()
-    old = getattr(config, 'mapper_dict', {}).copy()
-    for key in [key for key in new.keys() if new[key] is None]:
-        del new[key]
-        if old.has_key(key): del old[key]
-    old.update(new)
+    memory_kargs = getattr(config, 'mapper_dict', {}).copy()
+    
+    # Remove keys from memory and kargs if kargs has them as None
+    for key in [key for key in kargs.keys() if kargs[key] is None]:
+        del kargs[key]
+        if memory_kargs.has_key(key): del memory_kargs[key]
+    
+    # Merge the new args on top of the memory args
+    memory_kargs.update(kargs)
+    
+    # Setup a sub-domain if applicable
     if config.mapper.sub_domains:
-        subdomain = old.pop('sub_domain', None)
+        memory_kargs = _subdomain_check(config, memory_kargs)
+    
+    return memory_kargs
+
+def _subdomain_check(config, kargs):
+    if config.mapper.sub_domains:
+        subdomain = kargs.pop('sub_domain', None)
         host = config.environ['HTTP_HOST'].split(':')[0]
         sub_match = re.compile('^.+?\.(%s)$' % config.mapper.domain_match)
         domain = re.sub(sub_match, r'\1', host)
         if subdomain and not host.startswith(subdomain) and \
             subdomain not in config.mapper.sub_domains_ignore:
-            old['_host'] = subdomain + '.' + domain
+            kargs['_host'] = subdomain + '.' + domain
         elif (subdomain in config.mapper.sub_domains_ignore or subdomain is None) and domain != host:
-            old['_host'] = domain
+            kargs['_host'] = domain
         elif subdomain and not host.startswith(subdomain):
-            old['_host'] = subdomain + '.' + domain
-    return old
+            kargs['_host'] = subdomain + '.' + domain
+        return kargs
+    else:
+        return kargs
+    
 
 def _url_quote(string):
     return urllib.quote_plus(str(string), '/')
@@ -123,6 +142,9 @@ def url_for(*args, **kargs):
             # If this route has a filter, apply it
             if route.filter:
                 newargs = route.filter(newargs)
+            
+            # Handle sub-domains
+            newargs = _subdomain_check(config, newargs)
         else:
             newargs = _screenargs(kargs)
         anchor = newargs.pop('_anchor', None) or anchor

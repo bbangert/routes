@@ -296,7 +296,33 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('http://example.com/content/view/3', url_for(controller='content', action='view', id=3))
         self.assertEqual('http://new.example.com/content', url_for(controller='content', sub_domain='new'))
         self.assertEqual('/content', url_for(controller='content', sub_domain='sub'))
+    
+    def test_subdomains_with_named_routes(self):
+        base_environ = dict(SCRIPT_NAME='', PATH_INFO='/', HTTP_HOST='example.com', SERVER_NAME='example.com')
+        self.con.mapper_dict = {}
+        self.con.environ = base_environ.copy()
+
+        m = Mapper()
+        m.sub_domains = True
+        m.connect(':controller/:action/:id')
+        m.connect('category_home', 'category/:section', controller='blog', action='view', section='home')
+        m.connect('building', 'building/:campus/:building/alljacks', controller='building', action='showjacks')
+        m.create_regs(['content','blog','admin/comments','building'])
+        self.con.mapper = m
         
+        self.assertEqual('/content/view', url_for(controller='content', action='view'))
+        self.assertEqual('/content/index/2', url_for(controller='content', id=2))
+        self.assertEqual('/category', url_for('category_home'))
+        self.assertEqual('http://new.example.com/category', url_for('category_home', sub_domain='new'))
+        
+        environ = base_environ.copy()
+        environ.update(dict(HTTP_HOST='sub.example.com'))
+        self.con.environ = environ
+        self.con.mapper_dict = {'sub_domain':'sub'}
+        self.assertEqual('/content/view/3', url_for(controller='content', action='view', id=3))
+        self.assertEqual('http://joy.example.com/building/west/merlot/alljacks', 
+            url_for('building', campus='west', building='merlot', sub_domain='joy'))
+        self.assertEqual('http://example.com/category/feeds', url_for('category_home', section='feeds', sub_domain=None))
     
 
 if __name__ == '__main__':

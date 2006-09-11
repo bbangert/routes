@@ -2,6 +2,9 @@ Routes Changelog
 ========================
 
 -- 1.4.2 (**svn**)
+* Added unit tests to ensure sub_domain option works with named routes, cleaned
+  up url_for memory argument filtering. Fixed bug with named routes and sub_domain
+  option not working together, reported by Jonathan Rosebaugh.
 * Changed order in which sub-domain is added to match-dict so it can be used
   in a conditions function.
 
