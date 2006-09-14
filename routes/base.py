@@ -220,14 +220,14 @@ class Route(object):
             (rest, noreqs, allblank) = self.buildnextreg(path[1:], clist)
         
         if isinstance(part, dict) and part['type'] == ':':
-            var = part['name']
+            var = re.escape(part['name'])
             partreg = ''
             
             # First we plug in the proper part matcher
             if self.reqs.has_key(var):
                 partreg = '(?P<' + var + '>' + self.reqs[var] + ')'
             elif var == 'controller':
-                partreg = '(?P<' + var + '>' + '|'.join(clist) + ')'
+                partreg = '(?P<' + var + '>' + '|'.join(map(re.escape, clist)) + ')'
             else:
                 if len(path) > 1:
                     partreg = '(?P<' + var + '>[^' + path[1][0] +']+)'
@@ -296,16 +296,16 @@ class Route(object):
                     reg = '(?P<' + var + '>.*)' + rest
         elif part.endswith('/'):
             if allblank:
-                reg = part[:-1] + '(/' + rest + ')?'
+                reg = re.escape(part[:-1]) + '(/' + rest + ')?'
             else:
                 allblank = False
-                reg = part + rest
+                reg = re.escape(part) + rest
         
         # We have a normal string here, this is a req, and it prevents us from being all blank
         else:
             noreqs = False
             allblank = False
-            reg = part + rest
+            reg = re.escape(part) + rest
         
         return (reg, noreqs, allblank)
     
@@ -906,18 +906,18 @@ class Mapper(object):
                 route_options['action'] = action
                 route_name = "%s%s_%s" % (name_prefix, action, controller)
                 self.connect(route_name, "%s;%s" % (collection_path, action), **route_options)
-                self.connect("formatted_" + route_name, "%s\.:(format);%s")
+                self.connect("formatted_" + route_name, "%s.:(format);%s")
             if primary:
                 route_options['action'] = primary
                 self.connect(collection_path, **route_options)
-                self.connect("%s\.:(format)" % collection_path, **route_options)
+                self.connect("%s.:(format)" % collection_path, **route_options)
         
         # Specifically add in the built-in 'index' collection method and its formatted
         # version
         self.connect(name_prefix + controller, collection_path, action='index', 
             conditions={'method':['GET']}, **options)
         self.connect("formatted_" + name_prefix + controller, 
-            collection_path + "\.:(format)", action='index', 
+            collection_path + ".:(format)", action='index', 
             conditions={'method':['GET']}, **options)
         
         # Add the routes that deal with new resource methods
@@ -929,8 +929,8 @@ class Mapper(object):
                 if action != 'new': name = action + "_" + name
                 route_options['action'] = action
                 self.connect(name_prefix + name, path, **route_options)
-                path = (action == 'new' and new_path + '\.:(format)') or \
-                    "%s\.:(format);%s" % (new_path, action)
+                path = (action == 'new' and new_path + '.:(format)') or \
+                    "%s.:(format);%s" % (new_path, action)
                 self.connect("formatted_" + name_prefix + name, path, **route_options)
         
         # Add the routes that deal with member methods of a resource
@@ -946,7 +946,7 @@ class Mapper(object):
                 self.connect("%s%s_%s" % (name_prefix, action, controller),
                     "%s;%s" % (member_path, action), **route_options)
                 self.connect("formatted_%s%s_%s" % (name_prefix, action, controller),
-                    "%s\.:(format);%s" % (member_path, action), **route_options)
+                    "%s.:(format);%s" % (member_path, action), **route_options)
             if primary:
                 route_options['action'] = primary
                 self.connect(member_path, **route_options)
