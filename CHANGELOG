@@ -2,6 +2,9 @@ Routes Changelog
 ========================
 
 -- 1.4.2 (**svn**)
+* Added more thorough testing to _RequestConfig object and the ability to
+  set your own object. This increases testing coverage of the __init__ module
+  to 100%.
 * Fixed bug with sub_domain not maintaining port information in url_for and
   added unit tests. Reported by Jonathan Rosebaugh.
 * Added unit tests to ensure sub_domain option works with named routes, cleaned

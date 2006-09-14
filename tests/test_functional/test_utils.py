@@ -248,6 +248,50 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('/archives/2003/8/2/woopee', url_for('archives', article=story))
         self.assertEqual('/archives/2004/12/20/default', url_for('archives', article=empty))
     
+    def test_with_ssl_environ(self):
+        base_environ = dict(SCRIPT_NAME='', HTTPS='on', SERVER_PORT='443', PATH_INFO='/', 
+            HTTP_HOST='example.com', SERVER_NAME='example.com')
+        self.con.mapper_dict = {}
+        self.con.environ = base_environ.copy()
+
+        m = Mapper()
+        m.connect(':controller/:action/:id')
+        m.create_regs(['content','archives','admin/comments'])
+        self.con.mapper = m
+        
+        # HTTPS is on, but we're running on a different port internally
+        self.assertEqual(self.con.protocol, 'https')
+        self.assertEqual('/content/view', url_for(controller='content', action='view'))
+        self.assertEqual('/content/index/2', url_for(controller='content', id=2))
+        self.assertEqual('https://nowhere.com/content', url_for(host='nowhere.com', controller='content'))
+        
+        # If HTTPS is on, but the port isn't 443, we'll need to include the port info
+        environ = base_environ.copy()
+        environ.update(dict(SERVER_PORT='8080'))
+        self.con.environ = environ
+        self.con.mapper_dict = {}
+        self.assertEqual('/content/index/2', url_for(controller='content', id=2))
+        self.assertEqual('https://nowhere.com/content', url_for(host='nowhere.com', controller='content'))
+        self.assertEqual('https://nowhere.com:8080/content', url_for(host='nowhere.com:8080', controller='content'))
+        self.assertEqual('http://nowhere.com/content', url_for(host='nowhere.com', protocol='http', controller='content'))
+    
+    def test_with_http_environ(self):
+        base_environ = dict(SCRIPT_NAME='', SERVER_PORT='1080', PATH_INFO='/', 
+            HTTP_HOST='example.com', SERVER_NAME='example.com')
+        self.con.environ = base_environ.copy()
+        self.con.mapper_dict = {}
+
+        m = Mapper()
+        m.connect(':controller/:action/:id')
+        m.create_regs(['content','archives','admin/comments'])
+        self.con.mapper = m
+        
+        self.assertEqual(self.con.protocol, 'http')
+        self.assertEqual('/content/view', url_for(controller='content', action='view'))
+        self.assertEqual('/content/index/2', url_for(controller='content', id=2))
+        self.assertEqual('https://example.com/content', url_for(protocol='https', controller='content'))
+    
+        
     def test_subdomains(self):
         base_environ = dict(SCRIPT_NAME='', PATH_INFO='/', HTTP_HOST='example.com', SERVER_NAME='example.com')
         self.con.mapper_dict = {}
