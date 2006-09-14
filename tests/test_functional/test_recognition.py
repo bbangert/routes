@@ -553,6 +553,33 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual({'controller':'content','action':'view','id':None,'name':'group'},
                          m.match('/group/view-'))
     
+    def test_routematch(self):
+        m = Mapper()
+        m.connect(':controller/:action/:id')
+        m.create_regs(['content'])
+        route = m.matchlist[0]
+        
+        resultdict, route_obj = m.routematch('/content')
+        assert {'action':'index', 'controller':'content','id':None} == resultdict
+        assert route == route_obj
+        assert None == m.routematch('/nowhere')
+    
+    def test_routematch_debug(self):
+        m = Mapper()
+        m.connect(':controller/:action/:id')
+        m.debug = True
+        m.create_regs(['content'])
+        route = m.matchlist[0]
+        
+        resultdict, route_obj, debug = m.routematch('/content')
+        assert {'action':'index', 'controller':'content','id':None} == resultdict
+        assert route == route_obj
+        resultdict, route_obj, debug = m.routematch('/nowhere')
+        assert resultdict is None
+        assert route_obj is None
+        assert len(debug) == 1
+        
+    
     def test_conditions(self):
         m = Mapper()
         m.connect('home/upload', controller='content', action='upload', conditions=dict(method=['POST']))
