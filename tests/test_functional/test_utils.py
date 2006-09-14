@@ -5,7 +5,8 @@ test_utils
 [See end of file]
 """
 
-import sys, time, unittest
+import os, sys, time, unittest
+from routes.util import controller_scan
 from routes import *
 
 class TestUtils(unittest.TestCase):
@@ -389,7 +390,17 @@ class TestUtils(unittest.TestCase):
         
         self.con.environ['HTTP_HOST'] = 'example.com'
         self.assertEqual('http://new.example.com/category', url_for('category_home', sub_domain='new'))
-
+    
+    def test_controller_scan(self):
+        here_dir = os.path.dirname(__file__)
+        controller_dir = os.path.join(os.path.dirname(here_dir), 
+            os.path.join('test_files', 'controller_files'))
+        controllers = controller_scan(controller_dir)
+        assert len(controllers) == 3
+        assert controllers[0] == 'admin/users'
+        assert controllers[1] == 'content'
+        assert controllers[2] == 'users'
+        
 if __name__ == '__main__':
     unittest.main()
 else:

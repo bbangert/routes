@@ -112,8 +112,7 @@ def url_for(*args, **kargs):
     for key in ['anchor', 'host', 'protocol']:
         if kargs.get(key): del kargs[key]
         if kargs.has_key(key+'_'):
-            kargs[key] = kargs[key+'_']
-            del kargs[key+'_']
+            kargs[key] = kargs.pop(key+'_')
     config = request_config()
     route = None
     static = False

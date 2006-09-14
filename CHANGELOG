@@ -2,6 +2,9 @@ Routes Changelog
 ========================
 
 -- 1.4.2 (**svn**)
+* Added unit tests to ensure controller_scan works properly with nested
+  controller files and appropriately scans the directory structure. This
+  brings the Routes util module up to full code coverage.
 * Fixed url_for so that when the protocol is changed, port information is
   removed from the host.
 * Added more thorough testing to _RequestConfig object and the ability to
