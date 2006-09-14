@@ -9,7 +9,21 @@ import sys, time, unittest
 from routes import *
 
 class TestRecognition(unittest.TestCase):
-
+    
+    def test_regexp_char_escaping(self):
+        m = Mapper()
+        m.connect(':controller/:(action).:(id)')
+        m.create_regs(['content'])
+        
+        assert None == m.match('/content/view#2')
+        assert {'action':'view','controller':'content','id':'2'} == m.match('/content/view.2')
+        
+        m.connect(':controller/:action/:id')
+        m.create_regs(['content', 'find.all'])
+        assert {'action': 'view#2', 'controller': 'content', 'id': None} == m.match('/content/view#2')
+        assert {'action':'view','controller':'find.all','id':None} == m.match('/find.all/view')
+        assert None == m.match('/findzall/view')
+        
     def test_all_static(self):
         m = Mapper()
         m.connect('hello/world/how/are/you', controller='content', action='index')
@@ -539,6 +553,31 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual({'controller':'content','action':'view','id':None,'name':'group'},
                          m.match('/group/view-'))
     
+    def test_conditions(self):
+        m = Mapper()
+        m.connect('home/upload', controller='content', action='upload', conditions=dict(method=['POST']))
+        m.connect(':controller/:action/:id')
+        m.create_regs(['content', 'blog'])
+        
+        con = request_config()
+        con.mapper = m
+        env = dict(PATH_INFO='/nowhere', HTTP_HOST='example.com', REQUEST_METHOD='GET')
+        con.mapper_dict = {}
+        con.environ = env
+        assert None == con.mapper_dict
+        
+        env['PATH_INFO'] = '/content'
+        con.environ = env
+        assert {'action':'index','controller':'content','id':None} == con.mapper_dict
+        
+        env['PATH_INFO'] = '/home/upload'
+        con.environ = env
+        assert None == con.mapper_dict
+        
+        env['REQUEST_METHOD'] = 'POST'
+        con.environ = env
+        assert {'action':'upload','controller':'content'} == con.mapper_dict
+        
     def test_subdomains(self):
         m = Mapper()
         m.sub_domains = True
@@ -567,7 +606,42 @@ class TestRecognition(unittest.TestCase):
         con.environ = env
         self.assertEqual({'action': 'index', 'controller': 'content', 'sub_domain': 'www', 'id': None},
             con.mapper_dict)
-
+    
+    def test_subdomains_with_conditions(self):
+        m = Mapper()
+        m.sub_domains = True
+        m.connect(':controller/:action/:id')
+        m.create_regs(['content', 'blog'])
+        
+        con = request_config()
+        con.mapper = m
+        env = dict(PATH_INFO='/nowhere', HTTP_HOST='example.com')
+        con.mapper_dict = {}
+        con.environ = env
+        
+        self.assertEqual(None, con.mapper_dict)
+        
+        env['PATH_INFO'] = '/content'
+        con.environ = env
+        self.assertEqual({'action': 'index', 'controller': 'content', 'sub_domain': None, 'id': None},
+            con.mapper_dict)
+        
+        m.connect('', controller='users', action='home', conditions={'sub_domain':True})
+        m.create_regs(['content', 'users', 'blog'])
+        env['PATH_INFO'] = '/'
+        con.environ = env
+        assert None == con.mapper_dict
+        
+        env['HTTP_HOST'] = 'fred.example.com'
+        con.environ = env
+        print con.mapper_dict
+        assert {'action': 'home', 'controller': 'users', 'sub_domain': 'fred'} == con.mapper_dict
+        
+        m.sub_domains_ignore = ['www']
+        env['HTTP_HOST'] = 'www.example.com'
+        con.environ = env
+        print con.mapper_dict
+        assert None == con.mapper_dict
     
     def test_subdomains_with_ignore(self):
         m = Mapper()
