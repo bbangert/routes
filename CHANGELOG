@@ -2,6 +2,8 @@ Routes Changelog
 ========================
 
 -- 1.4.2 (**svn**)
+* Fixed url_for so that when the protocol is changed, port information is
+  removed from the host.
 * Added more thorough testing to _RequestConfig object and the ability to
   set your own object. This increases testing coverage of the __init__ module
   to 100%.
