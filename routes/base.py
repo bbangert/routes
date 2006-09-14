@@ -158,9 +158,9 @@ class Route(object):
         """
         defaults = {}
         # Add in a controller/action default if they don't exist
-        if 'controller' not in routekeys and not kargs.has_key('controller'):
+        if 'controller' not in routekeys and 'controller' not in kargs:
             kargs['controller'] = 'content'
-        if 'action' not in routekeys and not kargs.has_key('action'):
+        if 'action' not in routekeys and 'action' not in kargs:
             kargs['action'] = 'index'
         defaultkeys = frozenset([key for key in kargs.keys() if key not in reserved_keys])
         for key in defaultkeys:
@@ -169,8 +169,6 @@ class Route(object):
             else:
                 defaults[key] = None
         if 'action' in routekeys and not defaults.has_key('action'):
-            defaults['action'] = 'index'
-        elif not defaults.has_key('action') and 'controller' in maxkeys:
             defaults['action'] = 'index'
         if 'id' in routekeys and not defaults.has_key('id'):
             defaults['id'] = None

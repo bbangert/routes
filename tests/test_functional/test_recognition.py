@@ -20,7 +20,7 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual(None, m.match('/hello/world/how/are'))
         self.assertEqual(None, m.match('/hello/world/how/are/you/today'))
         self.assertEqual({'controller':'content','action':'index'}, m.match('/hello/world/how/are/you'))
-    
+        
     def test_basic_dynamic(self):
         for path in ['hi/:name', 'hi/:(name)']:
             m = Mapper()
