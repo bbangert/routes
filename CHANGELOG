@@ -2,6 +2,9 @@ Routes Changelog
 ========================
 
 -- 1.4.2 (**svn**)
+* Significant updates to map.resource and unit tests that comb it thoroughly
+  to ensure its creating all the proper routes (it now is). Increased unit
+  testing coverage to 95%.
 * Added unit tests to ensure controller_scan works properly with nested
   controller files and appropriately scans the directory structure. This
   brings the Routes util module up to full code coverage.

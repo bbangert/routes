@@ -7,6 +7,7 @@ test_recognition
 
 import sys, time, unittest
 from routes import *
+from routes.util import RouteException
 
 class TestRecognition(unittest.TestCase):
     
@@ -449,13 +450,15 @@ class TestRecognition(unittest.TestCase):
         m = Mapper()
         m.prefix = '/blog'
         m.connect(':controller/:action/:id')
+        m.connect('', controller='content', action='index')
         m.create_regs(['content', 'archive', 'admin/comments'])
 
         self.assertEqual(None, m.match('/x'))
         self.assertEqual(None, m.match('/admin/comments'))
         self.assertEqual(None, m.match('/content/view'))
         self.assertEqual(None, m.match('/archive/view/4'))
-
+        
+        self.assertEqual({'controller':'content','action':'index'}, m.match('/blog'))
         self.assertEqual({'controller':'content','action':'index','id':None}, m.match('/blog/content'))
         self.assertEqual({'controller':'admin/comments','action':'view','id':None}, m.match('/blog/admin/comments/view'))
         self.assertEqual({'controller':'archive','action':'index','id':None}, m.match('/blog/archive'))
@@ -553,6 +556,14 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual({'controller':'content','action':'view','id':None,'name':'group'},
                          m.match('/group/view-'))
     
+    def test_no_reg_make(self):
+        m = Mapper()
+        m.connect(':name/:(action)-:(id)', controller='content')
+        m.controller_scan = False
+        def call_func():
+            m.match('/group/view-3')
+        self.assertRaises(RouteException, call_func)        
+    
     def test_routematch(self):
         m = Mapper()
         m.connect(':controller/:action/:id')
@@ -578,7 +589,22 @@ class TestRecognition(unittest.TestCase):
         assert resultdict is None
         assert route_obj is None
         assert len(debug) == 1
+    
+    def test_match_debug(self):
+        m = Mapper()
+        m.connect('nowhere', 'http://nowhere.com/', _static=True)
+        m.connect(':controller/:action/:id')
+        m.debug = True
+        m.create_regs(['content'])
+        route = m.matchlist[1]
         
+        resultdict, route_obj, debug = m.match('/content')
+        assert {'action':'index', 'controller':'content','id':None} == resultdict
+        assert route == route_obj
+        resultdict, route_obj, debug = m.match('/nowhere')
+        assert resultdict is None
+        assert route_obj is None
+        assert len(debug) == 2
     
     def test_conditions(self):
         m = Mapper()

@@ -435,6 +435,7 @@ class TestGeneration(unittest.TestCase):
 
         assert '/blog/content/view' == m.generate(controller='content', action='view')
         assert '/blog/content' == m.generate(controller='content')
+        assert '/blog/content' == m.generate(controller='content')
         assert '/blog/admin/comments' == m.generate(controller='admin/comments')
     
     def test_route_with_odd_leftovers(self):
@@ -465,7 +466,6 @@ class TestGeneration(unittest.TestCase):
         assert baseroute + '/1;edit' == m.generate(action='edit',id='1', **options)
         assert baseroute + '/1.xml' == m.generate(action='show', id='1',format='xml', **options)
         
-        print m.generate(action='create', method='post', **options)
         assert baseroute == m.generate(action='create', method='post', **options)
         assert baseroute + '/1' == m.generate(action='update', method='put', id='1', **options)
         assert baseroute + '/1' == m.generate(action='delete', method='delete', id='1', **options)
@@ -509,7 +509,16 @@ class TestGeneration(unittest.TestCase):
         self._assert_restful_routes(m, options)
         assert '/messages/new;preview' == m.generate(controller='messages', action='preview', method='post')
     
-
+    def test_resources_with_name_prefix(self):
+        m = Mapper()
+        m.resource('messages', name_prefix='category_', new=dict(preview='POST'))
+        m.create_regs(['messages'])
+        options = dict(controller='messages')
+        self._assert_restful_routes(m, options)
+        assert '/messages/new;preview' == url_for('category_preview_new_messages')
+        assert None == url_for('category_preview_new_messages', method='get')
+        
+        
 if __name__ == '__main__':
     unittest.main()
 else:

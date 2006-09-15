@@ -514,7 +514,7 @@ class Mapper(object):
         self.matchlist = []
         self.maxkeys = {}
         self.minkeys = {}
-        self.urlcache = None
+        self.urlcache = {}
         self._created_regs = False
         self._created_gens = False
         self.prefix = None
@@ -719,11 +719,8 @@ class Mapper(object):
         kargs['action'] = action
         
         # Check the url cache to see if it exists, use it if it does
-        if self.urlcache is not None:
-            try:
-                return self.urlcache[str(kargs)]
-            except:
-                pass
+        if str(kargs) in self.urlcache:
+            return self.urlcache[str(kargs)]
         
         actionlist = self._gendict.get(controller) or self._gendict.get('*')
         if not actionlist: return None
@@ -890,7 +887,7 @@ class Mapper(object):
         # Insert create, update, and destroy methods
         collection_methods.setdefault('POST', []).insert(0, 'create')
         member_methods.setdefault('PUT', []).insert(0, 'update')
-        member_methods.setdefault('DELETE', []).insert(0, 'destroy')
+        member_methods.setdefault('DELETE', []).insert(0, 'delete')
         
         # If there's a path prefix option, use it with the controller
         controller = strip_slashes(controller)

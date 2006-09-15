@@ -400,7 +400,19 @@ class TestUtils(unittest.TestCase):
         assert controllers[0] == 'admin/users'
         assert controllers[1] == 'content'
         assert controllers[2] == 'users'
+    
+    def test_auto_controller_scan(self):
+        here_dir = os.path.dirname(__file__)
+        controller_dir = os.path.join(os.path.dirname(here_dir), 
+            os.path.join('test_files', 'controller_files'))
+        m = Mapper(directory=controller_dir)
+        m.always_scan = True
+        m.connect(':controller/:action/:id')
         
+        assert {'action':'index', 'controller':'content','id':None} == m.match('/content')
+        assert {'action':'index', 'controller':'users','id':None} == m.match('/users')
+        assert {'action':'index', 'controller':'admin/users','id':None} == m.match('/admin/users')        
+    
 if __name__ == '__main__':
     unittest.main()
 else:
