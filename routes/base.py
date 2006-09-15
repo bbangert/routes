@@ -12,6 +12,13 @@ if sys.version < '2.4':
 
 import threadinglocal
 
+def strip_slashes(name):
+    if name.startswith('/'):
+        name = name[1:]
+    if name.endswith('/'):
+        name = name[:-1]
+    return name
+
 class Route(object):
     """The Route object holds a route recognition and generation routine.
     
@@ -392,8 +399,12 @@ class Route(object):
         
         # Verify that if we have a method arg, its in the method accept list. Also, method
         # will be changed to _method for route generation
-        meth = kargs.pop('method', None)
-        if meth: kargs['_method'] = meth
+        meth = kargs.get('method')
+        if meth:
+            if self.conditions and 'method' in self.conditions \
+                and meth.upper() not in self.conditions['method']:
+                return False
+            kargs.pop('method')
         
         routelist = self.routebackwards
         urllist = []
@@ -870,7 +881,7 @@ class Mapper(object):
         # and the old keys become items in a list as the value
         def swap(dct, newdct):
             for key, val in dct.iteritems():
-                newdct.setdefault(val, []).append(key)
+                newdct.setdefault(val.upper(), []).append(key)
             return newdct
         collection_methods = swap(collection, {})
         member_methods = swap(member, {})
@@ -882,8 +893,12 @@ class Mapper(object):
         member_methods.setdefault('DELETE', []).insert(0, 'destroy')
         
         # If there's a path prefix option, use it with the controller
-        path = path_prefix + controller
-        
+        controller = strip_slashes(controller)
+        path_prefix = strip_slashes(path_prefix)
+        if path_prefix:
+            path = path_prefix + '/' + controller
+        else:
+            path = controller
         collection_path = path
         new_path = path + "/new"
         member_path = path + "/:(id)"
@@ -895,7 +910,7 @@ class Mapper(object):
             route options"""
             opts = options.copy()
             if method != 'any': 
-                opts['conditions'] = {'method':[meth]}
+                opts['conditions'] = {'method':[meth.upper()]}
             return opts
         
         # Add the routes for handling collection methods
