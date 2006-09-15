@@ -1,9 +1,4 @@
-"""
-test_recognition
-
-(c) Copyright 2005 Ben Bangert, Parachute
-[See end of file]
-"""
+"""test_recognition"""
 
 import sys, time, unittest
 from routes import *
