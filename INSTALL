@@ -1,0 +1,11 @@
+Installing Routes can be done the traditional way with:
+
+    python setup.py install
+
+Or directly from the CheeseShop via setuptools:
+
+    easy_install Routes
+
+Alternatively, you can copy the package to your site-packages directory
+to bypass the setuptools based install script (which requires an Internet
+connection).
