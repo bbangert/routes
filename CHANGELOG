@@ -1,7 +1,7 @@
 Routes Changelog
 ========================
 
--- 1.4.2 (**svn**)
+-- 1.5 (**svn**)
 * Significant updates to map.resource and unit tests that comb it thoroughly
   to ensure its creating all the proper routes (it now is). Increased unit
   testing coverage to 95%.
