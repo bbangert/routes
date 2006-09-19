@@ -69,7 +69,7 @@ The following are all valid examples of adding routes:
 
     m.connect('archives/:year/:month/:day', controller='archives', 
               action='view', year=2004,
-              requirements=dict(year='\d{2,4}', month='\d{2}'))
+              requirements=dict(year='\d{2,4}', month='\d{1,2}'))
     m.connect('feeds/:category/atom.xml', controller='feeds', action='atom')
     m.connect('history', 'archives/by_eon/:century', controller='archives', 
               action='aggregate', century=1800)
@@ -118,7 +118,7 @@ arguments to generate, like:
     
     m.connect('archives/:year/:month/:day', controller='archives', 
               action='view', year=2004,
-              requirements=dict(year='\d{2,4}', month='\d{2}'))
+              requirements=dict(year='\d{2,4}', month='\d{1,2}'))
 
 To generate a URL for this will require a month and day argument, and a year
 argument if you don't want to use 2004. When using Routes with a database or
@@ -152,7 +152,7 @@ filter function:
     
     m.connect('archives', 'archives/:year/:month/:day', 
               controller='archives', action='view', year=2004,
-              requirements=dict(year='\d{2,4}', month='\d{2}'),
+              requirements=dict(year='\d{2,4}', month='\d{1,2}'),
               _filter=story_expand)
     
 This filter function will be used when using the named route ``archives``. If a
@@ -234,7 +234,7 @@ Requirements
 *Optional*
 
     ``m.connect('archives/:year/:month/:day', controller='archives', action='view', year=2004,``
-    requirements=dict(year='\\d{2,4}', month='\\d{2}') ``)``
+    requirements=dict(year='\d{2,4}', month='\d{1,2}') ``)``
 
 Requirements is a special keyword used by Routes to enforce a regular
 expression restriction on the `dynamic part`_ or `wildcard part`_ of a
@@ -550,7 +550,7 @@ that got you there without specifying the entire thing:
 .. code-block:: Python
 
     m.connect('archives/:year/:month/:day', controller='archives', action='view', year=2004,
-              requirements=dict(year='\d{2,4}', month='\d{2}'))
+              requirements=dict(year='\d{2,4}', month='\d{1,2}'))
 
     # URL used: /archives/2005/10/4
     # Route dict: {'controller':'archives','action':'view','year':'2005','month':'10','day':'4'}
