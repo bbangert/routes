@@ -270,14 +270,14 @@ Examples:
 .. code-block:: Python
     
     # The method to be either GET or HEAD
-    map.connect('user/list', controller='user', action='list', conditions=dict(method=['GET','HEAD']))
+    m.connect('user/list', controller='user', action='list', conditions=dict(method=['GET','HEAD']))
     
     
     # A sub-domain should be present
-    map.connect('', controller='user', action='home', conditions=dict(sub_domain=True))
+    m.connect('', controller='user', action='home', conditions=dict(sub_domain=True))
     
     # Sub-domain should be either 'fred' or 'george'
-    map.connect('', controller='user', action='home', conditions=dict(sub_domain=['fred','george']))
+    m.connect('', controller='user', action='home', conditions=dict(sub_domain=['fred','george']))
     
     
     # Put the referrer into the resulting match dictionary, this won't stop the match
@@ -285,7 +285,7 @@ Examples:
     def referals(environ, result):
         result['referer'] = environ.get('HTTP_REFERER')
         return True
-    map.connect(':controller/:action/:id', conditions=dict(function=referals))
+    m.connect(':controller/:action/:id', conditions=dict(function=referals))
 
 
 -------------------------------
