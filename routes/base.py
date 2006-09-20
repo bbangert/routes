@@ -48,13 +48,11 @@ class Route(object):
         
         """
         
-        self.static = False
         self.routepath = routepath
         self.sub_domains = False
         
         # Don't bother forming stuff we don't need if its a static route
-        if kargs.has_key('_static'):
-            self.static = True
+        self.static = kargs.get('_static', False)
         self.filter = kargs.pop('_filter', None)
         
         # Pull out route conditions
@@ -191,11 +189,7 @@ class Route(object):
         makeregexp should be called by the web framework after it knows all available controllers
         that can be utilized
         
-        """
-        
-        if self.static:
-            return
-        
+        """        
         (reg, noreqs, allblank) = self.buildnextreg(self.routelist, clist)
         
         if not reg: reg = '/'

@@ -57,8 +57,6 @@ def _subdomain_check(config, kargs):
             kargs['_host'] = subdomain + '.' + domain + port
         elif (subdomain in config.mapper.sub_domains_ignore or subdomain is None) and domain != host:
             kargs['_host'] = domain + port
-        elif subdomain and not host.startswith(subdomain):
-            kargs['_host'] = subdomain + '.' + domain + port
         return kargs
     else:
         return kargs

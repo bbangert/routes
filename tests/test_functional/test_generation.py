@@ -128,6 +128,16 @@ class TestGeneration(unittest.TestCase):
             assert '/hi/content' == m.generate(controller='content')
             assert '/hi/admin/user' == m.generate(controller='admin/user')
     
+    def test_controller_with_static(self):
+        for path in ['hi/:controller', 'hi/:(controller)']:
+            m = Mapper()
+            m.connect(path)
+            m.connect('google', 'http://www.google.com', _static=True)
+        
+            assert '/hi/content' == m.generate(controller='content')
+            assert '/hi/admin/user' == m.generate(controller='admin/user')
+            assert 'http://www.google.com' == url_for('google')
+    
     def test_standard_route(self):
         for path in [':controller/:action/:id', ':(controller)/:(action)/:(id)']:
             m = Mapper()
@@ -498,7 +508,7 @@ class TestGeneration(unittest.TestCase):
     
     def test_resources_with_new_action(self):
         m = Mapper()
-        m.resource('messages', new=dict(preview='POST'))
+        m.resource('messages/', new=dict(preview='POST'))
         m.create_regs(['messages'])
         options = dict(controller='messages')
         self._assert_restful_routes(m, options)
