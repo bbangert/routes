@@ -31,6 +31,7 @@ def initialize(t):
   <head>
     <title>${title}</title>
     <link rel="stylesheet" type="text/css" href="${docroot}layout.css"/>
+    <link rel="stylesheet" type="text/css" href="${docroot}SyntaxHighlighter.css"/>
     <link py:if="generator.syndication_url" 
           rel="alternate" 
           type="application/rss+xml" 
@@ -107,6 +108,15 @@ def initialize(t):
 	  </span>
 	      </p>
         <div>
+        <!-- the following code should be place at the bottom of the page -->
+        <script language="javascript" src="/scripts/shCore.js"></script>
+        <script language="javascript" src="/scripts/shBrushPython.js"></script>
+        <script language="javascript" src="/scripts/shBrushCss.js"></script>
+        <script language="javascript" src="/scripts/shBrushXml.js"></script>
+        <script language="javascript" src="/scripts/shBrushPasteIni.js"></script>
+        <script language="javascript">
+            dp.SyntaxHighlighter.HighlightAll('code');
+        </script>
         <br/> <!--
         <a name="search">
           <form method="get" id="searchform" 
