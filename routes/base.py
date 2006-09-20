@@ -912,7 +912,7 @@ class Mapper(object):
                 route_options['action'] = action
                 route_name = "%s%s_%s" % (name_prefix, action, controller)
                 self.connect(route_name, "%s;%s" % (collection_path, action), **route_options)
-                self.connect("formatted_" + route_name, "%s.:(format);%s")
+                self.connect("formatted_" + route_name, "%s.:(format);%s" % (collection_path, action))
             if primary:
                 route_options['action'] = primary
                 self.connect(collection_path, **route_options)
