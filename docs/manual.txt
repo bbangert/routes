@@ -604,6 +604,87 @@ When sub-domain support is on, the ``url_for`` function will accept a
 has the sub-domain indicated. This feature works with Route memory to ensure
 that the sub-domain is only added when necessary.
 
+Some examples:
+
+.. code-block:: Python
+    
+    # Assuming that the current URL from the request is http://george.example.com/users/edit
+    # Also assuming that you're using the map options above with the default routing of
+    # ':controller/:action/:id'
+    url_for(action='update', sub_domain='fred')   # -> http://fred.example.com/users/update
+    
+    url_for(controller='/content', action='view', sub_domain='www')
+    # will become -> http://example.com/content/view
+    
+    url_for(action='new', sub_domain=None)        # -> http://example.com/users/new
+
+----------------
+RESTful Services
+----------------
+
+To make it easier to setup RESTful web services with Routes, there's a shortcut
+Mapper method that will setup a batch of routes for you along with conditions
+that will restrict them to specific HTTP methods. This is directly styled on
+the Rails version of ``map.resource``, which was based heavily on the Atom
+Publishing Protocol.
+
+The ``map.resource`` command creates a set of Routes for common operations on
+a collection of resources, individually referred to as 'members'. Consider the
+common case where you have a system that deals with users. In that case
+operations dealing with the entire group of users (or perhaps a subset) would
+be considered *collection* methods. Operations (or actions) that act on an
+individual member of that collection are considered *member* methods. These
+terms are important to remember as the options to ``map.resource`` rely on a
+clear understanding of *collection* actions vs. *member* actions.
+
+View a `complete list with examples of the map.resource options <class-routes.base.Mapper.html#resource>`_.
+
+The default mapping that map.resource sets up looks like this:
+
+.. code-block:: Python
+    
+    map.resource('messages')
+    
+    # Will setup all the routes as if you had typed the following map commands:
+    map.connect('create_messages', 'messages', controller='messages', action='create', 
+        conditions=dict(method=['POST']))
+    map.connect('formatted_create_messages', 'messages.:(format)', controller='messages', action='create',
+        conditions=dict(method=['POST']))
+    map.connect('messages', 'messages', controller='messages', action='index',
+        conditions=dict(method=['GET']))
+    map.connect('formatted_messages', 'messages.:(format)', controller='messages', action='index',
+        conditions=dict(method=['GET']))
+    map.connect('new_messages', 'messages/new', controller='messages', action='new',
+        conditions=dict(method=['GET']))
+    map.connect('new_messages', 'messages/new.:(format)', controller='messages', action='new',
+        conditions=dict(method=['GET']))
+    map.connect('update_messages', 'messages/:id', controller='messages', action='update',
+        conditions=dict(method=['PUT']))
+    map.connect('delete_messages', 'messages/:id', controller='messages', action='delete',
+        conditions=dict(method=['DELETE']))
+    map.connect('edit_messages', 'messages/:(id);edit', controller='messages, action='edit',
+        conditions=dict(method=[''GET']))
+    map.connect('formatted_edit_messages', 'messages/:(id).:(format);edit', controller='messages, 
+        action='edit', conditions=dict(method=[''GET']))
+    map.connect('show_messages', 'messages/:id', controller='messages', action='show',
+        conditions=dict(method=['GET']))
+    map.connect('formatted_show_messages', 'messages/:(id).:(format)', controller='messages', action='show',
+        conditions=dict(method=['GET']))
+
+The most important aspects of this is the following mapping that is established::
+    
+    GET    /messages         -> messages.index()
+    POST   /messages         -> messages.create()
+    PUT    /messages/1       -> messages.update(id)
+    DELETE /messages/1       -> messages.delete(id)
+    GET    /messages/1       -> messages.show(id)
+    GET    /messages/1;edit  -> messages.edit(id)
+
+Additional methods that respond to either a new member, or different ways of 
+viewing collections can be added via keyword arguments to ``map.resource`` as
+shown in the `complete list with examples of the map.resource options 
+<class-routes.base.Mapper.html#resource>`_.
+
 --------------------
 Additional Resources
 --------------------
