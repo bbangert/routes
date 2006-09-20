@@ -22,6 +22,30 @@ Buzzword Compliance: *REST*, *DRY*
 News
 ====
 
+**Sept. 19th, 2006**
+
+Routes 1.5 released:
+
+* Significant updates to map.resource and unit tests that comb it thoroughly
+  to ensure its creating all the proper routes (it now is). Increased unit
+  testing coverage to 95%.
+* Added unit tests to ensure controller_scan works properly with nested
+  controller files and appropriately scans the directory structure. This
+  brings the Routes util module up to full code coverage.
+* Fixed url_for so that when the protocol is changed, port information is
+  removed from the host.
+* Added more thorough testing to _RequestConfig object and the ability to
+  set your own object. This increases testing coverage of the __init__ module
+  to 100%.
+* Fixed bug with sub_domain not maintaining port information in url_for and
+  added unit tests. Reported by Jonathan Rosebaugh.
+* Added unit tests to ensure sub_domain option works with named routes, cleaned
+  up url_for memory argument filtering. Fixed bug with named routes and sub_domain
+  option not working together, reported by Jonathan Rosebaugh.
+* Changed order in which sub-domain is added to match-dict so it can be used
+  in a conditions function.
+
+
 **Sept. 6th, 2006**
 
 Routes 1.4.1 released:
