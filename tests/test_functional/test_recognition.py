@@ -58,6 +58,15 @@ class TestRecognition(unittest.TestCase):
             self.assertEqual({'name':'fred', 'action':'index', 'controller':'content'}, m.match('/fred/hi'))
             self.assertEqual({'name':'index', 'action':'index', 'controller':'content'}, m.match('/index/hi'))
     
+    def test_dynamic_with_underscores(self):
+        m = Mapper()
+        m.connect('article/:small_page', small_page=False)
+        m.connect(':(controller)/:(action)/:(id)')
+        m.create_regs(['article', 'blog'])
+        
+        assert {'controller':'blog','action':'view','id':'0'} == m.match('/blog/view/0')
+        assert {'controller':'blog','action':'view','id':None} == m.match('/blog/view')
+        
     def test_dynamic_with_default(self):
         for path in ['hi/:action', 'hi/:(action)']:
             m = Mapper()

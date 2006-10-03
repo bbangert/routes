@@ -2,7 +2,8 @@ Routes Changelog
 ========================
 
 -- 1.5.1 (**svn**)
-
+* Fixed bug with escaping part names in the regular expression, reported by
+  James Taylor.
 
 -- 1.5 (Sept. 19th, 2006)
 * Significant updates to map.resource and unit tests that comb it thoroughly

@@ -221,7 +221,7 @@ class Route(object):
             (rest, noreqs, allblank) = self.buildnextreg(path[1:], clist)
         
         if isinstance(part, dict) and part['type'] == ':':
-            var = re.escape(part['name'])
+            var = part['name']
             partreg = ''
             
             # First we plug in the proper part matcher

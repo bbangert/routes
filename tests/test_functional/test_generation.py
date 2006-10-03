@@ -55,6 +55,17 @@ class TestGeneration(unittest.TestCase):
         
         assert '/view/None/chicago' == m.generate(home=None, area='chicago')
     
+    def test_dynamic_with_underscore_parts(self):
+        m = Mapper()
+        m.connect('article/:small_page', small_page=False)
+        m.connect(':(controller)/:(action)/:(id)')
+        
+        assert '/blog/view/0' == m.generate(controller="blog", action="view", id="0")
+        assert '/blog/view/False' == m.generate(controller="blog", action="view", id='False')
+        assert '/blog/view' == m.generate(controller="blog", action="view", id='None')
+        assert '/article' == m.generate(small_page=None)
+        assert '/article/hobbes' == m.generate(small_page='hobbes')
+        
     def test_dynamic_with_false_equivs_and_splits(self):
         m = Mapper()
         m.connect('article/:(page)', page=False)
