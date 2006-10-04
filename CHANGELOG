@@ -1,7 +1,7 @@
 Routes Changelog
 ========================
 
--- 1.5.1 (**svn**)
+-- 1.5.1 (Oct. 4th, 2006)
 * Fixed bug with escaping part names in the regular expression, reported by
   James Taylor.
 

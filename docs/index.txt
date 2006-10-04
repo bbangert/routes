@@ -22,6 +22,14 @@ Buzzword Compliance: *REST*, *DRY*
 News
 ====
 
+** Oct. 4th, 2006**
+
+Routes 1.5.1:
+
+* Fixed bug with escaping part names in the regular expression, reported by
+  James Taylor.
+
+
 **Sept. 19th, 2006**
 
 Routes 1.5 released:
