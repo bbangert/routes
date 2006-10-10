@@ -1,6 +1,11 @@
 Routes Changelog
 ========================
 
+-- 1.5.2 (**svn**)
+* Added fully_qualified keyword option to url_for to have it generate a full
+  URL. Resolves #29.
+* Fixed examples in url_for doc strings so they'll be accurate.
+
 -- 1.5.1 (Oct. 4th, 2006)
 * Fixed bug with escaping part names in the regular expression, reported by
   James Taylor.

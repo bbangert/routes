@@ -73,6 +73,7 @@ def url_for(*args, **kargs):
         anchor          specified the anchor name to be appened to the path
         host            overrides the default (current) host if provided
         protocol        overrides the default (current) protocol if provided
+        qualified       creates the URL with the host/port information as needed
         
     The URL is generated based on the rest of the keys. When generating a new URL, values
     will be used from the current request's parameters (if present). The following rules
@@ -87,8 +88,8 @@ def url_for(*args, **kargs):
     
         url_for(id=4)                    =>  '/blog/view/4',
         url_for(controller='/admin')     =>  '/admin',
-        url_for(controller='admin')      =>  '/admin/index/4'
-        url_for(action='edit')           =>  '/blog/post/4',
+        url_for(controller='admin')      =>  '/admin/view/2'
+        url_for(action='edit')           =>  '/blog/edit/2',
         url_for(action='list', id=None)  =>  '/blog/list'
     
     **Static and Named Routes**
@@ -105,6 +106,7 @@ def url_for(*args, **kargs):
     anchor = kargs.get('anchor')
     host = kargs.get('host')
     protocol = kargs.get('protocol')
+    qualified = kargs.pop('qualified', None)
     
     # Remove special words from kargs, convert placeholders
     for key in ['anchor', 'host', 'protocol']:
@@ -155,7 +157,7 @@ def url_for(*args, **kargs):
         if config.mapper.append_slash and not url.endswith('/'):
             url += '/'
     if anchor: url += '#' + _url_quote(anchor)
-    if host or protocol:
+    if host or protocol or qualified:
         if not host:
             # Ensure we don't use a specific port, as changing the protocol
             # means that we most likely need a new port

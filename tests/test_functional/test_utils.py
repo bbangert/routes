@@ -54,7 +54,21 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('/archive/2004/9/2', url_for(month=9, day=2))
         self.assertEqual('/blog', url_for(controller='blog', year=None))
         self.assertEqual('/archive/2004', url_for())
+    
+    def test_url_for_with_defaults_and_qualified(self):
+        m = self.con.mapper
+        m.connect('home', '', controller='blog', action='splash')
+        m.connect('category_home', 'category/:section', controller='blog', action='view', section='home')
+        m.connect(':controller/:action/:id')
+        m.create_regs(['content','blog','admin/comments'])
+        self.con.environ = dict(SCRIPT_NAME='', SERVER_NAME='www.example.com', PATH_INFO='/blog/view/4')
         
+        self.assertEqual('/blog/view/4', url_for())
+        self.assertEqual('/post/index/4', url_for(controller='post'))
+        self.assertEqual('http://www.example.com/blog/view/4', url_for(qualified=True))
+        self.assertEqual('/blog/view/2', url_for(id=2))
+        self.assertEqual('/viewpost/4', url_for(controller='post', action='view', id=4))
+    
     def test_with_route_names(self):
         m = self.con.mapper
         self.con.mapper_dict = {}
