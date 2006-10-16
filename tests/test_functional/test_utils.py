@@ -68,6 +68,11 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('http://www.example.com/blog/view/4', url_for(qualified=True))
         self.assertEqual('/blog/view/2', url_for(id=2))
         self.assertEqual('/viewpost/4', url_for(controller='post', action='view', id=4))
+        
+        self.con.environ = dict(SCRIPT_NAME='', SERVER_NAME='www.example.com', SERVER_PORT='8080', PATH_INFO='/blog/view/4')
+        self.assertEqual('/post/index/4', url_for(controller='post'))
+        self.assertEqual('http://www.example.com:8080/blog/view/4', url_for(qualified=True))
+        
     
     def test_with_route_names(self):
         m = self.con.mapper

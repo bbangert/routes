@@ -158,10 +158,12 @@ def url_for(*args, **kargs):
             url += '/'
     if anchor: url += '#' + _url_quote(anchor)
     if host or protocol or qualified:
-        if not host:
+        if not host and not qualified:
             # Ensure we don't use a specific port, as changing the protocol
             # means that we most likely need a new port
             host = config.host.split(':')[0]
+        elif not host:
+            host = config.host
         if not protocol: protocol = config.protocol
         url = protocol + '://' + host + url
     return url
