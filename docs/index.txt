@@ -26,6 +26,8 @@ News
 
 Routes 1.5.2:
 
+* Fixed qualified keyword to keep host port names when used, unless a host
+  is specifically passed in. Reported by Jon Rosebaugh.
 * Added fully_qualified keyword option to url_for to have it generate a full
   URL. Resolves #29.
 * Fixed examples in url_for doc strings so they'll be accurate.
