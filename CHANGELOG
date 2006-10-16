@@ -1,7 +1,7 @@
 Routes Changelog
 ========================
 
--- 1.5.2 (**svn**)
+-- 1.5.2 (Oct. 16th, 2006)
 * Added fully_qualified keyword option to url_for to have it generate a full
   URL. Resolves #29.
 * Fixed examples in url_for doc strings so they'll be accurate.
