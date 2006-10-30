@@ -45,7 +45,8 @@ def _screenargs(kargs):
 def _subdomain_check(config, kargs):
     if config.mapper.sub_domains:
         subdomain = kargs.pop('sub_domain', None)
-        hostmatch = config.environ['HTTP_HOST'].split(':')
+        fullhost = config.environ.get('HTTP_HOST') or config.environ.get('SERVER_NAME')
+        hostmatch = fullhost.split(':')
         host = hostmatch[0]
         port = ''
         if len(hostmatch) > 1:
