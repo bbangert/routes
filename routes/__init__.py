@@ -34,7 +34,7 @@ class _RequestConfig(object):
         store the resulting match dict in mapper_dict.
         """
         port_info = ''
-        if environ.get('HTTPS'):
+        if environ.get('HTTPS') or environ.get('wsgi.url_scheme') == 'https':
             self.__shared_state.protocol = 'https'
             if environ.get('SERVER_PORT') != '443':
                 port_info += ':' + environ['SERVER_PORT']
