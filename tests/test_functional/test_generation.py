@@ -453,6 +453,19 @@ class TestGeneration(unittest.TestCase):
         assert '/blog/content' == m.generate(controller='content')
         assert '/blog/content' == m.generate(controller='content')
         assert '/blog/admin/comments' == m.generate(controller='admin/comments')
+
+    def test_url_with_environ_and_absolute(self):
+        m = Mapper()
+        m.environ = dict(SCRIPT_NAME='/blog')
+        m.connect('image', 'image/:name', _absolute=True)
+        m.connect(':controller/:action/:id')
+        m.create_regs(['content','blog','admin/comments'])
+
+        assert '/blog/content/view' == m.generate(controller='content', action='view')
+        assert '/blog/content' == m.generate(controller='content')
+        assert '/blog/content' == m.generate(controller='content')
+        assert '/blog/admin/comments' == m.generate(controller='admin/comments')
+        assert '/image/topnav.jpg' == url_for('image', name='topnav.jpg')
     
     def test_route_with_odd_leftovers(self):
         m = Mapper()

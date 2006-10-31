@@ -2,7 +2,8 @@ Routes Changelog
 ========================
 
 -- 1.5.3 (**svn**)
-
+* Added _absolute keyword option route connect to ignore SCRIPT_NAME settings.
+  Suggested by Ian Bicking.
 
 -- 1.5.2 (Oct. 16th, 2006)
 * Fixed qualified keyword to keep host port names when used, unless a host
