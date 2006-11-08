@@ -3,7 +3,7 @@ use_setuptools()
 from setuptools import setup, find_packages
 
 setup(name="Routes",
-      version='1.5.3',
+      version='1.6',
       description='Routing Recognition and Generation Tools',
       long_description="""
 A Routing package for Python that matches URL's to dicts and vice versa
