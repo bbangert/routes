@@ -732,8 +732,8 @@ class TestRecognition(unittest.TestCase):
     
     def test_resource(self):
         m = Mapper()
-        m.resource('person')
-        m.create_regs(['person'])
+        m.resource('person', 'people')
+        m.create_regs(['people'])
         
         con = request_config()
         con.mapper = m
@@ -742,18 +742,18 @@ class TestRecognition(unittest.TestCase):
             con.mapper_dict = {}
             con.environ = env
         
-        test_path('/person', 'GET')
-        assert {'controller':'person', 'action':'index'} == con.mapper_dict
-        test_path('/person', 'POST')
-        assert {'controller':'person', 'action':'create'} == con.mapper_dict
-        test_path('/person/2', 'GET')
-        assert {'controller':'person', 'action':'show', 'id':'2'} == con.mapper_dict
-        test_path('/person/2;edit', 'GET')
-        assert {'controller':'person', 'action':'edit', 'id':'2'} == con.mapper_dict
-        test_path('/person/2', 'DELETE')
-        assert {'controller':'person', 'action':'delete', 'id':'2'} == con.mapper_dict
-        test_path('/person/2', 'PUT')
-        assert {'controller':'person', 'action':'update', 'id':'2'} == con.mapper_dict
+        test_path('/people', 'GET')
+        assert {'controller':'people', 'action':'index'} == con.mapper_dict
+        test_path('/people', 'POST')
+        assert {'controller':'people', 'action':'create'} == con.mapper_dict
+        test_path('/people/2', 'GET')
+        assert {'controller':'people', 'action':'show', 'id':'2'} == con.mapper_dict
+        test_path('/people/2;edit', 'GET')
+        assert {'controller':'people', 'action':'edit', 'id':'2'} == con.mapper_dict
+        test_path('/people/2', 'DELETE')
+        assert {'controller':'people', 'action':'delete', 'id':'2'} == con.mapper_dict
+        test_path('/people/2', 'PUT')
+        assert {'controller':'people', 'action':'update', 'id':'2'} == con.mapper_dict
 
 
 if __name__ == '__main__':

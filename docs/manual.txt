@@ -643,42 +643,48 @@ The default mapping that map.resource sets up looks like this:
 
 .. code-block:: Python
     
-    map.resource('messages')
+    map.resource('message', 'messages')
     
     # Will setup all the routes as if you had typed the following map commands:
-    map.connect('create_messages', 'messages', controller='messages', action='create', 
-        conditions=dict(method=['POST']))
-    map.connect('formatted_create_messages', 'messages.:(format)', controller='messages', action='create',
+    map.connect('messages', controller='messages', action='create', 
         conditions=dict(method=['POST']))
     map.connect('messages', 'messages', controller='messages', action='index',
         conditions=dict(method=['GET']))
     map.connect('formatted_messages', 'messages.:(format)', controller='messages', action='index',
         conditions=dict(method=['GET']))
-    map.connect('new_messages', 'messages/new', controller='messages', action='new',
+    map.connect('new_message', 'messages/new', controller='messages', action='new',
         conditions=dict(method=['GET']))
-    map.connect('new_messages', 'messages/new.:(format)', controller='messages', action='new',
+    map.connect('formatted_new_message', 'messages/new.:(format)', controller='messages', action='new',
         conditions=dict(method=['GET']))
-    map.connect('update_messages', 'messages/:id', controller='messages', action='update',
+    map.connect('messages/:id', controller='messages', action='update',
         conditions=dict(method=['PUT']))
-    map.connect('delete_messages', 'messages/:id', controller='messages', action='delete',
+    map.connect('messages/:id', controller='messages', action='delete',
         conditions=dict(method=['DELETE']))
-    map.connect('edit_messages', 'messages/:(id);edit', controller='messages, action='edit',
+    map.connect('edit_message', 'messages/:(id);edit', controller='messages, action='edit',
         conditions=dict(method=[''GET']))
-    map.connect('formatted_edit_messages', 'messages/:(id).:(format);edit', controller='messages, 
+    map.connect('formatted_edit_message', 'messages/:(id).:(format);edit', controller='messages, 
         action='edit', conditions=dict(method=[''GET']))
-    map.connect('show_messages', 'messages/:id', controller='messages', action='show',
+    map.connect('message', 'messages/:id', controller='messages', action='show',
         conditions=dict(method=['GET']))
-    map.connect('formatted_show_messages', 'messages/:(id).:(format)', controller='messages', action='show',
+    map.connect('formatted_message', 'messages/:(id).:(format)', controller='messages', action='show',
         conditions=dict(method=['GET']))
 
 The most important aspects of this is the following mapping that is established::
     
-    GET    /messages         -> messages.index()
-    POST   /messages         -> messages.create()
-    PUT    /messages/1       -> messages.update(id)
-    DELETE /messages/1       -> messages.delete(id)
-    GET    /messages/1       -> messages.show(id)
-    GET    /messages/1;edit  -> messages.edit(id)
+    GET    /messages         -> messages.index()          -> url_for('messages')
+    POST   /messages         -> messages.create()         -> url_for('messages')
+    GET    /messages/new     -> messages.new()            -> url_for('new_message')
+    PUT    /messages/1       -> messages.update(id)       -> url_for('message', id=1)
+    DELETE /messages/1       -> messages.delete(id)       -> url_for('message', id=1)
+    GET    /messages/1       -> messages.show(id)         -> url_for('message', id=1)
+    GET    /messages/1;edit  -> messages.edit(id)         -> url_for('edit_message', id=1)
+
+.. Note::
+    Several of these methods map to functions intended to display forms. The
+    new message method should be used to return a form allowing someone to 
+    create a new message, while it should POST to /messages. The edit message
+    function should work similarly returning a form to edit a message, which
+    then posts a PUT to the /messages/1 resource.
 
 Additional methods that respond to either a new member, or different ways of 
 viewing collections can be added via keyword arguments to ``map.resource`` as

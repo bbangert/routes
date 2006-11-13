@@ -794,14 +794,20 @@ class Mapper(object):
                 continue
         return None
     
-    def resource(self, controller_name, **kwargs):
+    def resource(self, member_name, collection_name, **kwargs):
         """Generate routes for a controller resource
         
-        The controller should be the name of the controller for which a set
-        of resource-based Routes should be generated. The concept of a web
-        resource maps somewhat directly to 'CRUD' operations. The overlying
-        things to keep in mind is that mapping a resource is about handling
-        creating, viewing, and editing that resource.
+        The member_name name should be the appropriate singular version of the
+        resource given your locale and used with members of the collection.
+        The collection_name name will be used to refer to the resource 
+        collection methods and should be a plural version of the member_name
+        argument. By default, the member_name name will also be assumed to map
+        to a controller you create.
+        
+        The concept of a web resource maps somewhat directly to 'CRUD' 
+        operations. The overlying things to keep in mind is that mapping a
+        resource is about handling creating, viewing, and editing that
+        resource.
         
         All keyword arguments are optional.
         
@@ -859,7 +865,6 @@ class Mapper(object):
                 # has named route "category_message"
         
         """
-        controller = controller_name
         collection = kwargs.pop('collection', {})
         member = kwargs.pop('member', {})
         new = kwargs.pop('new', {})
@@ -886,7 +891,7 @@ class Mapper(object):
         member_methods.setdefault('DELETE', []).insert(0, 'delete')
         
         # If there's a path prefix option, use it with the controller
-        controller = strip_slashes(controller)
+        controller = strip_slashes(collection_name)
         path_prefix = strip_slashes(path_prefix)
         if path_prefix:
             path = path_prefix + '/' + controller
@@ -912,7 +917,7 @@ class Mapper(object):
             route_options = requirements_for(method)
             for action in lst:
                 route_options['action'] = action
-                route_name = "%s%s_%s" % (name_prefix, action, controller)
+                route_name = "%s%s_%s" % (name_prefix, action, collection_name)
                 self.connect(route_name, "%s;%s" % (collection_path, action), **route_options)
                 self.connect("formatted_" + route_name, "%s.:(format);%s" % (collection_path, action))
             if primary:
@@ -922,9 +927,9 @@ class Mapper(object):
         
         # Specifically add in the built-in 'index' collection method and its formatted
         # version
-        self.connect(name_prefix + controller, collection_path, action='index', 
+        self.connect(name_prefix + collection_name, collection_path, action='index', 
             conditions={'method':['GET']}, **options)
-        self.connect("formatted_" + name_prefix + controller, 
+        self.connect("formatted_" + name_prefix + collection_name, 
             collection_path + ".:(format)", action='index', 
             conditions={'method':['GET']}, **options)
         
@@ -933,7 +938,7 @@ class Mapper(object):
             route_options = requirements_for(method)
             for action in lst:
                 path = (action == 'new' and new_path) or "%s;%s" % (new_path, action)
-                name = "new_" + controller
+                name = "new_" + member_name
                 if action != 'new': name = action + "_" + name
                 route_options['action'] = action
                 self.connect(name_prefix + name, path, **route_options)
@@ -951,9 +956,9 @@ class Mapper(object):
                 primary = None
             for action in lst:
                 route_options['action'] = action
-                self.connect("%s%s_%s" % (name_prefix, action, controller),
+                self.connect("%s%s_%s" % (name_prefix, action, member_name),
                     "%s;%s" % (member_path, action), **route_options)
-                self.connect("formatted_%s%s_%s" % (name_prefix, action, controller),
+                self.connect("formatted_%s%s_%s" % (name_prefix, action, member_name),
                     "%s.:(format);%s" % (member_path, action), **route_options)
             if primary:
                 route_options['action'] = primary
@@ -963,7 +968,7 @@ class Mapper(object):
         route_options = requirements_for('GET')
         route_options['action'] = 'show'
         route_options['requirements'] = {'id':'\w+'}
-        self.connect(name_prefix + controller, member_path, **route_options)
-        self.connect("formatted_" + name_prefix + controller, member_path + ".:(format)",
+        self.connect(name_prefix + member_name, member_path, **route_options)
+        self.connect("formatted_" + name_prefix + member_name, member_path + ".:(format)",
             **route_options)
     

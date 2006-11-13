@@ -501,30 +501,36 @@ class TestGeneration(unittest.TestCase):
     
     def test_resources(self):
         m = Mapper()
-        m.resource('messages')
+        m.resource('message', 'messages')
         m.create_regs(['messages'])
         options = dict(controller='messages')
+        assert '/messages' == url_for('messages')
+        assert '/messages/1' == url_for('message', id=1)
+        assert '/messages/new' == url_for('new_message')
+        assert '/messages/1.xml' == url_for('message', id=1, format='xml')
+        assert '/messages/1;edit' == url_for('edit_message', id=1)
         self._assert_restful_routes(m, options)
     
     def test_resources_with_path_prefix(self):
         m = Mapper()
-        m.resource('messages', path_prefix='/thread/:threadid')
+        m.resource('message', 'messages', path_prefix='/thread/:threadid')
         m.create_regs(['messages'])
         options = dict(controller='messages', threadid='5')
         self._assert_restful_routes(m, options, path_prefix='thread/5/')
     
     def test_resources_with_collection_action(self):
         m = Mapper()
-        m.resource('messages', collection=dict(rss='GET'))
+        m.resource('message', 'messages', collection=dict(rss='GET'))
         m.create_regs(['messages'])
         options = dict(controller='messages')
         self._assert_restful_routes(m, options)
         assert '/messages;rss' == m.generate(controller='messages', action='rss')
+        assert '/messages;rss' == url_for('rss_messages')
     
     def test_resources_with_member_action(self):
         for method in ['put', 'post']:
             m = Mapper()
-            m.resource('messages', member=dict(mark=method))
+            m.resource('message', 'messages', member=dict(mark=method))
             m.create_regs(['messages'])
             options = dict(controller='messages')
             self._assert_restful_routes(m, options)
@@ -532,20 +538,21 @@ class TestGeneration(unittest.TestCase):
     
     def test_resources_with_new_action(self):
         m = Mapper()
-        m.resource('messages/', new=dict(preview='POST'))
+        m.resource('message', 'messages/', new=dict(preview='POST'))
         m.create_regs(['messages'])
         options = dict(controller='messages')
         self._assert_restful_routes(m, options)
         assert '/messages/new;preview' == m.generate(controller='messages', action='preview', method='post')
+        assert '/messages/new;preview' == url_for('preview_new_message')
     
     def test_resources_with_name_prefix(self):
         m = Mapper()
-        m.resource('messages', name_prefix='category_', new=dict(preview='POST'))
+        m.resource('message', 'messages', name_prefix='category_', new=dict(preview='POST'))
         m.create_regs(['messages'])
         options = dict(controller='messages')
         self._assert_restful_routes(m, options)
-        assert '/messages/new;preview' == url_for('category_preview_new_messages')
-        assert None == url_for('category_preview_new_messages', method='get')
+        assert '/messages/new;preview' == url_for('category_preview_new_message')
+        assert None == url_for('category_preview_new_message', method='get')
         
         
 if __name__ == '__main__':

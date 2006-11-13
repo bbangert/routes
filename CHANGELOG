@@ -2,6 +2,12 @@ Routes Changelog
 ========================
 
 -- 1.6 (**svn**)
+* Added additional url_for tests to ensure map.resource generates proper named
+  routes.
+* WARNING: Changed map.resource initialization to accept individual member and
+  collection names to generate proper singular and plural route names. Those
+  using map.resource will need to update their routes and url_for statements
+  accordingly.
 * Added additional map.resource recognition tests.
 * Added WSGI middleware that does route resolving using new `WSGI.org Routing
   Vars Spec <http://wsgi.org/wsgi/Specifications/routing_args>`_.
