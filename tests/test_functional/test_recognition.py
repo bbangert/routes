@@ -729,7 +729,31 @@ class TestRecognition(unittest.TestCase):
         con.environ = env
         self.assertEqual({'action': 'index', 'controller': 'content', 'sub_domain': None, 'id': None},
             con.mapper_dict)
-
+    
+    def test_resource(self):
+        m = Mapper()
+        m.resource('person')
+        m.create_regs(['person'])
+        
+        con = request_config()
+        con.mapper = m
+        def test_path(path, method):
+            env = dict(HTTP_HOST='example.com', PATH_INFO=path, REQUEST_METHOD=method)
+            con.mapper_dict = {}
+            con.environ = env
+        
+        test_path('/person', 'GET')
+        assert {'controller':'person', 'action':'index'} == con.mapper_dict
+        test_path('/person', 'POST')
+        assert {'controller':'person', 'action':'create'} == con.mapper_dict
+        test_path('/person/2', 'GET')
+        assert {'controller':'person', 'action':'show', 'id':'2'} == con.mapper_dict
+        test_path('/person/2;edit', 'GET')
+        assert {'controller':'person', 'action':'edit', 'id':'2'} == con.mapper_dict
+        test_path('/person/2', 'DELETE')
+        assert {'controller':'person', 'action':'delete', 'id':'2'} == con.mapper_dict
+        test_path('/person/2', 'PUT')
+        assert {'controller':'person', 'action':'update', 'id':'2'} == con.mapper_dict
 
 
 if __name__ == '__main__':

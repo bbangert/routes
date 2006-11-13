@@ -2,6 +2,7 @@ Routes Changelog
 ========================
 
 -- 1.6 (**svn**)
+* Added additional map.resource recognition tests.
 * Added WSGI middleware that does route resolving using new `WSGI.org Routing
   Vars Spec <http://wsgi.org/wsgi/Specifications/routing_args>`_.
 * Added _absolute keyword option route connect to ignore SCRIPT_NAME settings.
