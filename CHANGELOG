@@ -2,6 +2,8 @@ Routes Changelog
 ========================
 
 -- 1.6 (**svn**)
+* Fixed append_slash to take effect in the route generation itself instead of
+  relying on url_for function. Reported by ToddG.
 * Added additional url_for tests to ensure map.resource generates proper named
   routes.
 * WARNING: Changed map.resource initialization to accept individual member and

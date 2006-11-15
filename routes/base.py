@@ -378,7 +378,7 @@ class Route(object):
         
         return result
     
-    def generate(self, _ignore_req_list=False, **kargs):
+    def generate(self, _ignore_req_list=False, _append_slash=False, **kargs):
         """Generate a URL from ourself given a set of keyword arguments
         
         Toss an exception if this
@@ -463,9 +463,13 @@ class Route(object):
             url = '/' + url
         extras = frozenset(kargs.keys()) - self.maxkeys
         if extras:
+            if _append_slash and not url.endswith('/'):
+                url += '/'
             url += '?'
             url += urllib.urlencode([(key, kargs[key]) for key in kargs if key in extras and \
                                      (key != 'action' or key != 'controller')])
+        elif _append_slash and not url.endswith('/'):
+            url += '/'
         return url
     
 
@@ -709,6 +713,9 @@ class Mapper(object):
         # Generate ourself if we haven't already
         if not self._created_gens:
             self._create_gens()
+        
+        if self.append_slash:
+            kargs['_append_slash'] = True
         
         kargs['controller'] = controller
         kargs['action'] = action

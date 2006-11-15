@@ -155,8 +155,6 @@ def url_for(*args, **kargs):
         host = newargs.pop('_host', None) or host
         protocol = newargs.pop('_protocol', None) or protocol
         url = config.mapper.generate(**newargs)
-        if config.mapper.append_slash and not url.endswith('/'):
-            url += '/'
     if anchor: url += '#' + _url_quote(anchor)
     if host or protocol or qualified:
         if not host and not qualified:
