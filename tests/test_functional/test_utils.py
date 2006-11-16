@@ -210,6 +210,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('/delicious.jpg', url_for('/delicious.jpg'))
         self.assertEqual('/delicious/search?v=routes', url_for('/delicious/search', v='routes'))
         self.assertEqual('/content/list/', url_for(controller='/content', action='list'))
+        self.assertEqual('/content/list/?page=1', url_for(controller='/content', action='list', page='1'))
 
     def test_no_named_path_with_script(self):
         m = self.con.mapper
