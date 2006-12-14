@@ -22,6 +22,25 @@ Buzzword Compliance: *REST*, *DRY*
 News
 ====
 
+**Dec. 14th, 2006**
+
+Routes 1.6:
+
+* Fixed append_slash to take effect in the route generation itself instead of
+  relying on url_for function. Reported by ToddG.
+* Added additional url_for tests to ensure map.resource generates proper named
+  routes.
+* WARNING: Changed map.resource initialization to accept individual member and
+  collection names to generate proper singular and plural route names. Those
+  using map.resource will need to update their routes and url_for statements
+  accordingly.
+* Added additional map.resource recognition tests.
+* Added WSGI middleware that does route resolving using new `WSGI.org Routing
+  Vars Spec <http://wsgi.org/wsgi/Specifications/routing_args>`_.
+* Added _absolute keyword option route connect to ignore SCRIPT_NAME settings.
+  Suggested by Ian Bicking.
+
+
 **Oct. 16th, 2006**
 
 Routes 1.5.2:
