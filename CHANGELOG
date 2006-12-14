@@ -1,6 +1,8 @@
 Routes Changelog
 ========================
 
+-- 1.6.2 (**svn**)
+
 -- 1.6 (Dec. 14th, 2006)
 * Fixed append_slash to take effect in the route generation itself instead of
   relying on url_for function. Reported by ToddG.
