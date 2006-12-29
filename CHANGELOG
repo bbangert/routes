@@ -1,7 +1,8 @@
 Routes Changelog
 ========================
 
--- 1.6.2 (**svn**)
+-- 1.6.1 (Dec. 29, 2006)
+* Fixed zipsafe flag to be False.
 
 -- 1.6 (Dec. 14th, 2006)
 * Fixed append_slash to take effect in the route generation itself instead of
