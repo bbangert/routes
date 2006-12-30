@@ -53,7 +53,7 @@ class RoutesMiddleware(object):
             environ['REQUEST_METHOD'] = old_method
         
         if not match:
-            return self.not_found(environ, start_response)
+            match = {}
         
         for k,v in match.iteritems():
             if v:
@@ -75,6 +75,3 @@ class RoutesMiddleware(object):
             
         return self.app(environ, start_response)
     
-    def not_found(self, environ, start_response):
-        start_response('404 Not Found', [('Content-type', 'text/plain')])
-        return ['Not found']
