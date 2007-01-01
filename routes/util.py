@@ -180,7 +180,7 @@ def redirect_to(*args, **kargs):
     """
     target = url_for(*args, **kargs)
     config = request_config()
-    config.redirect(target)
+    return config.redirect(target)
 
 def controller_scan(directory=None):
     """
