@@ -744,16 +744,26 @@ class TestRecognition(unittest.TestCase):
         
         test_path('/people', 'GET')
         assert {'controller':'people', 'action':'index'} == con.mapper_dict
+        test_path('/people', 'get')
+        assert {'controller':'people', 'action':'index'} == con.mapper_dict
+        
         test_path('/people', 'POST')
         assert {'controller':'people', 'action':'create'} == con.mapper_dict
+        test_path('/people', 'post')
+        assert {'controller':'people', 'action':'create'} == con.mapper_dict
+        
         test_path('/people/2', 'GET')
         assert {'controller':'people', 'action':'show', 'id':'2'} == con.mapper_dict
         test_path('/people/2;edit', 'GET')
         assert {'controller':'people', 'action':'edit', 'id':'2'} == con.mapper_dict
+
         test_path('/people/2', 'DELETE')
         assert {'controller':'people', 'action':'delete', 'id':'2'} == con.mapper_dict
+        test_path('/people/2', 'delete')
+        assert {'controller':'people', 'action':'delete', 'id':'2'} == con.mapper_dict
+
         test_path('/people/2', 'PUT')
-        assert {'controller':'people', 'action':'update', 'id':'2'} == con.mapper_dict
+        assert {'controller':'people', 'action':'update', 'id':'2'} == con.mapper_dict        
 
 
 if __name__ == '__main__':
