@@ -22,6 +22,16 @@ Buzzword Compliance: *REST*, *DRY*
 News
 ====
 
+**Jan. 5, 2007**
+
+Routes 1.6.2:
+
+* Fixed issue with method checking not properly handling different letter
+  cases in REQUEST_METHOD. Reported by Sean Davis.
+* redirect_to now supports config.redirect returning a redirect, not just
+  raising one.
+
+
 **Dec. 29, 2006**
 
 Routes 1.6.1:
