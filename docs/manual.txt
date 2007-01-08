@@ -170,6 +170,13 @@ If the story interface changes, you can change how the arguments are pulled out
 in a single location. This also makes it substantially easier to generate the
 URL.
 
+.. warning::
+    Using the filter function *requires* the route to be a 
+    `named route <named routes>`_. This is due to how the filter function can 
+    affect the route that actually gets chosen. The only way to reliably ensure
+    the proper filter function gets used is by naming the route, and using its
+    route name with ``url_for``.
+
 Route Path
 ----------
 
