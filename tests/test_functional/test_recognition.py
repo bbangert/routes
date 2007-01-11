@@ -1,6 +1,9 @@
 """test_recognition"""
 
-import sys, time, unittest
+import sys
+import time
+import unittest
+import urllib
 from routes import *
 from routes.util import RouteException
 
@@ -30,7 +33,15 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual(None, m.match('/hello/world/how/are'))
         self.assertEqual(None, m.match('/hello/world/how/are/you/today'))
         self.assertEqual({'controller':'content','action':'index'}, m.match('/hello/world/how/are/you'))
-        
+    
+    def test_unicode(self):
+        hoge = u'\u30c6\u30b9\u30c8' # the word test in Japanese
+        hoge_enc = urllib.quote_plus(hoge.encode('utf-8'))
+        m = Mapper()
+        m.connect(':hoge')
+        self.assertEqual({'controller': 'content', 'action': 'index', 'hoge': hoge},
+                         m.match('/' + hoge_enc))
+            
     def test_basic_dynamic(self):
         for path in ['hi/:name', 'hi/:(name)']:
             m = Mapper()
@@ -744,12 +755,8 @@ class TestRecognition(unittest.TestCase):
         
         test_path('/people', 'GET')
         assert {'controller':'people', 'action':'index'} == con.mapper_dict
-        test_path('/people', 'get')
-        assert {'controller':'people', 'action':'index'} == con.mapper_dict
         
         test_path('/people', 'POST')
-        assert {'controller':'people', 'action':'create'} == con.mapper_dict
-        test_path('/people', 'post')
         assert {'controller':'people', 'action':'create'} == con.mapper_dict
         
         test_path('/people/2', 'GET')
@@ -758,8 +765,6 @@ class TestRecognition(unittest.TestCase):
         assert {'controller':'people', 'action':'edit', 'id':'2'} == con.mapper_dict
 
         test_path('/people/2', 'DELETE')
-        assert {'controller':'people', 'action':'delete', 'id':'2'} == con.mapper_dict
-        test_path('/people/2', 'delete')
         assert {'controller':'people', 'action':'delete', 'id':'2'} == con.mapper_dict
 
         test_path('/people/2', 'PUT')

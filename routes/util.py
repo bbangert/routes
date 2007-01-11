@@ -64,7 +64,7 @@ def _subdomain_check(config, kargs):
     
 
 def _url_quote(string):
-    return urllib.quote_plus(str(string), '/')
+    return urllib.quote_plus(unicode(string).encode('utf-8'), '/')
 
 def url_for(*args, **kargs):
     """Generates a URL 
@@ -137,7 +137,11 @@ def url_for(*args, **kargs):
         if static:
             if kargs:
                 url += '?'
-                url += urllib.urlencode(kargs)
+                l = []
+                for k, v in kargs.iteritems():
+                    l.append(u"%s=%s" % (urllib.quote_plus(unicode(k).encode('utf-8')),
+                                         urllib.quote_plus(unicode(v).encode('utf-8'))))
+                url += u'&'.join(l)
     if not static:
         if route:
             newargs = route.defaults.copy()

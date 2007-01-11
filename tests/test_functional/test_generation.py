@@ -1,6 +1,7 @@
 """test_generation"""
 
 import sys, time, unittest
+import urllib
 from routes import *
 
 class TestGeneration(unittest.TestCase):
@@ -553,6 +554,21 @@ class TestGeneration(unittest.TestCase):
         self._assert_restful_routes(m, options)
         assert '/messages/new;preview' == url_for('category_preview_new_message')
         assert None == url_for('category_preview_new_message', method='get')
+
+    def test_unicode(self):
+        hoge = u'\u30c6\u30b9\u30c8' # the word test in Japanese
+        hoge_enc = urllib.quote_plus(hoge.encode('utf-8'))
+        m = Mapper()
+        m.connect(':hoge')
+        self.assertEqual("/%s" % hoge_enc, m.generate(hoge=hoge))
+
+    def test_unicode_static(self):
+        hoge = u'\u30c6\u30b9\u30c8' # the word test in Japanese
+        hoge_enc = urllib.quote_plus(hoge.encode('utf-8'))
+        m = Mapper()
+        m.connect('google-jp', 'http://www.google.co.jp/search', _static=True)
+        self.assertEqual("http://www.google.co.jp/search?q=" + hoge_enc,
+                         url_for('google-jp', q=hoge))
         
         
 if __name__ == '__main__':

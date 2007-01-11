@@ -171,7 +171,7 @@ class Route(object):
         defaultkeys = frozenset([key for key in kargs.keys() if key not in reserved_keys])
         for key in defaultkeys:
             if kargs[key] != None:
-                defaults[key] = str(kargs[key])
+                defaults[key] = unicode(kargs[key])
             else:
                 defaults[key] = None
         if 'action' in routekeys and not defaults.has_key('action'):
@@ -360,6 +360,8 @@ class Route(object):
         result = {}
         extras = frozenset(self.defaults.keys()) - frozenset(matchdict.keys())
         for key,val in matchdict.iteritems():
+            # change back into python unicode objects from the URL representation
+            val = val and urllib.unquote_plus(val).decode('utf-8')
             if not val and self.defaults.has_key(key) and self.defaults[key]:
                 result[key] = self.defaults[key]
             else:
@@ -389,7 +391,7 @@ class Route(object):
         if not _ignore_req_list:
             for key in self.reqs.keys():
                 val = kargs.get(key)
-                if val and not self.req_regs[key].match(str(val)):
+                if val and not self.req_regs[key].match(unicode(val)):
                     return False
         
         # Verify that if we have a method arg, its in the method accept list. Also, method
@@ -418,7 +420,7 @@ class Route(object):
                     continue
                     
                 # Now check to see if there's a default and it matches the incoming call arg
-                if (has_default and has_arg) and str(kargs[arg]) == str(self.defaults[arg]) and not gaps: 
+                if (has_default and has_arg) and unicode(kargs[arg]) == unicode(self.defaults[arg]) and not gaps: 
                     continue
                 
                 # We need to pull the value to append, if the arg is None and we have a default, use that
@@ -602,7 +604,7 @@ class Mapper(object):
             if 'controller' in route.hardcoded:
                 clist = [route.defaults['controller']]
             if 'action' in route.hardcoded:
-                alist = [str(route.defaults['action'])]
+                alist = [unicode(route.defaults['action'])]
             for controller in clist:
                 for action in alist:
                     actiondict = gendict.setdefault(controller, {})
@@ -721,8 +723,8 @@ class Mapper(object):
         kargs['action'] = action
         
         # Check the url cache to see if it exists, use it if it does
-        if str(kargs) in self.urlcache:
-            return self.urlcache[str(kargs)]
+        if unicode(kargs) in self.urlcache:
+            return self.urlcache[unicode(kargs)]
         
         actionlist = self._gendict.get(controller) or self._gendict.get('*')
         if not actionlist: return None
@@ -731,7 +733,7 @@ class Mapper(object):
         
         keys = frozenset(kargs.keys())
         cacheset = False
-        cachekey = str(keys)
+        cachekey = unicode(keys)
         cachelist = sortcache.get(cachekey)
         if cachelist:
             keylist = cachelist
@@ -795,7 +797,7 @@ class Mapper(object):
                     and not route.absolute:
                     path = self.environ['SCRIPT_NAME'] + path
                 if self.urlcache is not None:
-                    self.urlcache[str(kargs)] = path
+                    self.urlcache[unicode(kargs)] = path
                 return path
             else:
                 continue

@@ -2,7 +2,8 @@ Routes Changelog
 ========================
 
 -- 1.6.3 (**svn**)
-
+* Applied patch to generation and matching to handle Unicode characters
+  properly. Reported with patch by David Smith.
 
 -- 1.6.2 (Jan. 5, 2007)
 * Fixed issue with method checking not properly handling different letter
