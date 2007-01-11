@@ -2,6 +2,8 @@ Routes Changelog
 ========================
 
 -- 1.6.3 (**svn**)
+* Fixed lookahead assertion in regexp builder to properly handle two grouped
+  patterns in a row.
 * Applied patch to generation and matching to handle Unicode characters
   properly. Reported with patch by David Smith.
 

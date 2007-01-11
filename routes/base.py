@@ -231,10 +231,7 @@ class Route(object):
             elif var == 'controller':
                 partreg = '(?P<' + var + '>' + '|'.join(map(re.escape, clist)) + ')'
             else:
-                if len(path) > 1:
-                    partreg = '(?P<' + var + '>[^' + path[1][0] +']+)'
-                else:
-                    partreg = '(?P<' + var + '>[^/]+)'
+                partreg = '(?P<' + var + '>[^/]+?)'
             
             if self.reqs.has_key(var): noreqs = False
             if not self.defaults.has_key(var): 
