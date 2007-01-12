@@ -794,8 +794,8 @@ class Mapper(object):
                     and not route.absolute:
                     path = self.environ['SCRIPT_NAME'] + path
                 if self.urlcache is not None:
-                    self.urlcache[unicode(kargs)] = path
-                return path
+                    self.urlcache[unicode(kargs)] = str(path)
+                return str(path)
             else:
                 continue
         return None

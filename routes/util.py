@@ -139,9 +139,9 @@ def url_for(*args, **kargs):
                 url += '?'
                 l = []
                 for k, v in kargs.iteritems():
-                    l.append(u"%s=%s" % (urllib.quote_plus(unicode(k).encode('utf-8')),
+                    l.append("%s=%s" % (urllib.quote_plus(unicode(k).encode('utf-8')),
                                          urllib.quote_plus(unicode(v).encode('utf-8'))))
-                url += u'&'.join(l)
+                url += '&'.join(l)
     if not static:
         if route:
             newargs = route.defaults.copy()

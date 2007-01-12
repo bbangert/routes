@@ -561,6 +561,7 @@ class TestGeneration(unittest.TestCase):
         m = Mapper()
         m.connect(':hoge')
         self.assertEqual("/%s" % hoge_enc, m.generate(hoge=hoge))
+        self.assertTrue(isinstance(m.generate(hoge=hoge), str))
 
     def test_unicode_static(self):
         hoge = u'\u30c6\u30b9\u30c8' # the word test in Japanese
@@ -569,6 +570,7 @@ class TestGeneration(unittest.TestCase):
         m.connect('google-jp', 'http://www.google.co.jp/search', _static=True)
         self.assertEqual("http://www.google.co.jp/search?q=" + hoge_enc,
                          url_for('google-jp', q=hoge))
+        self.assertTrue(isinstance(url_for('google-jp', q=hoge), str))
         
         
 if __name__ == '__main__':
