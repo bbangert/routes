@@ -222,6 +222,7 @@ class Route(object):
         # regexp match on a key, allblank remembers if the rest could possible be completely empty
         (rest, noreqs, allblank) = ('', True, True)
         if len(path[1:]) > 0:
+            self.prior = part
             (rest, noreqs, allblank) = self.buildnextreg(path[1:], clist)
         
         if isinstance(part, dict) and part['type'] == ':':
@@ -255,6 +256,10 @@ class Route(object):
                 # possible
                 elif self.reqs.has_key(var):
                     allblank = False
+                    reg = partreg + rest
+                
+                # If the character before this is a special char, it has to be followed by this
+                elif self.defaults.has_key(var) and self.prior in (',', ';', '.'):
                     reg = partreg + rest
                 
                 # Or we have a default with no regexp, don't touch the allblank

@@ -785,6 +785,7 @@ class TestRecognition(unittest.TestCase):
                           'format': 'html', 'locale': 'en',
                           'controller': 'content', 'action': 'index'},
                          m.match('/2007/test.html,en'))
+        self.assertEqual(None, m.match('/2007/test.'))
 
 if __name__ == '__main__':
     unittest.main()
