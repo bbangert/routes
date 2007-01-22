@@ -62,6 +62,9 @@ class Route(object):
         # reserved keys that don't count
         reserved_keys = ['requirements']
         
+        # special chars to indicate a natural split in the URL
+        self.done_chars = ('/',',',';','.')
+        
         # Strip preceding '/' if present
         if routepath.startswith('/'):
             routepath = routepath[1:]
@@ -107,14 +110,14 @@ class Route(object):
                     done_on = ')'
                 else:
                     current = char
-                    done_on = '/'
-            elif collecting and char != done_on:
+                    done_on = self.done_chars
+            elif collecting and char not in done_on:
                 current += char
             elif collecting:
                 collecting = False
                 routelist.append(dict(type=var_type, name=current))
-                if done_on == '/':
-                    routelist.append(done_on)
+                if char in self.done_chars:
+                    routelist.append(char)
                 done_on = var_type = current = ''
             else:
                 current += char
@@ -139,7 +142,7 @@ class Route(object):
         gaps = False
         backcheck.reverse()
         for part in backcheck:
-            if not isinstance(part, dict) and part != '/':
+            if not isinstance(part, dict) and part not in self.done_chars:
                 gaps = True
                 continue
             elif not isinstance(part, dict):
@@ -231,7 +234,7 @@ class Route(object):
             elif var == 'controller':
                 partreg = '(?P<' + var + '>' + '|'.join(map(re.escape, clist)) + ')'
             else:
-                partreg = '(?P<' + var + '>[^/]+?)'
+                partreg = '(?P<' + var + '>[^%s]+?)' % ''.join(self.done_chars)
             
             if self.reqs.has_key(var): noreqs = False
             if not self.defaults.has_key(var): 
@@ -293,9 +296,9 @@ class Route(object):
                     allblank = False
                     noreqs = False
                     reg = '(?P<' + var + '>.*)' + rest
-        elif part.endswith('/'):
+        elif part and part[-1] in self.done_chars:
             if allblank:
-                reg = re.escape(part[:-1]) + '(/' + rest + ')?'
+                reg = re.escape(part[:-1]) + '(' + re.escape(part[-1]) + rest + ')?'
             else:
                 allblank = False
                 reg = re.escape(part) + rest
@@ -444,8 +447,8 @@ class Route(object):
                 if kar is not None:
                     urllist.append(url_quote(kar))
                     gaps = True
-            elif part.endswith('/'):
-                if not gaps and part == '/':
+            elif part and part[-1] in self.done_chars:
+                if not gaps and part in self.done_chars:
                     continue
                 elif not gaps:
                     urllist.append(part[:-1])

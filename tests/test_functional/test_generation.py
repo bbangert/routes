@@ -571,8 +571,18 @@ class TestGeneration(unittest.TestCase):
         self.assertEqual("http://www.google.co.jp/search?q=" + hoge_enc,
                          url_for('google-jp', q=hoge))
         self.assertTrue(isinstance(url_for('google-jp', q=hoge), str))
+
+    def test_other_special_chars(self):
+        m = Mapper()
+        m.connect('/:year/:(slug).:(format),:(locale)', locale='en', format='html')
+        m.create_regs(['content'])
         
-        
+        assert '/2007/test' == m.generate(year=2007, slug='test')
+        assert '/2007/test.xml' == m.generate(year=2007, slug='test', format='xml')
+        assert '/2007/test.xml,ja' == m.generate(year=2007, slug='test', format='xml', locale='ja')
+        assert None == m.generate(year=2007, format='html')
+
+
 if __name__ == '__main__':
     unittest.main()
 else:

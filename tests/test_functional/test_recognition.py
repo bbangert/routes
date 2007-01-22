@@ -14,7 +14,7 @@ class TestRecognition(unittest.TestCase):
         m.connect(':controller/:(action).:(id)')
         m.create_regs(['content'])
         
-        assert None == m.match('/content/view#2')
+        assert {'action':'view#2','controller':'content','id':None} == m.match('/content/view#2')
         assert {'action':'view','controller':'content','id':'2'} == m.match('/content/view.2')
         
         m.connect(':controller/:action/:id')
@@ -770,6 +770,21 @@ class TestRecognition(unittest.TestCase):
         test_path('/people/2', 'PUT')
         assert {'controller':'people', 'action':'update', 'id':'2'} == con.mapper_dict        
 
+    def test_other_special_chars(self):
+        m = Mapper()
+        m.connect('/:year/:(slug).:(format),:(locale)', format='html', locale='en')
+        m.create_regs(['content'])
+
+        self.assertEqual({'year': '2007', 'slug': 'test', 'locale': 'en', 'format': 'html',
+                          'controller': 'content', 'action': 'index'},
+                         m.match('/2007/test'))
+        self.assertEqual({'year': '2007', 'slug': 'test', 'format': 'html', 'locale': 'en',
+                          'controller': 'content', 'action': 'index'},
+                         m.match('/2007/test.html'))
+        self.assertEqual({'year': '2007', 'slug': 'test',
+                          'format': 'html', 'locale': 'en',
+                          'controller': 'content', 'action': 'index'},
+                         m.match('/2007/test.html,en'))
 
 if __name__ == '__main__':
     unittest.main()
