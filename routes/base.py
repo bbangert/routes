@@ -234,6 +234,8 @@ class Route(object):
                 partreg = '(?P<' + var + '>' + self.reqs[var] + ')'
             elif var == 'controller':
                 partreg = '(?P<' + var + '>' + '|'.join(map(re.escape, clist)) + ')'
+            elif getattr(self, 'prior', None) == '/':
+                partreg = '(?P<' + var + '>[^/]+?)'
             else:
                 partreg = '(?P<' + var + '>[^%s]+?)' % ''.join(self.done_chars)
             

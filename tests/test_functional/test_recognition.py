@@ -773,6 +773,7 @@ class TestRecognition(unittest.TestCase):
     def test_other_special_chars(self):
         m = Mapper()
         m.connect('/:year/:(slug).:(format),:(locale)', format='html', locale='en')
+        m.connect('/error/:action/:id', controller='error')
         m.create_regs(['content'])
 
         self.assertEqual({'year': '2007', 'slug': 'test', 'locale': 'en', 'format': 'html',
@@ -786,6 +787,8 @@ class TestRecognition(unittest.TestCase):
                           'controller': 'content', 'action': 'index'},
                          m.match('/2007/test.html,en'))
         self.assertEqual(None, m.match('/2007/test.'))
+        self.assertEqual({'controller': 'error', 'action': 'img',
+                          'id': 'icon-16.png'}, m.match('/error/img/icon-16.png'))
 
 if __name__ == '__main__':
     unittest.main()
