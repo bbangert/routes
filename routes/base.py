@@ -50,6 +50,7 @@ class Route(object):
         
         self.routepath = routepath
         self.sub_domains = False
+        self.prior = None
         
         # Don't bother forming stuff we don't need if its a static route
         self.static = kargs.get('_static', False)
@@ -234,7 +235,7 @@ class Route(object):
                 partreg = '(?P<' + var + '>' + self.reqs[var] + ')'
             elif var == 'controller':
                 partreg = '(?P<' + var + '>' + '|'.join(map(re.escape, clist)) + ')'
-            elif getattr(self, 'prior', None) == '/':
+            elif self.prior == '/':
                 partreg = '(?P<' + var + '>[^/]+?)'
             else:
                 partreg = '(?P<' + var + '>[^%s]+?)' % ''.join(self.done_chars)
