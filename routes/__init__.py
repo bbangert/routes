@@ -48,7 +48,13 @@ class _RequestConfig(object):
             mapper = self.mapper
             self.mapper.req_data.environ = environ
             path = environ['PATH_INFO']
-            self.__shared_state.mapper_dict = mapper.match(path)
+            result = mapper.routematch(path)
+            if result is not None:
+                self.__shared_state.mapper_dict = result[0]
+                self.__shared_state.route = result[1]
+            else:
+                self.__shared_state.mapper_dict = None
+                self.__shared_state.route = None
         host = environ.get('HTTP_HOST') or environ.get('SERVER_NAME')
         self.__shared_state.host = host.split(':')[0]
         self.__shared_state.host += port_info

@@ -1,6 +1,7 @@
 """Routes WSGI Middleware"""
 import re
 import urllib
+import logging
 
 try:
     from paste.wsgiwrappers import WSGIRequest
@@ -8,6 +9,8 @@ except:
     pass
 
 from routes.base import request_config
+
+log = logging.getLogger('routes.middleware')
 
 class RoutesMiddleware(object):
     def __init__(self, wsgi_app, mapper, use_method_override=True, 
@@ -31,6 +34,7 @@ class RoutesMiddleware(object):
         self.mapper = mapper
         self.use_method_override = use_method_override
         self.path_info = path_info
+        log.debug("Initialized with method overriding = %s, and path info altering = %s" % (use_method_override, path_info))
     
     def __call__(self, environ, start_response):
         config = request_config()
@@ -42,18 +46,27 @@ class RoutesMiddleware(object):
             if '_method' in environ.get('QUERY_STRING', '') and '_method' in req.GET:
                 old_method = environ['REQUEST_METHOD']
                 environ['REQUEST_METHOD'] = req.GET['_method'].upper()
+                log.debug("_method found in QUERY_STRING, altering request method to %s" % environ['REQUEST_METHOD'])
             elif environ['REQUEST_METHOD'] == 'POST' and '_method' in req.POST:
                 old_method = environ['REQUEST_METHOD']
                 environ['REQUEST_METHOD'] = req.POST['_method'].upper()
+                log.debug("_method found in POST data, altering request method to %s" % environ['REQUEST_METHOD'])
         
         config.environ = environ
         match = config.mapper_dict
+        route = config.route
         
         if old_method:
             environ['REQUEST_METHOD'] = old_method
         
+        urlinfo = "%s %s" % (environ['REQUEST_METHOD'], environ['PATH_INFO'])
         if not match:
             match = {}
+            log.debug("No route matched for %s" % urlinfo)
+        else:
+            log.debug("Matched %s" % urlinfo)
+            log.debug("Route path: '%s', defaults: %s" % (route.routepath, route.defaults))
+            log.debug("Match dict: %s" % match)
         
         for k,v in match.iteritems():
             if v:
