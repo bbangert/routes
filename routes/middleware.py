@@ -13,6 +13,8 @@ from routes.base import request_config
 log = logging.getLogger('routes.middleware')
 
 class RoutesMiddleware(object):
+    """Routing middleware that handles resolving the PATH_INFO in addition
+    to optionally recognizing method overriding."""
     def __init__(self, wsgi_app, mapper, use_method_override=True, 
                  path_info=True):
         """Create a Route middleware object
@@ -34,23 +36,29 @@ class RoutesMiddleware(object):
         self.mapper = mapper
         self.use_method_override = use_method_override
         self.path_info = path_info
-        log.debug("Initialized with method overriding = %s, and path info altering = %s" % (use_method_override, path_info))
+        log.debug("""Initialized with method overriding = %s, and path info 
+altering = %s""" % (use_method_override, path_info))
     
     def __call__(self, environ, start_response):
+        """Resolves the URL in PATH_INFO, and uses wsgi.routing_args to pass 
+        on URL resolver results."""
         config = request_config()
         config.mapper = self.mapper
         
         old_method = None
         if self.use_method_override:
             req = WSGIRequest(environ)
-            if '_method' in environ.get('QUERY_STRING', '') and '_method' in req.GET:
+            if '_method' in environ.get('QUERY_STRING', '') and \
+                '_method' in req.GET:
                 old_method = environ['REQUEST_METHOD']
                 environ['REQUEST_METHOD'] = req.GET['_method'].upper()
-                log.debug("_method found in QUERY_STRING, altering request method to %s" % environ['REQUEST_METHOD'])
+                log.debug("_method found in QUERY_STRING, altering request"
+                          " method to %s" % environ['REQUEST_METHOD'])
             elif environ['REQUEST_METHOD'] == 'POST' and '_method' in req.POST:
                 old_method = environ['REQUEST_METHOD']
                 environ['REQUEST_METHOD'] = req.POST['_method'].upper()
-                log.debug("_method found in POST data, altering request method to %s" % environ['REQUEST_METHOD'])
+                log.debug("_method found in POST data, altering request "
+                          "method to %s" % environ['REQUEST_METHOD'])
         
         config.environ = environ
         match = config.mapper_dict
@@ -65,12 +73,13 @@ class RoutesMiddleware(object):
             log.debug("No route matched for %s" % urlinfo)
         else:
             log.debug("Matched %s" % urlinfo)
-            log.debug("Route path: '%s', defaults: %s" % (route.routepath, route.defaults))
+            log.debug("Route path: '%s', defaults: %s" % (route.routepath, 
+                                                          route.defaults))
             log.debug("Match dict: %s" % match)
         
-        for k,v in match.iteritems():
-            if v:
-                match[k] = urllib.unquote_plus(v)
+        for key, val in match.iteritems():
+            if val:
+                match[key] = urllib.unquote_plus(val)
         
         environ['wsgiorg.routing_args'] = ((), match)
 
@@ -82,7 +91,8 @@ class RoutesMiddleware(object):
             environ['PATH_INFO'] = newpath
             if not environ['PATH_INFO'].startswith('/'):
                 environ['PATH_INFO'] = '/' + environ['PATH_INFO']
-            environ['SCRIPT_NAME'] += re.sub(r'^(.*?)/' + newpath + '$', r'\1', oldpath)
+            environ['SCRIPT_NAME'] += re.sub(r'^(.*?)/' + newpath + '$', 
+                                             r'\1', oldpath)
             if environ['SCRIPT_NAME'].endswith('/'):
                 environ['SCRIPT_NAME'] = environ['SCRIPT_NAME'][:-1]
             
