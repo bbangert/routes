@@ -1,7 +1,8 @@
 """Utility functions for use in templates / controllers
 
-*PLEASE NOTE*: Many of these functions expect an initialized RequestConfig object. This is 
-expected to have been initialized for EACH REQUEST by the web framework.
+*PLEASE NOTE*: Many of these functions expect an initialized RequestConfig
+object. This is expected to have been initialized for EACH REQUEST by the web
+framework.
 
 """
 import os
@@ -11,9 +12,9 @@ from routes import request_config
 
 def _screenargs(kargs):
     """
-    Private function that takes a dict, and screens it against the current request dict
-    to determine what the dict should look like that is used. This is responsible for
-    the requests "memory" of the current.
+    Private function that takes a dict, and screens it against the current 
+    request dict to determine what the dict should look like that is used. 
+    This is responsible for the requests "memory" of the current.
     """
     controller_name = kargs.get('controller')
     
@@ -31,7 +32,8 @@ def _screenargs(kargs):
     # Remove keys from memory and kargs if kargs has them as None
     for key in [key for key in kargs.keys() if kargs[key] is None]:
         del kargs[key]
-        if memory_kargs.has_key(key): del memory_kargs[key]
+        if memory_kargs.has_key(key):
+            del memory_kargs[key]
     
     # Merge the new args on top of the memory args
     memory_kargs.update(kargs)
@@ -43,9 +45,12 @@ def _screenargs(kargs):
     return memory_kargs
 
 def _subdomain_check(config, kargs):
+    """Screen the kargs for a subdomain and alter it appropriately depending
+    on the current subdomain or lack therof."""
     if config.mapper.sub_domains:
         subdomain = kargs.pop('sub_domain', None)
-        fullhost = config.environ.get('HTTP_HOST') or config.environ.get('SERVER_NAME')
+        fullhost = config.environ.get('HTTP_HOST') or \
+            config.environ.get('SERVER_NAME')
         hostmatch = fullhost.split(':')
         host = hostmatch[0]
         port = ''
@@ -56,7 +61,8 @@ def _subdomain_check(config, kargs):
         if subdomain and not host.startswith(subdomain) and \
             subdomain not in config.mapper.sub_domains_ignore:
             kargs['_host'] = subdomain + '.' + domain + port
-        elif (subdomain in config.mapper.sub_domains_ignore or subdomain is None) and domain != host:
+        elif (subdomain in config.mapper.sub_domains_ignore or \
+            subdomain is None) and domain != host:
             kargs['_host'] = domain + port
         return kargs
     else:
@@ -64,24 +70,29 @@ def _subdomain_check(config, kargs):
     
 
 def _url_quote(string):
+    """A Unicode handling version of urllib.quote_plus."""
     return urllib.quote_plus(unicode(string).encode('utf-8'), '/')
 
 def url_for(*args, **kargs):
     """Generates a URL 
     
-    All keys given to url_for are sent to the Routes Mapper instance for generation except for::
+    All keys given to url_for are sent to the Routes Mapper instance for 
+    generation except for::
         
         anchor          specified the anchor name to be appened to the path
         host            overrides the default (current) host if provided
         protocol        overrides the default (current) protocol if provided
-        qualified       creates the URL with the host/port information as needed
+        qualified       creates the URL with the host/port information as 
+                        needed
         
-    The URL is generated based on the rest of the keys. When generating a new URL, values
-    will be used from the current request's parameters (if present). The following rules
-    are used to determine when and how to keep the current requests parameters:
+    The URL is generated based on the rest of the keys. When generating a new 
+    URL, values will be used from the current request's parameters (if 
+    present). The following rules are used to determine when and how to keep 
+    the current requests parameters:
     
     * If the controller is present and begins with '/', no defaults are used
-    * If the controller is changed, action is set to 'index' unless otherwise specified
+    * If the controller is changed, action is set to 'index' unless otherwise 
+      specified
     
     For example, if the current request yielded a dict of
     {'controller': 'blog', 'action': 'view', 'id': 2}, with the standard 
@@ -95,14 +106,15 @@ def url_for(*args, **kargs):
     
     **Static and Named Routes**
     
-    If there is a string present as the first argument, a lookup is done against the named
-    routes table to see if there's any matching routes. The keyword defaults used with static
-    routes will be sent in as GET query arg's if a route matches.
+    If there is a string present as the first argument, a lookup is done 
+    against the named routes table to see if there's any matching routes. The
+    keyword defaults used with static routes will be sent in as GET query 
+    arg's if a route matches.
     
-    If no route by that name is found, the string is assumed to be a raw URL. Should the raw
-    URL begin with ``/`` then appropriate SCRIPT_NAME data will be added if present, otherwise
-    the string will be used as the url with keyword args becoming GET query args.
-    
+    If no route by that name is found, the string is assumed to be a raw URL. 
+    Should the raw URL begin with ``/`` then appropriate SCRIPT_NAME data will
+    be added if present, otherwise the string will be used as the url with 
+    keyword args becoming GET query args.
     """
     anchor = kargs.get('anchor')
     host = kargs.get('host')
@@ -111,7 +123,8 @@ def url_for(*args, **kargs):
     
     # Remove special words from kargs, convert placeholders
     for key in ['anchor', 'host', 'protocol']:
-        if kargs.get(key): del kargs[key]
+        if kargs.get(key):
+            del kargs[key]
         if kargs.has_key(key+'_'):
             kargs[key] = kargs.pop(key+'_')
     config = request_config()
@@ -137,11 +150,12 @@ def url_for(*args, **kargs):
         if static:
             if kargs:
                 url += '?'
-                l = []
-                for k, v in kargs.iteritems():
-                    l.append("%s=%s" % (urllib.quote_plus(unicode(k).encode('utf-8')),
-                                         urllib.quote_plus(unicode(v).encode('utf-8'))))
-                url += '&'.join(l)
+                query_args = []
+                for key, val in kargs.iteritems():
+                    query_args.append("%s=%s" % (
+                        urllib.quote_plus(unicode(key).encode('utf-8')),
+                        urllib.quote_plus(unicode(val).encode('utf-8'))))
+                url += '&'.join(query_args)
     if not static:
         if route:
             newargs = route.defaults.copy()
@@ -159,7 +173,8 @@ def url_for(*args, **kargs):
         host = newargs.pop('_host', None) or host
         protocol = newargs.pop('_protocol', None) or protocol
         url = config.mapper.generate(**newargs)
-    if anchor: url += '#' + _url_quote(anchor)
+    if anchor:
+        url += '#' + _url_quote(anchor)
     if host or protocol or qualified:
         if not host and not qualified:
             # Ensure we don't use a specific port, as changing the protocol
@@ -167,46 +182,48 @@ def url_for(*args, **kargs):
             host = config.host.split(':')[0]
         elif not host:
             host = config.host
-        if not protocol: protocol = config.protocol
+        if not protocol: 
+            protocol = config.protocol
         url = protocol + '://' + host + url
     return url
 
 def redirect_to(*args, **kargs):
-    """
-    Issues a redirect based on the arguments. 
+    """Issues a redirect based on the arguments. 
     
-    Redirect's *should* occur as a "302 Moved" header, however the web framework
-    may utilize a different method.
+    Redirect's *should* occur as a "302 Moved" header, however the web 
+    framework may utilize a different method.
     
-    All arguments are passed to url_for to retrieve the appropriate URL, then the
-    resulting URL it sent to the redirect function as the URL.
-    
+    All arguments are passed to url_for to retrieve the appropriate URL, then
+    the resulting URL it sent to the redirect function as the URL.
     """
     target = url_for(*args, **kargs)
     config = request_config()
     return config.redirect(target)
 
 def controller_scan(directory=None):
-    """
-    Scan a directory for python files and use them as controllers
-    """
+    """Scan a directory for python files and use them as controllers"""
     if directory is None:
         return []
     
     def find_controllers(dirname, prefix=''):
+        """Locate controllers in a directory"""
         controllers = []
         for fname in os.listdir(dirname):
             filename = os.path.join(dirname, fname)
-            if os.path.isfile(filename) and re.match('^[^_]{1,1}.*\.py$', fname):
+            if os.path.isfile(filename) and \
+                re.match('^[^_]{1,1}.*\.py$', fname):
                 controllers.append(prefix + fname[:-3])
             elif os.path.isdir(filename):
-                controllers.extend(find_controllers(filename, prefix=prefix+fname+'/'))
+                controllers.extend(find_controllers(filename, 
+                                                    prefix=prefix+fname+'/'))
         return controllers
-    def longest_first(a, b):
-        return cmp(len(b), len(a))
+    def longest_first(fst, lst):
+        """Compare the length of one string to another, shortest goes first"""
+        return cmp(len(lst), len(fst))
     controllers = find_controllers(directory)
     controllers.sort(longest_first)
     return controllers
 
 class RouteException(Exception):
+    """Tossed during Route exceptions"""
     pass
