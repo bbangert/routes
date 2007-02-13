@@ -2,6 +2,10 @@ Routes Changelog
 ========================
 
 -- 1.6.3 (**svn**)
+* Added explicit option to Routes and Mapper. Routes _explicit setting will
+  prevent the Route defaults from being implicitly set, while setting Mapper
+  to explicit will prevent Route implicit defaults and stop url_for from using
+  Route memory. Fixes #38.
 * Updated config object so that the route is attached if possible.
 * Adding standard logging usage with debug messages.
 * Added additional test for normal '.' match and fixed new special matching to

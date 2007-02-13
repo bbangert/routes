@@ -427,7 +427,108 @@ class TestUtils(unittest.TestCase):
         assert {'action':'index', 'controller':'content','id':None} == m.match('/content')
         assert {'action':'index', 'controller':'users','id':None} == m.match('/users')
         assert {'action':'index', 'controller':'admin/users','id':None} == m.match('/admin/users')        
+
+class TestUtilsWithExplicit(unittest.TestCase):
+    def setUp(self):
+        m = Mapper(explicit=True)
+        m.connect('archive/:year/:month/:day', controller='blog', action='view', month=None, day=None,
+                  requirements={'month':'\d{1,2}','day':'\d{1,2}'})
+        m.connect('viewpost/:id', controller='post', action='view', id=None)
+        m.connect(':controller/:action/:id')
+        con = request_config()
+        con.mapper = m
+        con.host = 'www.test.com'
+        con.protocol = 'http'
+        self.con = con
+        
+    def test_url_for(self):
+        con = self.con
+        con.mapper_dict = {}
+        
+        self.assertEqual(None, url_for(controller='blog'))
+        self.assertEqual(None, url_for())
+        self.assertEqual('/blog/view/3', url_for(controller='blog', action='view', id=3))
+        self.assertEqual('https://www.test.com/viewpost', url_for(controller='post', action='view', protocol='https'))
+        self.assertEqual('http://www.test.org/content/view/2', url_for(host='www.test.org', controller='content', action='view', id=2))
     
+    def test_url_for_with_defaults(self):
+        con = self.con
+        con.mapper_dict = {'controller':'blog','action':'view','id':4}
+        
+        self.assertEqual(None, url_for())
+        self.assertEqual(None, url_for(controller='post'))
+        self.assertEqual(None, url_for(id=2))
+        self.assertEqual('/viewpost/4', url_for(controller='post', action='view', id=4))
+        
+        con.mapper_dict = {'controller':'blog','action':'view','year':2004}
+        self.assertEqual(None, url_for(month=10))
+        self.assertEqual(None, url_for(month=9, day=2))
+        self.assertEqual(None, url_for(controller='blog', year=None))
+    
+    def test_url_for_with_more_defaults(self):
+        con = self.con
+        con.mapper_dict = {'controller':'blog','action':'view','id':4}
+        
+        self.assertEqual(None, url_for())
+        self.assertEqual(None, url_for(controller='post'))
+        self.assertEqual(None, url_for(id=2))
+        self.assertEqual('/viewpost/4', url_for(controller='post', action='view', id=4))
+        
+        con.mapper_dict = {'controller':'blog','action':'view','year':2004}
+        self.assertEqual(None, url_for(month=10))
+        self.assertEqual(None, url_for())
+    
+    def test_url_for_with_defaults_and_qualified(self):
+        m = self.con.mapper
+        m.connect('home', '', controller='blog', action='splash')
+        m.connect('category_home', 'category/:section', controller='blog', action='view', section='home')
+        m.connect(':controller/:action/:id')
+        m.create_regs(['content','blog','admin/comments'])
+        self.con.environ = dict(SCRIPT_NAME='', SERVER_NAME='www.example.com', PATH_INFO='/blog/view/4')
+        
+        self.assertEqual(None, url_for())
+        self.assertEqual(None, url_for(controller='post'))
+        self.assertEqual(None, url_for(id=2))
+        self.assertEqual(None, url_for(qualified=True, controller='blog', id=4))
+        self.assertEqual('http://www.example.com/blog/view/4', url_for(qualified=True, controller='blog', action='view', id=4))
+        self.assertEqual('/viewpost/4', url_for(controller='post', action='view', id=4))
+        
+        self.con.environ = dict(SCRIPT_NAME='', SERVER_NAME='www.example.com', SERVER_PORT='8080', PATH_INFO='/blog/view/4')
+        self.assertEqual(None, url_for(controller='post'))
+        self.assertEqual('http://www.example.com:8080/blog/view/4', url_for(qualified=True, controller='blog', action='view', id=4))
+        
+    
+    def test_with_route_names(self):
+        m = self.con.mapper
+        self.con.mapper_dict = {}
+        m.connect('home', '', controller='blog', action='splash')
+        m.connect('category_home', 'category/:section', controller='blog', action='view', section='home')
+        m.create_regs(['content','blog','admin/comments'])
+
+        self.assertEqual(None, url_for(controller='content', action='view'))
+        self.assertEqual(None, url_for(controller='content'))
+        self.assertEqual(None, url_for(controller='admin/comments'))
+        self.assertEqual('/category', url_for('category_home'))
+        self.assertEqual('/category/food', url_for('category_home', section='food'))
+        self.assertEqual('/category', url_for('home', action='view', section='home'))
+        self.assertEqual(None, url_for('home', controller='content'))
+        self.assertEqual('/content/splash/2', url_for('home', controller='content', action='splash', id=2))
+        self.assertEqual('/', url_for('home'))
+        
+    def test_with_route_names_and_defaults(self):
+        m = self.con.mapper
+        self.con.mapper_dict = {}
+        m.connect('home', '', controller='blog', action='splash')
+        m.connect('category_home', 'category/:section', controller='blog', action='view', section='home')
+        m.connect('building', 'building/:campus/:building/alljacks', controller='building', action='showjacks')
+        m.create_regs(['content','blog','admin/comments','building'])
+
+        self.con.mapper_dict = dict(controller='building', action='showjacks', campus='wilma', building='port')
+        self.assertEqual(None, url_for())
+        self.assertEqual('/building/wilma/port/alljacks', url_for(controller='building', action='showjacks', campus='wilma', building='port'))
+        self.assertEqual('/', url_for('home'))
+
+
 if __name__ == '__main__':
     unittest.main()
 else:

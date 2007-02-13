@@ -16,6 +16,12 @@ def _screenargs(kargs):
     request dict to determine what the dict should look like that is used. 
     This is responsible for the requests "memory" of the current.
     """
+    config = request_config()
+    if config.mapper.explicit and config.mapper.sub_domains:
+        return _subdomain_check(config, kargs)
+    elif config.mapper.explicit:
+        return kargs
+    
     controller_name = kargs.get('controller')
     
     if controller_name and controller_name.startswith('/'):
@@ -26,7 +32,6 @@ def _screenargs(kargs):
         # Fill in an action if we don't have one, but have a controller
         kargs['action'] = 'index'
     
-    config = request_config()
     memory_kargs = getattr(config, 'mapper_dict', {}).copy()
     
     # Remove keys from memory and kargs if kargs has them as None
@@ -184,7 +189,8 @@ def url_for(*args, **kargs):
             host = config.host
         if not protocol: 
             protocol = config.protocol
-        url = protocol + '://' + host + url
+        if url is not None:
+            url = protocol + '://' + host + url
     return url
 
 def redirect_to(*args, **kargs):

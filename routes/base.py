@@ -60,6 +60,9 @@ class Route(object):
         # Pull out route conditions
         self.conditions = kargs.pop('conditions', None)
         
+        # Determine if explicit behavior should be used
+        self.explicit = kargs.pop('_explicit', False)
+        
         # reserved keys that don't count
         reserved_keys = ['requirements']
         
@@ -168,9 +171,11 @@ class Route(object):
         """
         defaults = {}
         # Add in a controller/action default if they don't exist
-        if 'controller' not in routekeys and 'controller' not in kargs:
+        if 'controller' not in routekeys and 'controller' not in kargs \
+           and not self.explicit:
             kargs['controller'] = 'content'
-        if 'action' not in routekeys and 'action' not in kargs:
+        if 'action' not in routekeys and 'action' not in kargs \
+           and not self.explicit:
             kargs['action'] = 'index'
         defaultkeys = frozenset([key for key in kargs.keys() if key not in reserved_keys])
         for key in defaultkeys:
@@ -178,9 +183,11 @@ class Route(object):
                 defaults[key] = unicode(kargs[key])
             else:
                 defaults[key] = None
-        if 'action' in routekeys and not defaults.has_key('action'):
+        if 'action' in routekeys and not defaults.has_key('action') \
+           and not self.explicit:
             defaults['action'] = 'index'
-        if 'id' in routekeys and not defaults.has_key('id'):
+        if 'id' in routekeys and not defaults.has_key('id') \
+           and not self.explicit:
             defaults['id'] = None
         newdefaultkeys = frozenset([key for key in defaults.keys() if key not in reserved_keys])
         return (defaults, newdefaultkeys)
@@ -402,8 +409,8 @@ class Route(object):
                 if val and not self.req_regs[key].match(unicode(val)):
                     return False
         
-        # Verify that if we have a method arg, its in the method accept list. Also, method
-        # will be changed to _method for route generation
+        # Verify that if we have a method arg, its in the method accept list. 
+        # Also, method will be changed to _method for route generation
         meth = kargs.get('method')
         if meth:
             if self.conditions and 'method' in self.conditions \
@@ -423,7 +430,8 @@ class Route(object):
                 has_default = self.defaults.has_key(arg)
                 
                 # Determine if we can leave this part off
-                # First check if the default exists and wasn't provided in the call (also no gaps)
+                # First check if the default exists and wasn't provided in the 
+                # call (also no gaps)
                 if has_default and not has_arg and not gaps:
                     continue
                     
@@ -494,31 +502,40 @@ class Mapper(object):
         
     """
     def __init__(self, controller_scan=controller_scan, directory=None, 
-                 always_scan=False, register=True):
+                 always_scan=False, register=True, explicit=False):
         """Create a new Mapper instance
         
         All keyword arguments are optional.
 
         ``controller_scan``
-            Function reference that will be used to return a list of valid controllers used
-            during URL matching. If ``directory`` keyword arg is present, it will be passed
-            into the function during its call. This option defaults to a function that will
-            scan a directory for controllers.
+            Function reference that will be used to return a list of valid 
+            controllers used during URL matching. If ``directory`` keyword arg
+            is present, it will be passed into the function during its call. 
+            This option defaults to a function that will scan a directory for
+            controllers.
 
         ``directory``
-            Passed into controller_scan for the directory to scan. It should be an absolute
-            path if using the default ``controller_scan`` function.
+            Passed into controller_scan for the directory to scan. It should be
+            an absolute path if using the default ``controller_scan`` function.
 
         ``always_scan``
-            Whether or not the ``controller_scan`` function should be run during every URL
-            match. This is typically a good idea during development so the server won't need
-            to be restarted anytime a controller is added.
+            Whether or not the ``controller_scan`` function should be run 
+            during every URL match. This is typically a good idea during 
+            development so the server won't need to be restarted anytime a 
+            controller is added.
         
         ``register``
-            Boolean used to determine if the Mapper should use ``request_config`` to register
-            itself as the mapper. Since it's done on a thread-local basis, this is typically
-            best used during testing though it won't hurt in other cases.
+            Boolean used to determine if the Mapper should use 
+            ``request_config`` to register itself as the mapper. Since it's 
+            done on a thread-local basis, this is typically best used during 
+            testing though it won't hurt in other cases.
         
+        ``explicit``
+            Boolean used to determine if routes should be connected with 
+            implicit defaults of:
+              {'controller':'content','action':'index','id':None}
+            When set to True, these defaults will not be added to route
+            connections and ``url_for`` will not use Route memory.
         """
         self.matchlist = []
         self.maxkeys = {}
@@ -539,6 +556,7 @@ class Mapper(object):
         self.sub_domains = False
         self.sub_domains_ignore = []
         self.domain_match = '[^\.\/]+?\.[^\.\/]+'
+        self.explicit = explicit
         if register:
             config = request_config()
             config.mapper = self
@@ -564,6 +582,8 @@ class Mapper(object):
         if len(args) > 1:
             routename = args[0]
             args = args[1:]
+        if '_explicit' not in kargs:
+            kargs['_explicit'] = self.explicit
         route = Route(*args, **kargs)
         self.matchlist.append(route)
         if routename:
@@ -710,7 +730,7 @@ class Mapper(object):
         return None
         
     
-    def generate(self, controller='content', action='index', **kargs):
+    def generate(self, **kargs):
         """Generate a route from a set of keywords
         
         Returns the url text, or None if no URL could be generated.
@@ -726,9 +746,15 @@ class Mapper(object):
         
         if self.append_slash:
             kargs['_append_slash'] = True
+                
+        if not self.explicit:
+            if 'controller' not in kargs:
+                kargs['controller'] = 'content'
+            if 'action' not in kargs:
+                kargs['action'] = 'index'
         
-        kargs['controller'] = controller
-        kargs['action'] = action
+        controller = kargs.get('controller', None)
+        action = kargs.get('action', None)
         
         # Check the url cache to see if it exists, use it if it does
         if unicode(kargs) in self.urlcache:
