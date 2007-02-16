@@ -48,6 +48,7 @@ altering = %s""" % (use_method_override, path_info))
         old_method = None
         if self.use_method_override:
             req = WSGIRequest(environ)
+            req.errors = 'ignore'
             if '_method' in environ.get('QUERY_STRING', '') and \
                 '_method' in req.GET:
                 old_method = environ['REQUEST_METHOD']
