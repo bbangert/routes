@@ -575,7 +575,6 @@ class Mapper(object):
         self._created_regs = False
         self._created_gens = False
         self.prefix = None
-        self.environ = None
         self.req_data = threadinglocal.local()
         self.directory = directory
         self.always_scan = always_scan
@@ -592,6 +591,14 @@ class Mapper(object):
             config = request_config()
             config.mapper = self
     
+    def _envget(self):
+        return getattr(self.req_data, 'environ', None)
+    def _envset(self, env):
+        self.req_data.environ = env
+    def _envdel(self):
+        del self.req_data.environ
+    environ = property(_envget, _envset, _envdel)
+
     def connect(self, *args, **kargs):
         """Create and connect a new Route to the Mapper.
         

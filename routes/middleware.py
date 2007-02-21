@@ -96,6 +96,8 @@ altering = %s""" % (use_method_override, path_info))
                                              r'\1', oldpath)
             if environ['SCRIPT_NAME'].endswith('/'):
                 environ['SCRIPT_NAME'] = environ['SCRIPT_NAME'][:-1]
-            
+        
+        del config.environ
+        del self.mapper.environ
         return self.app(environ, start_response)
     

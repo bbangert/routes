@@ -46,7 +46,6 @@ class _RequestConfig(object):
             self.mapper.environ = environ
         if 'PATH_INFO' in environ and hasattr(self, 'mapper'):
             mapper = self.mapper
-            self.mapper.req_data.environ = environ
             path = environ['PATH_INFO']
             result = mapper.routematch(path)
             if result is not None:

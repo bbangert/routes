@@ -2,6 +2,9 @@ Routes Changelog
 ========================
 
 -- 1.6.3 (**svn**)
+* Updating mapper object to use thread local for request data (such as 
+  environ) and middleware now deletes environ references at the end of the
+  request.
 * Added explicit option to Routes and Mapper. Routes _explicit setting will
   prevent the Route defaults from being implicitly set, while setting Mapper
   to explicit will prevent Route implicit defaults and stop url_for from using
