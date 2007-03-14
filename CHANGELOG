@@ -2,6 +2,10 @@ Routes Changelog
 ========================
 
 -- 1.6.3 (**svn**)
+* Added member_name and collection_name setting to Route object when made with
+  map.resource.
+* Updated routes.middleware to make the Routes matched accessible as
+  environ['routes.route'].
 * Updating mapper object to use thread local for request data (such as 
   environ) and middleware now deletes environ references at the end of the
   request.

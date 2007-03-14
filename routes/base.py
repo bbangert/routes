@@ -58,6 +58,11 @@ class Route(object):
         self.filter = kargs.pop('_filter', None)
         self.absolute = kargs.pop('_absolute', False)
         
+        # Pull out the member/collection name if present, this applies only to
+        # map.resource
+        self.member_name = kargs.pop('_member_name', None)
+        self.collection_name = kargs.pop('_collection_name', None)
+        
         # Pull out route conditions
         self.conditions = kargs.pop('conditions', None)
         
@@ -1001,6 +1006,11 @@ class Mapper(object):
         member_path = path + "/:(id)"
         
         options = {'controller':kwargs.get('controller', controller)}
+        options = { 
+            'controller': kwargs.get('controller', controller), 
+            '_member_name': member_name, 
+            '_collection_name': collection_name, 
+        }
         
         def requirements_for(meth):
             """Returns a new dict to be used for all route creation as the

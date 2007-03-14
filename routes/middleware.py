@@ -83,6 +83,7 @@ altering = %s""" % (use_method_override, path_info))
                 match[key] = urllib.unquote_plus(val)
         
         environ['wsgiorg.routing_args'] = ((), match)
+        environ['routes.route'] = route
 
         # If the route included a path_info attribute and it should be used to
         # alter the environ, we'll pull it out
