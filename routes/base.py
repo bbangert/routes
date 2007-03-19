@@ -62,6 +62,7 @@ class Route(object):
         # map.resource
         self.member_name = kargs.pop('_member_name', None)
         self.collection_name = kargs.pop('_collection_name', None)
+        self.parent_resource = kargs.pop('_parent_resource', None)
         
         # Pull out route conditions
         self.conditions = kargs.pop('conditions', None)
@@ -965,13 +966,55 @@ class Mapper(object):
                     name_prefix="category_")
                 # GET /category/7/message/1
                 # has named route "category_message"
-        
+                
+        ``parent_resource`` 
+            A ``dict`` containing information about the parent resource, for 
+            creating a nested resource. It should contain the ``member_name`` 
+            and ``collection_name`` of the parent resource. This ``dict`` will 
+            be available via the associated ``Route`` object which can be 
+            accessed during a request via ``request.environ['routes.route']`` 
+ 
+            If ``parent_resource`` is supplied and ``path_prefix`` isn't, 
+            ``path_prefix`` will be generated from ``parent_resource`` as  
+            "<parent collection name>/:<parent member name>_id". 
+
+            If ``parent_resource`` is supplied and ``name_prefix`` isn't, 
+            ``name_prefix`` will be generated from ``parent_resource`` as  
+            "<parent member name>_". 
+ 
+            Example:: 
+ 
+                >>> from routes.util import url_for 
+                >>> m = Mapper() 
+                >>> m.resource('location', 'locations', 
+                ...            parent_resource=dict(member_name='region', 
+                ...                                 collection_name='regions')) 
+                >>> # path_prefix is "regions/:region_id" 
+                >>> # name prefix is "region_"  
+                >>> url_for('region_locations', region_id=13) 
+                '/regions/13/locations'
+                >>> url_for('region_new_location', region_id=13) 
+                '/regions/13/locations/new'
+                >>> url_for('region_location', region_id=13, id=60) 
+                '/regions/13/locations/60'
+                >>> url_for('region_edit_location', region_id=13, id=60) 
+                '/regions/13/locations/60;edit'
         """
         collection = kwargs.pop('collection', {})
         member = kwargs.pop('member', {})
         new = kwargs.pop('new', {})
         path_prefix = kwargs.pop('path_prefix', '')
         name_prefix = kwargs.pop('name_prefix', '')
+        parent_resource = kwargs.pop('parent_resource', None)
+        
+        # Generate ``path_prefix`` if ``path_prefix`` wasn't specified and 
+        # ``parent_resource`` was. Likewise for ``name_prefix``. 
+        if parent_resource is not None: 
+            if not path_prefix: 
+                path_prefix = '%s/:%s_id' % (parent_resource['collection_name'], 
+                                             parent_resource['member_name']) 
+            if not name_prefix: 
+                name_prefix = '%s_' % parent_resource['member_name']   
         
         # Ensure the edit and new actions are in and GET
         member['edit'] = 'GET'
@@ -1007,9 +1050,10 @@ class Mapper(object):
         
         options = {'controller':kwargs.get('controller', controller)}
         options = { 
-            'controller': kwargs.get('controller', controller), 
-            '_member_name': member_name, 
-            '_collection_name': collection_name, 
+            'controller': kwargs.get('controller', controller),
+            '_member_name': member_name,
+            '_collection_name': collection_name,
+            '_parent_resource': parent_resource,
         }
         
         def requirements_for(meth):

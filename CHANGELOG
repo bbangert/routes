@@ -2,6 +2,8 @@ Routes Changelog
 ========================
 
 -- 1.6.3 (**svn**)
+* Added ability to specify parent resource to map.resource command. Patch from
+  Wyatt Baldwin.
 * Fixed formatted route issue with map.resource when additional collection 
   methods are specified. Added unit tests to verify the collection methods
   work properly.
