@@ -923,7 +923,7 @@ class Mapper(object):
             
             Example::
                 
-                map.resource('message', collection={'rss':'GET'})
+                map.resource('message', 'messages', collection={'rss':'GET'})
                 # GET /message;rss (maps to the rss action)
                 # also adds named route "rss_message"
         
@@ -933,7 +933,7 @@ class Mapper(object):
             
             Example::
                 
-                map.resource('message', member={'mark':'POST'})
+                map.resource('message', 'messages', member={'mark':'POST'})
                 # POST /message/1;mark (maps to the mark action)
                 # also adds named route "mark_message"
         
@@ -943,7 +943,7 @@ class Mapper(object):
             
             Example::
                 
-                map.resource('message', new={'preview':'POST'})
+                map.resource('message', 'messages', new={'preview':'POST'})
                 # POST /message/new;preview (maps to the preview action)
                 # also adds a url named "preview_new_message"
         
@@ -960,7 +960,7 @@ class Mapper(object):
             
             Example::
                 
-                map.resource('message', controller='categories', 
+                map.resource('message', 'messages', controller='categories', 
                     path_prefix='/category/:category_id', 
                     name_prefix="category_")
                 # GET /category/7/message/1
@@ -1030,7 +1030,7 @@ class Mapper(object):
                 self.connect(route_name, "%s;%s" % (collection_path, action),
                                                     **route_options)
                 self.connect("formatted_" + route_name, "%s.:(format);%s" % \
-                             (collection_path, action))
+                             (collection_path, action), **route_options)
             if primary:
                 route_options['action'] = primary
                 self.connect(collection_path, **route_options)

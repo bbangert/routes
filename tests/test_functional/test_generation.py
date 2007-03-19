@@ -506,10 +506,13 @@ class TestGeneration(unittest.TestCase):
         m.create_regs(['messages'])
         options = dict(controller='messages')
         assert '/messages' == url_for('messages')
+        assert '/messages.xml' == url_for('messages', format='xml')
         assert '/messages/1' == url_for('message', id=1)
+        assert '/messages/1.xml' == url_for('message', id=1, format='xml')
         assert '/messages/new' == url_for('new_message')
         assert '/messages/1.xml' == url_for('message', id=1, format='xml')
         assert '/messages/1;edit' == url_for('edit_message', id=1)
+        assert '/messages/1.xml;edit' == url_for('edit_message', id=1, format='xml')
         self._assert_restful_routes(m, options)
     
     def test_resources_with_path_prefix(self):
@@ -527,6 +530,8 @@ class TestGeneration(unittest.TestCase):
         self._assert_restful_routes(m, options)
         assert '/messages;rss' == m.generate(controller='messages', action='rss')
         assert '/messages;rss' == url_for('rss_messages')
+        assert '/messages.xml;rss' == m.generate(controller='messages', action='rss', format='xml')
+        assert '/messages.xml;rss' == url_for('formatted_rss_messages', format='xml')
     
     def test_resources_with_member_action(self):
         for method in ['put', 'post']:
@@ -536,6 +541,7 @@ class TestGeneration(unittest.TestCase):
             options = dict(controller='messages')
             self._assert_restful_routes(m, options)
             assert '/messages/1;mark' == m.generate(method=method, action='mark', id='1', **options)
+            assert '/messages/1.xml;mark' == m.generate(method=method, action='mark', id='1', format='xml', **options)
     
     def test_resources_with_new_action(self):
         m = Mapper()
@@ -545,6 +551,8 @@ class TestGeneration(unittest.TestCase):
         self._assert_restful_routes(m, options)
         assert '/messages/new;preview' == m.generate(controller='messages', action='preview', method='post')
         assert '/messages/new;preview' == url_for('preview_new_message')
+        assert '/messages/new.xml;preview' == m.generate(controller='messages', action='preview', method='post', format='xml')
+        assert '/messages/new.xml;preview' == url_for('preview_new_message', format='xml')
     
     def test_resources_with_name_prefix(self):
         m = Mapper()

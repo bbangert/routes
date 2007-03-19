@@ -2,6 +2,9 @@ Routes Changelog
 ========================
 
 -- 1.6.3 (**svn**)
+* Fixed formatted route issue with map.resource when additional collection 
+  methods are specified. Added unit tests to verify the collection methods
+  work properly.
 * Updated URL parsing to properly use HTTP_HOST for hostname + port info before
   falling back to SERVER_PORT and SERVER_NAME. Fixes #43.
 * Added member_name and collection_name setting to Route object when made with
