@@ -2,6 +2,8 @@ Routes Changelog
 ========================
 
 -- 1.6.3 (**svn**)
+* Updated URL parsing to properly use HTTP_HOST for hostname + port info before
+  falling back to SERVER_PORT and SERVER_NAME. Fixes #43.
 * Added member_name and collection_name setting to Route object when made with
   map.resource.
 * Updated routes.middleware to make the Routes matched accessible as

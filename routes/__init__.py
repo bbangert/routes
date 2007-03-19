@@ -1,5 +1,4 @@
 """Provides common classes and functions most users will want access to."""
-
 import threadinglocal, sys
 
 class _RequestConfig(object):
@@ -33,15 +32,10 @@ class _RequestConfig(object):
         Also, match the incoming URL if there's already a mapper, and
         store the resulting match dict in mapper_dict.
         """
-        port_info = ''
         if environ.get('HTTPS') or environ.get('wsgi.url_scheme') == 'https':
             self.__shared_state.protocol = 'https'
-            if environ.get('SERVER_PORT') != '443':
-                port_info += ':' + environ['SERVER_PORT']
         else:
             self.__shared_state.protocol = 'http'
-            if environ.get('SERVER_PORT', '80') != '80':
-                port_info += ':' + environ.get('SERVER_PORT', '80')
         if hasattr(self, 'mapper'):
             self.mapper.environ = environ
         if 'PATH_INFO' in environ and hasattr(self, 'mapper'):
@@ -54,10 +48,18 @@ class _RequestConfig(object):
             else:
                 self.__shared_state.mapper_dict = None
                 self.__shared_state.route = None
-        host = environ.get('HTTP_HOST') or environ.get('SERVER_NAME')
-        self.__shared_state.host = host.split(':')[0]
-        self.__shared_state.host += port_info
-    
+        
+        if environ.get('HTTP_HOST'):
+            self.__shared_state.host = environ['HTTP_HOST']
+        else:
+            self.__shared_state.host = environ['SERVER_NAME']
+            if environ['wsgi.url_scheme'] == 'https':
+                if environ['SERVER_PORT'] != '443':
+                    self.__shared_state.host += ':' + environ['SERVER_PORT']
+            else:
+                if environ['SERVER_PORT'] != '80':
+                    self.__shared_state.host += ':' + environ['SERVER_PORT']
+
 def request_config(original=False):
     """
     Returns the Routes RequestConfig object.

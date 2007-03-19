@@ -61,7 +61,7 @@ class TestUtils(unittest.TestCase):
         m.connect('category_home', 'category/:section', controller='blog', action='view', section='home')
         m.connect(':controller/:action/:id')
         m.create_regs(['content','blog','admin/comments'])
-        self.con.environ = dict(SCRIPT_NAME='', SERVER_NAME='www.example.com', PATH_INFO='/blog/view/4')
+        self.con.environ = dict(SCRIPT_NAME='', HTTP_HOST='www.example.com', PATH_INFO='/blog/view/4')
         
         self.assertEqual('/blog/view/4', url_for())
         self.assertEqual('/post/index/4', url_for(controller='post'))
@@ -69,7 +69,9 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('/blog/view/2', url_for(id=2))
         self.assertEqual('/viewpost/4', url_for(controller='post', action='view', id=4))
         
-        self.con.environ = dict(SCRIPT_NAME='', SERVER_NAME='www.example.com', SERVER_PORT='8080', PATH_INFO='/blog/view/4')
+        env = dict(SCRIPT_NAME='', SERVER_NAME='www.example.com', SERVER_PORT='8080', PATH_INFO='/blog/view/4')
+        env['wsgi.url_scheme'] = 'http'
+        self.con.environ = env
         self.assertEqual('/post/index/4', url_for(controller='post'))
         self.assertEqual('http://www.example.com:8080/blog/view/4', url_for(qualified=True))
         
@@ -106,7 +108,7 @@ class TestUtils(unittest.TestCase):
     def test_redirect_to(self):
         m = self.con.mapper
         self.con.mapper_dict = {}
-        self.con.environ = dict(SCRIPT_NAME='', SERVER_NAME='www.example.com')
+        self.con.environ = dict(SCRIPT_NAME='', HTTP_HOST='www.example.com')
         result = None
         def printer(echo):
             redirect_to.result = echo
@@ -155,7 +157,7 @@ class TestUtils(unittest.TestCase):
     def test_static_route(self):
         m = self.con.mapper
         self.con.mapper_dict = {}
-        self.con.environ = dict(SCRIPT_NAME='', SERVER_NAME='example.com')
+        self.con.environ = dict(SCRIPT_NAME='', HTTP_HOST='example.com')
         m.connect(':controller/:action/:id')
         m.connect('home', 'http://www.groovie.org/', _static=True)
         m.connect('space', '/nasa/images', _static=True)
@@ -169,7 +171,7 @@ class TestUtils(unittest.TestCase):
     def test_static_route_with_script(self):
         m = self.con.mapper
         self.con.mapper_dict = {}
-        self.con.environ = dict(SCRIPT_NAME='/webapp', SERVER_NAME='example.com')
+        self.con.environ = dict(SCRIPT_NAME='/webapp', HTTP_HOST='example.com')
         m.connect(':controller/:action/:id')
         m.connect('home', 'http://www.groovie.org/', _static=True)
         m.connect('space', '/nasa/images', _static=True)
@@ -184,7 +186,7 @@ class TestUtils(unittest.TestCase):
     def test_no_named_path(self):
         m = self.con.mapper
         self.con.mapper_dict = {}
-        self.con.environ = dict(SCRIPT_NAME='', SERVER_NAME='example.com')
+        self.con.environ = dict(SCRIPT_NAME='', HTTP_HOST='example.com')
         m.connect(':controller/:action/:id')
         m.connect('home', 'http://www.groovie.org/', _static=True)
         m.connect('space', '/nasa/images', _static=True)
@@ -199,7 +201,7 @@ class TestUtils(unittest.TestCase):
         m = self.con.mapper
         self.con.mapper_dict = {}
         m.append_slash = True
-        self.con.environ = dict(SCRIPT_NAME='', SERVER_NAME='example.com')
+        self.con.environ = dict(SCRIPT_NAME='', HTTP_HOST='example.com')
         m.connect(':controller/:action/:id')
         m.connect('home', 'http://www.groovie.org/', _static=True)
         m.connect('space', '/nasa/images', _static=True)
@@ -215,7 +217,7 @@ class TestUtils(unittest.TestCase):
     def test_no_named_path_with_script(self):
         m = self.con.mapper
         self.con.mapper_dict = {}
-        self.con.environ = dict(SCRIPT_NAME='/webapp', SERVER_NAME='example.com')
+        self.con.environ = dict(SCRIPT_NAME='/webapp', HTTP_HOST='example.com')
         m.connect(':controller/:action/:id')
         m.connect('home', 'http://www.groovie.org/', _static=True)
         m.connect('space', '/nasa/images', _static=True)
@@ -240,7 +242,7 @@ class TestUtils(unittest.TestCase):
             return kargs
         
         self.con.mapper_dict = {}
-        self.con.environ = dict(SCRIPT_NAME='', SERVER_NAME='example.com')
+        self.con.environ = dict(SCRIPT_NAME='', HTTP_HOST='example.com')
 
         m = Mapper()
         m.connect(':controller/:(action)-:(id).html')
@@ -294,6 +296,7 @@ class TestUtils(unittest.TestCase):
     def test_with_http_environ(self):
         base_environ = dict(SCRIPT_NAME='', SERVER_PORT='1080', PATH_INFO='/', 
             HTTP_HOST='example.com', SERVER_NAME='example.com')
+        base_environ['wsgi.url_scheme'] = 'http'
         self.con.environ = base_environ.copy()
         self.con.mapper_dict = {}
 
@@ -484,7 +487,10 @@ class TestUtilsWithExplicit(unittest.TestCase):
         m.connect('category_home', 'category/:section', controller='blog', action='view', section='home')
         m.connect(':controller/:action/:id')
         m.create_regs(['content','blog','admin/comments'])
-        self.con.environ = dict(SCRIPT_NAME='', SERVER_NAME='www.example.com', PATH_INFO='/blog/view/4')
+        env = dict(SCRIPT_NAME='', SERVER_NAME='www.example.com', SERVER_PORT='80', PATH_INFO='/blog/view/4')
+        env['wsgi.url_scheme'] = 'http'
+        
+        self.con.environ = env
         
         self.assertEqual(None, url_for())
         self.assertEqual(None, url_for(controller='post'))
@@ -493,7 +499,9 @@ class TestUtilsWithExplicit(unittest.TestCase):
         self.assertEqual('http://www.example.com/blog/view/4', url_for(qualified=True, controller='blog', action='view', id=4))
         self.assertEqual('/viewpost/4', url_for(controller='post', action='view', id=4))
         
-        self.con.environ = dict(SCRIPT_NAME='', SERVER_NAME='www.example.com', SERVER_PORT='8080', PATH_INFO='/blog/view/4')
+        env = dict(SCRIPT_NAME='', SERVER_NAME='www.example.com', SERVER_PORT='8080', PATH_INFO='/blog/view/4')
+        env['wsgi.url_scheme'] = 'http'
+        self.con.environ = env
         self.assertEqual(None, url_for(controller='post'))
         self.assertEqual('http://www.example.com:8080/blog/view/4', url_for(qualified=True, controller='blog', action='view', id=4))
         
