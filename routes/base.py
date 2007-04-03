@@ -74,7 +74,7 @@ class Route(object):
         reserved_keys = ['requirements']
         
         # special chars to indicate a natural split in the URL
-        self.done_chars = ('/', ',', ';', '.')
+        self.done_chars = ('/', ',', ';', '.', '#')
         
         # Strip preceding '/' if present
         if routepath.startswith('/'):
@@ -260,8 +260,8 @@ class Route(object):
             elif var == 'controller':
                 partreg = '(?P<' + var + '>' + '|'.join(map(re.escape, clist))
                 partreg += ')'
-            elif self.prior == '/':
-                partreg = '(?P<' + var + '>[^/]+?)'
+            elif self.prior in ['/', '#']:
+                partreg = '(?P<' + var + '>[^' + self.prior + ']+?)'
             else:
                 partreg = '(?P<' + var + '>[^%s]+?)' % ''.join(self.done_chars)
             
@@ -407,7 +407,11 @@ class Route(object):
         for key, val in matchdict.iteritems():
             # change back into python unicode objects from the URL 
             # representation
-            val = val and urllib.unquote_plus(val).decode('utf-8')
+            try:
+                val = val and urllib.unquote_plus(val).decode('utf-8', 'replace')
+            except:
+                val = val and urllib.unquote_plus(val).decode('utf-8', 'ignore')
+            
             if not val and self.defaults.has_key(key) and self.defaults[key]:
                 result[key] = self.defaults[key]
             else:

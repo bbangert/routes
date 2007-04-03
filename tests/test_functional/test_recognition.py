@@ -14,7 +14,7 @@ class TestRecognition(unittest.TestCase):
         m.connect(':controller/:(action).:(id)')
         m.create_regs(['content'])
         
-        assert {'action':'view#2','controller':'content','id':None} == m.match('/content/view#2')
+        assert None == m.match('/content/view#2')
         assert {'action':'view','controller':'content','id':'2'} == m.match('/content/view.2')
         
         m.connect(':controller/:action/:id')

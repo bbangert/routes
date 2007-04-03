@@ -2,6 +2,11 @@ Routes Changelog
 ========================
 
 -- 1.6.3 (**svn**)
+* Added utf-8 decoding of incoming path arguments, with fallback to ignoring
+  them in the very rare cases a malformed request URL is sent. Patch from
+  David Smith.
+* Fixed treatment of '#' character as something that can be left off and
+  used in route paths. Found by Mike Orr.
 * Added ability to specify parent resource to map.resource command. Patch from
   Wyatt Baldwin.
 * Fixed formatted route issue with map.resource when additional collection 
