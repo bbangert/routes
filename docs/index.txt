@@ -22,6 +22,56 @@ Buzzword Compliance: *REST*, *DRY*
 News
 ====
 
+**April 10th, 2007**
+
+Routes 1.6.3:
+
+* Fixed matching so that an attempt to match an empty path raises a
+  RouteException. Fixes #44.
+* Added ability to use characters in URL's such as '-' and '_' in 
+  map.resource. Patch by Wyatt Baldwin. Fixes #45.
+* Updated Mapper.resource handling with name_prefix and path_prefix checking
+  to specify defaults. Also ensures that should either of them be set, they
+  override the prefixes should parent_resource be specified. Patch by Wyatt
+  Baldwin. Fixes #42.
+* Added utf-8 decoding of incoming path arguments, with fallback to ignoring
+  them in the very rare cases a malformed request URL is sent. Patch from
+  David Smith.
+* Fixed treatment of '#' character as something that can be left off and
+  used in route paths. Found by Mike Orr.
+* Added ability to specify parent resource to map.resource command. Patch from
+  Wyatt Baldwin.
+* Fixed formatted route issue with map.resource when additional collection 
+  methods are specified. Added unit tests to verify the collection methods
+  work properly.
+* Updated URL parsing to properly use HTTP_HOST for hostname + port info before
+  falling back to SERVER_PORT and SERVER_NAME. Fixes #43.
+* Added member_name and collection_name setting to Route object when made with
+  map.resource.
+* Updated routes.middleware to make the Routes matched accessible as
+  environ['routes.route'].
+* Updating mapper object to use thread local for request data (such as 
+  environ) and middleware now deletes environ references at the end of the
+  request.
+* Added explicit option to Routes and Mapper. Routes _explicit setting will
+  prevent the Route defaults from being implicitly set, while setting Mapper
+  to explicit will prevent Route implicit defaults and stop url_for from using
+  Route memory. Fixes #38.
+* Updated config object so that the route is attached if possible.
+* Adding standard logging usage with debug messages.
+* Added additional test for normal '.' match and fixed new special matching to
+  match it properly. Thanks David Smith.
+* Fixed hanging special char issue with 'special' URL chars at the end of a URL
+  that are missing the variable afterwards.
+* Changed Routes generation and recognition to handle other 'special' URL chars
+  , . and ; as if they were /. This lets them be optionally left out of the
+  resulting generated URL. Feature requested by David Smith.
+* Fixed lookahead assertion in regexp builder to properly handle two grouped
+  patterns in a row.
+* Applied patch to generation and matching to handle Unicode characters
+  properly. Reported with patch by David Smith.
+
+
 **Jan. 5, 2007**
 
 Routes 1.6.2:

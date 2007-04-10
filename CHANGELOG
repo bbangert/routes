@@ -1,7 +1,10 @@
 Routes Changelog
 ========================
 
--- 1.6.3 (**svn**)
+-- 1.7.0 (**svn**)
+
+
+-- 1.6.3 (April 10th, 2007)
 * Fixed matching so that an attempt to match an empty path raises a
   RouteException. Fixes #44.
 * Added ability to use characters in URL's such as '-' and '_' in 

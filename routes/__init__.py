@@ -22,7 +22,7 @@ class _RequestConfig(object):
             self.load_wsgi_environ(value)
             return self.__shared_state.__setattr__(name, value)
         return self.__shared_state.__setattr__(name, value)
-        
+    
     def __delattr__(self, name):
         delattr(self.__shared_state, name)
     
