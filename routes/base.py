@@ -540,25 +540,24 @@ class Mapper(object):
     
     URL generation is done by passing keyword parameters into the generate function, a URL is then
     returned.
-        
     """
     def __init__(self, controller_scan=controller_scan, directory=None, 
                  always_scan=False, register=True, explicit=False):
         """Create a new Mapper instance
         
         All keyword arguments are optional.
-
+        
         ``controller_scan``
             Function reference that will be used to return a list of valid 
             controllers used during URL matching. If ``directory`` keyword arg
             is present, it will be passed into the function during its call. 
             This option defaults to a function that will scan a directory for
             controllers.
-
+        
         ``directory``
             Passed into controller_scan for the directory to scan. It should be
             an absolute path if using the default ``controller_scan`` function.
-
+        
         ``always_scan``
             Whether or not the ``controller_scan`` function should be run 
             during every URL match. This is typically a good idea during 
@@ -573,8 +572,10 @@ class Mapper(object):
         
         ``explicit``
             Boolean used to determine if routes should be connected with 
-            implicit defaults of:
-              {'controller':'content','action':'index','id':None}
+            implicit defaults of::
+                
+                {'controller':'content','action':'index','id':None}
+            
             When set to True, these defaults will not be added to route
             connections and ``url_for`` will not use Route memory.
         """
