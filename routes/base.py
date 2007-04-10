@@ -1137,10 +1137,12 @@ class Mapper(object):
                 self.connect("formatted_" + name_prefix + name, path, 
                              **route_options)
         
+        requirements_regexp = '[\w\-_]+'
+
         # Add the routes that deal with member methods of a resource
         for method, lst in member_methods.iteritems():
             route_options = requirements_for(method)
-            route_options['requirements'] = {'id':'\w+'}
+            route_options['requirements'] = {'id':requirements_regexp}
             if method not in ['POST', 'GET', 'any']:
                 primary = lst.pop(0)
             else:
@@ -1159,7 +1161,7 @@ class Mapper(object):
         # Specifically add the member 'show' method
         route_options = requirements_for('GET')
         route_options['action'] = 'show'
-        route_options['requirements'] = {'id':'\w+'}
+        route_options['requirements'] = {'id':requirements_regexp}
         self.connect(name_prefix + member_name, member_path, **route_options)
         self.connect("formatted_" + name_prefix + member_name, 
                      member_path + ".:(format)", **route_options)

@@ -2,6 +2,8 @@ Routes Changelog
 ========================
 
 -- 1.6.3 (**svn**)
+* Added ability to use characters in URL's such as '-' and '_' in 
+  map.resource. Patch by Wyatt Baldwin. Fixes #45.
 * Updated Mapper.resource handling with name_prefix and path_prefix checking
   to specify defaults. Also ensures that should either of them be set, they
   override the prefixes should parent_resource be specified. Patch by Wyatt
