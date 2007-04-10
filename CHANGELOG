@@ -2,6 +2,10 @@ Routes Changelog
 ========================
 
 -- 1.6.3 (**svn**)
+* Updated Mapper.resource handling with name_prefix and path_prefix checking
+  to specify defaults. Also ensures that should either of them be set, they
+  override the prefixes should parent_resource be specified. Patch by Wyatt
+  Baldwin. Fixes #42.
 * Added utf-8 decoding of incoming path arguments, with fallback to ignoring
   them in the very rare cases a malformed request URL is sent. Patch from
   David Smith.

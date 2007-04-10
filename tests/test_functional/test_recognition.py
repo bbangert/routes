@@ -825,6 +825,71 @@ class TestRecognition(unittest.TestCase):
         url = url_for('region_location', region_id=13, id=60, action='update')
         assert url == '/regions/13/locations/60'
     
+        # Make sure ``path_prefix`` overrides work
+        # empty ``path_prefix`` (though I'm not sure why someone would do this)
+        m = Mapper()
+        m.resource('location', 'locations',
+                   parent_resource=dict(member_name='region',
+                                        collection_name='regions'),
+                   path_prefix='')
+        url = url_for('region_locations')
+        assert url == '/locations'
+        # different ``path_prefix``
+        m = Mapper()
+        m.resource('location', 'locations',
+                   parent_resource=dict(member_name='region',
+                                        collection_name='regions'),
+                   path_prefix='areas/:area_id')
+        url = url_for('region_locations', area_id=51)
+        assert url == '/areas/51/locations'
+
+        # Make sure ``name_prefix`` overrides work
+        # empty ``name_prefix``
+        m = Mapper()
+        m.resource('location', 'locations',
+                   parent_resource=dict(member_name='region',
+                                        collection_name='regions'),
+                   name_prefix='')
+        url = url_for('locations', region_id=51)
+        assert url == '/regions/51/locations'
+        # different ``name_prefix``
+        m = Mapper()
+        m.resource('location', 'locations',
+                   parent_resource=dict(member_name='region',
+                                        collection_name='regions'),
+                   name_prefix='area_')
+        url = url_for('area_locations', region_id=51)
+        assert url == '/regions/51/locations'
+
+        # Make sure ``path_prefix`` and ``name_prefix`` overrides work together
+        # empty ``path_prefix``
+        m = Mapper()
+        m.resource('location', 'locations',
+                   parent_resource=dict(member_name='region',
+                                        collection_name='regions'),
+                   path_prefix='',
+                   name_prefix='place_')
+        url = url_for('place_locations')
+        assert url == '/locations'
+        # empty ``name_prefix``
+        m = Mapper()
+        m.resource('location', 'locations',
+                   parent_resource=dict(member_name='region',
+                                        collection_name='regions'),
+                   path_prefix='areas/:area_id',
+                   name_prefix='')
+        url = url_for('locations', area_id=51)
+        assert url == '/areas/51/locations'
+        # different ``path_prefix`` and ``name_prefix``
+        m = Mapper()
+        m.resource('location', 'locations',
+                   parent_resource=dict(member_name='region',
+                                        collection_name='regions'),
+                   path_prefix='areas/:area_id',
+                   name_prefix='place_')
+        url = url_for('place_locations', area_id=51)
+        assert url == '/areas/51/locations'
+
     def test_other_special_chars(self):
         m = Mapper()
         m.connect('/:year/:(slug).:(format),:(locale)', format='html', locale='en')

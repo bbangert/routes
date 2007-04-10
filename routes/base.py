@@ -1003,22 +1003,51 @@ class Mapper(object):
                 '/regions/13/locations/60'
                 >>> url_for('region_edit_location', region_id=13, id=60) 
                 '/regions/13/locations/60;edit'
+
+            Overriding generated ``path_prefix``::
+
+                >>> m = Mapper()
+                >>> m.resource('location', 'locations',
+                ...            parent_resource=dict(member_name='region',
+                ...                                 collection_name='regions'),
+                ...            path_prefix='areas/:area_id')
+                >>> # name prefix is "region_"
+                >>> url_for('region_locations', area_id=51)
+                '/areas/51/locations'
+
+            Overriding generated ``name_prefix``::
+
+                >>> m = Mapper()
+                >>> m.resource('location', 'locations',
+                ...            parent_resource=dict(member_name='region',
+                ...                                 collection_name='regions'),
+                ...            name_prefix='')
+                >>> # path_prefix is "regions/:region_id" 
+                >>> url_for('locations', region_id=51)
+                '/regions/51/locations'
+
         """
         collection = kwargs.pop('collection', {})
         member = kwargs.pop('member', {})
         new = kwargs.pop('new', {})
-        path_prefix = kwargs.pop('path_prefix', '')
-        name_prefix = kwargs.pop('name_prefix', '')
+        path_prefix = kwargs.pop('path_prefix', None)
+        name_prefix = kwargs.pop('name_prefix', None)
         parent_resource = kwargs.pop('parent_resource', None)
         
         # Generate ``path_prefix`` if ``path_prefix`` wasn't specified and 
-        # ``parent_resource`` was. Likewise for ``name_prefix``. 
+        # ``parent_resource`` was. Likewise for ``name_prefix``. Make sure
+        # that ``path_prefix`` and ``name_prefix`` *always* take precedence if
+        # they are specified--in particular, we need to be careful when they
+        # are explicitly set to "".
         if parent_resource is not None: 
-            if not path_prefix: 
+            if path_prefix is None: 
                 path_prefix = '%s/:%s_id' % (parent_resource['collection_name'], 
                                              parent_resource['member_name']) 
-            if not name_prefix: 
-                name_prefix = '%s_' % parent_resource['member_name']   
+            if name_prefix is None:
+                name_prefix = '%s_' % parent_resource['member_name']
+        else:
+            if path_prefix is None: path_prefix = ''
+            if name_prefix is None: name_prefix = ''
         
         # Ensure the edit and new actions are in and GET
         member['edit'] = 'GET'
