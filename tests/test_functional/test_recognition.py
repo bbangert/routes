@@ -909,6 +909,18 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual(None, m.match('/2007/test.'))
         self.assertEqual({'controller': 'error', 'action': 'img',
                           'id': 'icon-16.png'}, m.match('/error/img/icon-16.png'))
+    
+    def test_empty_fails(self):
+        m = Mapper()
+        m.connect(':controller/:action/:id')
+        m.connect('', controller='content', action='view', id=4)
+        m.create_regs(['content'])
+        
+        assert {'controller':'content','action':'index','id':None} == m.match('/content')
+        assert {'controller':'content','action':'view','id':'4'} == m.match('/')
+        def call_func():
+            m.match('')
+        self.assertRaises(RouteException, call_func)
 
 if __name__ == '__main__':
     unittest.main()

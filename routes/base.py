@@ -720,8 +720,7 @@ class Mapper(object):
         if not self._created_regs and self.controller_scan:
             self.create_regs()
         elif not self._created_regs:
-            raise RouteException, \
-                  "You must generate the regular expressions before matching."
+            raise RouteException("You must generate the regular expressions before matching.")
         
         if self.always_scan:
             self.create_regs()
@@ -757,6 +756,10 @@ class Mapper(object):
             resultdict = m.match('/joe/sixpack')
         
         """
+        if not url:
+            raise RouteException('No URL provided, the minimum URL necessary'
+                                 ' to match is "/".')
+        
         result = self._match(url)
         if self.debug:
             return result[0], result[1], result[2]

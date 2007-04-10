@@ -2,6 +2,8 @@ Routes Changelog
 ========================
 
 -- 1.6.3 (**svn**)
+* Fixed matching so that an attempt to match an empty path raises a
+  RouteException. Fixes #44.
 * Added ability to use characters in URL's such as '-' and '_' in 
   map.resource. Patch by Wyatt Baldwin. Fixes #45.
 * Updated Mapper.resource handling with name_prefix and path_prefix checking
