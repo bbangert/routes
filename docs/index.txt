@@ -22,6 +22,12 @@ Buzzword Compliance: *REST*, *DRY*
 News
 ====
 
+Routes trunk:
+
+* Cached matches for requests with different values for SCRIPT_NAME
+  (the application root) could return bad URLs (caching the URL from
+  other values of SCRIPT_NAME).  Fixed.
+
 **April 10th, 2007**
 
 Routes 1.6.3:

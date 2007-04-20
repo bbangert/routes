@@ -812,10 +812,21 @@ class Mapper(object):
         
         controller = kargs.get('controller', None)
         action = kargs.get('action', None)
+
+        # If the URL didn't depend on the SCRIPT_NAME, we'll cache it
+        # keyed by just by kargs; otherwise we need to cache it with
+        # both SCRIPT_NAME and kargs:
+        cache_key = unicode(kargs).encode('utf8')
+        if self.environ:
+            cache_key_script_name = '%s:%s' % (
+                self.environ.get('SCRIPT_NAME', ''), cache_key)
+        else:
+            cache_key_script_name = cache_key
         
         # Check the url cache to see if it exists, use it if it does
-        if unicode(kargs) in self.urlcache:
-            return self.urlcache[unicode(kargs)]
+        for key in [cache_key, cache_key_script_name]:
+            if key in self.urlcache:
+                return self.urlcache[key]
         
         actionlist = self._gendict.get(controller) or self._gendict.get('*')
         if not actionlist:
@@ -897,8 +908,11 @@ class Mapper(object):
                 if self.environ and self.environ.get('SCRIPT_NAME', '') != '' \
                     and not route.absolute:
                     path = self.environ['SCRIPT_NAME'] + path
+                    key = cache_key_script_name
+                else:
+                    key = cache_key
                 if self.urlcache is not None:
-                    self.urlcache[unicode(kargs)] = str(path)
+                    self.urlcache[key] = str(path)
                 return str(path)
             else:
                 continue

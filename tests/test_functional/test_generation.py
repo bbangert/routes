@@ -455,6 +455,14 @@ class TestGeneration(unittest.TestCase):
         assert '/blog/content' == m.generate(controller='content')
         assert '/blog/admin/comments' == m.generate(controller='admin/comments')
 
+        m.environ = dict(SCRIPT_NAME='/notblog')
+
+        assert '/notblog/content/view' == m.generate(controller='content', action='view')
+        assert '/notblog/content' == m.generate(controller='content')
+        assert '/notblog/content' == m.generate(controller='content')
+        assert '/notblog/admin/comments' == m.generate(controller='admin/comments')
+        
+
     def test_url_with_environ_and_absolute(self):
         m = Mapper()
         m.environ = dict(SCRIPT_NAME='/blog')
