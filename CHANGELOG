@@ -2,7 +2,9 @@ Routes Changelog
 ========================
 
 -- 1.7.0 (**svn**)
-
+* Fixed Routes middleware to only parse POST's if the content type is
+  application/x-www-form-urlencoded for a HTML form. This properly avoids
+  parsing wsgi.input when it doesn't need to be.
 
 -- 1.6.3 (April 10th, 2007)
 * Fixed matching so that an attempt to match an empty path raises a
