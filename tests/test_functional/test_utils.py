@@ -16,6 +16,18 @@ class TestUtils(unittest.TestCase):
         con.host = 'www.test.com'
         con.protocol = 'http'
         self.con = con
+    
+    def test_url_for_with_unicode(self):
+        con = self.con
+        con.mapper_dict = {}
+        
+        assert '/blog' == url_for(controller='blog')
+        assert '/blog/view/umulat' == url_for(controller='blog', action='view', id=u'umulat')
+        
+        def raise_url():
+            return url_for(u'/some/stirng')
+        self.assertRaises(Exception, raise_url)
+        
         
     def test_url_for(self):
         con = self.con

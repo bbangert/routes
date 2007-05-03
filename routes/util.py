@@ -191,6 +191,11 @@ def url_for(*args, **kargs):
             protocol = config.protocol
         if url is not None:
             url = protocol + '://' + host + url
+    
+    if not isinstance(url, str) and url is not None:
+        raise Exception("url_for can only return a string or None, got "
+                        " unicode instead: %s" % url)
+    
     return url
 
 def redirect_to(*args, **kargs):
