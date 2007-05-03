@@ -405,12 +405,13 @@ class Route(object):
         result = {}
         extras = frozenset(self.defaults.keys()) - frozenset(matchdict.keys())
         for key, val in matchdict.iteritems():
-            # change back into python unicode objects from the URL 
-            # representation
-            try:
-                val = val and urllib.unquote_plus(val).decode('utf-8', 'replace')
-            except:
-                val = val and urllib.unquote_plus(val).decode('utf-8', 'ignore')
+            if key != 'path_info':
+                # change back into python unicode objects from the URL 
+                # representation
+                try:
+                    val = val and urllib.unquote_plus(val).decode('utf-8', 'replace')
+                except:
+                    val = val and urllib.unquote_plus(val).decode('utf-8', 'ignore')
             
             if not val and self.defaults.has_key(key) and self.defaults[key]:
                 result[key] = self.defaults[key]
