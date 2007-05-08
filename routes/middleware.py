@@ -56,7 +56,8 @@ altering = %s""" % (use_method_override, path_info))
                 log.debug("_method found in QUERY_STRING, altering request"
                           " method to %s" % environ['REQUEST_METHOD'])
             elif environ['REQUEST_METHOD'] == 'POST' and \
-                 'application/x-www-form-urlencoded' in environ['CONTENT_TYPE'] \
+                 'application/x-www-form-urlencoded' in environ.get('CONTENT_TYPE',
+                                                                    '') \
                  and'_method' in req.POST:
                 old_method = environ['REQUEST_METHOD']
                 environ['REQUEST_METHOD'] = req.POST['_method'].upper()

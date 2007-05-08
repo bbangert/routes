@@ -2,6 +2,8 @@ Routes Changelog
 ========================
 
 -- 1.7.0 (**svn**)
+* Don't assume environ['CONTENT_TYPE'] always exists: it may be ommitted
+  according to the WSGI PEP.
 * Fixed Unicode decode/encoding of path_info dynamic/wildcard parts so that
   PATH_INFO will stay a raw string as it should. Fixes #51.
 * Fixed url_for (thus redirect_to) to throw an exception if a Unicode
