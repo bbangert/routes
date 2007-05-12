@@ -2,6 +2,8 @@ Routes Changelog
 ========================
 
 -- 1.7.0 (**svn**)
+* Fixed Unicode decoding/encoding so that the URL decoding and encoding can be
+  set on the mapper with mapper.encoding. Fixes #40.
 * Don't assume environ['CONTENT_TYPE'] always exists: it may be ommitted
   according to the WSGI PEP.
 * Fixed Unicode decode/encoding of path_info dynamic/wildcard parts so that

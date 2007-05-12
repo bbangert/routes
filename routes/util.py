@@ -74,9 +74,9 @@ def _subdomain_check(config, kargs):
         return kargs
     
 
-def _url_quote(string):
+def _url_quote(string, encoding):
     """A Unicode handling version of urllib.quote_plus."""
-    return urllib.quote_plus(unicode(string).encode('utf-8'), '/')
+    return urllib.quote_plus(unicode(string).encode(encoding), '/')
 
 def url_for(*args, **kargs):
     """Generates a URL 
@@ -135,6 +135,7 @@ def url_for(*args, **kargs):
     config = request_config()
     route = None
     static = False
+    encoding = config.mapper.encoding
     url = ''
     if len(args) > 0:
         route = config.mapper._routenames.get(args[0])
@@ -158,8 +159,8 @@ def url_for(*args, **kargs):
                 query_args = []
                 for key, val in kargs.iteritems():
                     query_args.append("%s=%s" % (
-                        urllib.quote_plus(unicode(key).encode('utf-8')),
-                        urllib.quote_plus(unicode(val).encode('utf-8'))))
+                        urllib.quote_plus(unicode(key).encode(encoding)),
+                        urllib.quote_plus(unicode(val).encode(encoding))))
                 url += '&'.join(query_args)
     if not static:
         if route:
@@ -179,7 +180,7 @@ def url_for(*args, **kargs):
         protocol = newargs.pop('_protocol', None) or protocol
         url = config.mapper.generate(**newargs)
     if anchor:
-        url += '#' + _url_quote(anchor)
+        url += '#' + _url_quote(anchor, encoding)
     if host or protocol or qualified:
         if not host and not qualified:
             # Ensure we don't use a specific port, as changing the protocol

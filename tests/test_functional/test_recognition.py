@@ -41,6 +41,15 @@ class TestRecognition(unittest.TestCase):
         m.connect(':hoge')
         self.assertEqual({'controller': 'content', 'action': 'index', 'hoge': hoge},
                          m.match('/' + hoge_enc))
+    
+    def test_disabling_unicode(self):
+        hoge = u'\u30c6\u30b9\u30c8' # the word test in Japanese
+        hoge_enc = urllib.quote_plus(hoge.encode('utf-8'))
+        m = Mapper()
+        m.encoding = None
+        m.connect(':hoge')
+        self.assertEqual({'controller': 'content', 'action': 'index', 'hoge': hoge_enc},
+                         m.match('/' + hoge_enc))
             
     def test_basic_dynamic(self):
         for path in ['hi/:name', 'hi/:(name)']:

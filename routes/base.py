@@ -52,6 +52,8 @@ class Route(object):
         self.routepath = routepath
         self.sub_domains = False
         self.prior = None
+        self.encoding = 'utf-8'
+        self.decode_errors = 'replace'
         
         # Don't bother forming stuff we don't need if its a static route
         self.static = kargs.get('_static', False)
@@ -405,13 +407,13 @@ class Route(object):
         result = {}
         extras = frozenset(self.defaults.keys()) - frozenset(matchdict.keys())
         for key, val in matchdict.iteritems():
-            if key != 'path_info':
+            if key != 'path_info' and self.encoding:
                 # change back into python unicode objects from the URL 
                 # representation
                 try:
-                    val = val and urllib.unquote_plus(val).decode('utf-8', 'replace')
-                except:
-                    val = val and urllib.unquote_plus(val).decode('utf-8', 'ignore')
+                    val = val and urllib.unquote_plus(val).decode(self.encoding, self.decode_errors)
+                except UnicodeDecodeError:
+                    return False
             
             if not val and self.defaults.has_key(key) and self.defaults[key]:
                 result[key] = self.defaults[key]
@@ -494,7 +496,7 @@ class Route(object):
                 else:
                     return False
                 
-                urllist.append(url_quote(val))
+                urllist.append(url_quote(val, self.encoding))
                 if has_arg:
                     del kargs[arg]
                 gaps = True
@@ -502,7 +504,7 @@ class Route(object):
                 arg = part['name']
                 kar = kargs.get(arg)
                 if kar is not None:
-                    urllist.append(url_quote(kar))
+                    urllist.append(url_quote(kar, self.encoding))
                     gaps = True
             elif part and part[-1] in self.done_chars:
                 if not gaps and part in self.done_chars:
@@ -599,6 +601,8 @@ class Mapper(object):
         self.sub_domains_ignore = []
         self.domain_match = '[^\.\/]+?\.[^\.\/]+'
         self.explicit = explicit
+        self.encoding = 'utf-8'
+        self.decode_errors = 'ignore'
         if register:
             config = request_config()
             config.mapper = self
@@ -635,6 +639,12 @@ class Mapper(object):
         if '_explicit' not in kargs:
             kargs['_explicit'] = self.explicit
         route = Route(*args, **kargs)
+        
+        # Apply encoding and errors if its not the defaults
+        if self.encoding != 'utf-8' or self.decode_errors != 'ignore':
+            route.encoding = self.encoding
+            route.decode_errors = self.decode_errors
+        
         self.matchlist.append(route)
         if routename:
             self._routenames[routename] = route
