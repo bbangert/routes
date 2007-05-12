@@ -131,7 +131,7 @@ class Route(object):
                     done_on = ')'
                 else:
                     current = char
-                    done_on = self.done_chars
+                    done_on = self.done_chars + ('-',)
             elif collecting and char not in done_on:
                 current += char
             elif collecting:
@@ -265,7 +265,10 @@ class Route(object):
             elif self.prior in ['/', '#']:
                 partreg = '(?P<' + var + '>[^' + self.prior + ']+?)'
             else:
-                partreg = '(?P<' + var + '>[^%s]+?)' % ''.join(self.done_chars)
+                if not rest:
+                    partreg = '(?P<' + var + '>[^%s]+?)' % '/'
+                else:
+                    partreg = '(?P<' + var + '>[^%s]+?)' % ''.join(self.done_chars)
             
             if self.reqs.has_key(var):
                 noreqs = False

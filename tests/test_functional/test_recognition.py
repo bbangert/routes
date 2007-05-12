@@ -457,6 +457,28 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual({'controller':'content','action':'index', 'id': 'None'}, m.match('/content/index/None.py'))
         self.assertEqual({'controller':'content','action':'list', 'id':'None'}, m.match('/content/list/None.py'))
         self.assertEqual({'controller':'content','action':'show','id':'10'}, m.match('/content/show/10.py'))
+
+    def test_standard_route_with_gaps_and_domains(self):
+        m = Mapper()
+        m.connect('manage/:domain.:ext', controller='admin/user', action='view', ext='html')
+        m.connect(':controller/:action/:id')
+        m.create_regs(['content','admin/user'])
+        
+        self.assertEqual({'controller':'content','action':'index', 'id': 'None.py'}, m.match('/content/index/None.py'))
+        self.assertEqual({'controller':'content','action':'list', 'id':'None.py'}, m.match('/content/list/None.py'))
+        self.assertEqual({'controller':'content','action':'show','id':'10.py'}, m.match('/content/show/10.py'))
+        self.assertEqual({'controller':'content','action':'show.all','id':'10.py'}, m.match('/content/show.all/10.py'))
+        self.assertEqual({'controller':'content','action':'show','id':'www.groovie.org'}, m.match('/content/show/www.groovie.org'))
+        
+        self.assertEqual({'controller':'admin/user','action':'view', 'ext': 'html', 'domain': 'groovie'}, m.match('/manage/groovie'))
+        self.assertEqual({'controller':'admin/user','action':'view', 'ext': 'xml', 'domain': 'groovie'}, m.match('/manage/groovie.xml'))
+    
+    def test_standard_with_domains(self):
+        m = Mapper()
+        m.connect('manage/:domain', controller='domains', action='view')
+        m.create_regs(['domains'])
+        
+        self.assertEqual({'controller':'domains','action':'view','domain':'www.groovie.org'}, m.match('/manage/www.groovie.org'))
     
     def test_default_route(self):
         m = Mapper()
