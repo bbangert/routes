@@ -52,7 +52,7 @@ class Route(object):
         self.routepath = routepath
         self.sub_domains = False
         self.prior = None
-        self.encoding = 'utf-8'
+        self.encoding = kargs.pop('_encoding', 'utf-8')
         self.decode_errors = 'replace'
         
         # Don't bother forming stuff we don't need if its a static route

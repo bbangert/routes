@@ -2,6 +2,8 @@ Routes Changelog
 ========================
 
 -- 1.7.0 (**svn**)
+* Added _encoding option to individual routes to toggle decoding/encoding on a
+  per route basis.
 * Fixed route matching so that '.' and other special chars are only part of the
   match should they not be followed by that character. Fixed regexp creation so
   that route parts with '.' in them aren't matched properly. Fixes #48.
