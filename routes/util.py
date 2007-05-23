@@ -79,7 +79,7 @@ def _url_quote(string, encoding):
     if encoding:
         return urllib.quote_plus(unicode(string).encode(encoding), '/')
     else:
-        return urllib.quote_plus(string, '/')
+        return urllib.quote_plus(str(string), '/')
 
 def url_for(*args, **kargs):
     """Generates a URL 
