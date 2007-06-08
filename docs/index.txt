@@ -22,11 +22,28 @@ Buzzword Compliance: *REST*, *DRY*
 News
 ====
 
-Routes trunk:
+** June 8th, 2007**
 
-* Cached matches for requests with different values for SCRIPT_NAME
-  (the application root) could return bad URLs (caching the URL from
-  other values of SCRIPT_NAME).  Fixed.
+Routes 1.7:
+
+* Fixed url_unquoting to only apply for strings.
+* Added _encoding option to individual routes to toggle decoding/encoding on a
+  per route basis.
+* Fixed route matching so that '.' and other special chars are only part of the
+  match should they not be followed by that character. Fixed regexp creation so
+  that route parts with '.' in them aren't matched properly. Fixes #48.
+* Fixed Unicode decoding/encoding so that the URL decoding and encoding can be
+  set on the mapper with mapper.encoding. Fixes #40.
+* Don't assume environ['CONTENT_TYPE'] always exists: it may be ommitted
+  according to the WSGI PEP.
+* Fixed Unicode decode/encoding of path_info dynamic/wildcard parts so that
+  PATH_INFO will stay a raw string as it should. Fixes #51.
+* Fixed url_for (thus redirect_to) to throw an exception if a Unicode
+  string is returned as that's an invalid URL. Fixes #46.
+* Fixed Routes middleware to only parse POST's if the content type is
+  application/x-www-form-urlencoded for a HTML form. This properly avoids
+  parsing wsgi.input when it doesn't need to be.
+
 
 **April 10th, 2007**
 

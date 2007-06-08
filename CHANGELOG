@@ -1,7 +1,7 @@
 Routes Changelog
 ========================
 
--- 1.7.0 (**svn**)
+-- 1.7 (June 8th, 2007)
 * Fixed url_unquoting to only apply for strings.
 * Added _encoding option to individual routes to toggle decoding/encoding on a
   per route basis.
