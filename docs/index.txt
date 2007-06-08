@@ -22,7 +22,7 @@ Buzzword Compliance: *REST*, *DRY*
 News
 ====
 
-** June 8th, 2007**
+**June 8th, 2007**
 
 Routes 1.7:
 
