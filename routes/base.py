@@ -584,6 +584,18 @@ class Mapper(object):
             
             When set to True, these defaults will not be added to route
             connections and ``url_for`` will not use Route memory.
+        
+        Additional attributes that may be set after mapper initialization (ie,
+        map.ATTRIBUTE = 'something'):
+        
+        ``encoding``
+            Used to indicate alternative encoding/decoding systems to use with
+            both incoming URL's, and during Route generation when passed a 
+            Unicode string. Defaults to 'utf-8'.
+        
+        ``decode_errors``
+            How to handle errors in the encoding, generally ignoring any chars 
+            that don't convert should be sufficient. Defaults to 'ignore'.
         """
         self.matchlist = []
         self.maxkeys = {}
@@ -643,8 +655,10 @@ class Mapper(object):
             kargs['_explicit'] = self.explicit
         route = Route(*args, **kargs)
         
-        # Apply encoding and errors if its not the defaults
-        if self.encoding != 'utf-8' or self.decode_errors != 'ignore':
+        # Apply encoding and errors if its not the defaults and the route 
+        # didn't have one passed in.
+        if (self.encoding != 'utf-8' or self.decode_errors != 'ignore') and \
+           '_encoding' not in kargs:
             route.encoding = self.encoding
             route.decode_errors = self.decode_errors
         
