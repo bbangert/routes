@@ -198,7 +198,7 @@ def url_for(*args, **kargs):
     
     if not isinstance(url, str) and url is not None:
         raise Exception("url_for can only return a string or None, got "
-                        " unicode instead: %s" % url)
+                        "unicode instead: %s" % url)
     
     return url
 
