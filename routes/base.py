@@ -196,7 +196,7 @@ class Route(object):
         defaultkeys = frozenset([key for key in kargs.keys() \
                                  if key not in reserved_keys])
         for key in defaultkeys:
-            if kargs[key] != None:
+            if kargs[key] is not None:
                 defaults[key] = unicode(kargs[key])
             else:
                 defaults[key] = None
