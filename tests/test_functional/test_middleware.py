@@ -53,3 +53,9 @@ def test_method_conversion():
                    headers={'Content-Type': 'application/x-www-form-urlencoded'})
     assert "matchdict is {'action': u'index', 'controller': u'content', 'type': u'grind'}" in res
     assert "'REQUEST_METHOD': 'POST'" in res
+
+    res = app.post('/content/grind',
+                   upload_files=[('fileupload', 'hello.txt', 'Hello World')],
+                   params={'_method':'DELETE', 'name':'smoth'})
+    assert "matchdict is {'action': u'index', 'controller': u'content', 'type': u'grind'}" in res
+    assert "'REQUEST_METHOD': 'POST'" in res

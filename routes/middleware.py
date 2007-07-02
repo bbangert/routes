@@ -55,10 +55,7 @@ altering = %s""", use_method_override, path_info)
                 environ['REQUEST_METHOD'] = req.GET['_method'].upper()
                 log.debug("_method found in QUERY_STRING, altering request"
                           " method to %s", environ['REQUEST_METHOD'])
-            elif environ['REQUEST_METHOD'] == 'POST' and \
-                 'application/x-www-form-urlencoded' in environ.get('CONTENT_TYPE',
-                                                                    '') \
-                 and'_method' in req.POST:
+            elif is_form_post(environ) and '_method' in req.POST:
                 old_method = environ['REQUEST_METHOD']
                 environ['REQUEST_METHOD'] = req.POST['_method'].upper()
                 log.debug("_method found in POST data, altering request "
@@ -105,3 +102,13 @@ altering = %s""", use_method_override, path_info)
         del config.environ
         del self.mapper.environ
         return response
+
+def is_form_post(environ):
+    """Determine whether the request is a POSTed html form"""
+    if environ['REQUEST_METHOD'] != 'POST':
+        return False
+    content_type = environ.get('CONTENT_TYPE', '').lower()
+    if ';' in content_type:
+        content_type = content_type.split(';', 1)[0]
+    return content_type in ('application/x-www-form-urlencoded',
+                            'multipart/form-data')
