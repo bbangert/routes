@@ -36,8 +36,8 @@ class RoutesMiddleware(object):
         self.mapper = mapper
         self.use_method_override = use_method_override
         self.path_info = path_info
-        log.debug("""Initialized with method overriding = %s, and path info 
-altering = %s""", use_method_override, path_info)
+        log.debug("Initialized with method overriding = %s, and path info "
+                  "altering = %s", use_method_override, path_info)
     
     def __call__(self, environ, start_response):
         """Resolves the URL in PATH_INFO, and uses wsgi.routing_args to pass 
