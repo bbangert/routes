@@ -61,7 +61,10 @@ class RoutesMiddleware(object):
                 log.debug("_method found in POST data, altering request "
                           "method to %s", environ['REQUEST_METHOD'])
         
+        # Run the actual route matching
+        # -- Assignment of environ to config triggers route matching
         config.environ = environ
+        
         match = config.mapper_dict
         route = config.route
         
