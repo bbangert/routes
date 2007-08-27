@@ -14,12 +14,10 @@ class TestRecognition(unittest.TestCase):
         m.connect(':controller/:(action).:(id)')
         m.create_regs(['content'])
         
-        assert None == m.match('/content/view#2')
         assert {'action':'view','controller':'content','id':'2'} == m.match('/content/view.2')
         
         m.connect(':controller/:action/:id')
         m.create_regs(['content', 'find.all'])
-        assert {'action': 'view#2', 'controller': 'content', 'id': None} == m.match('/content/view#2')
         assert {'action':'view','controller':'find.all','id':None} == m.match('/find.all/view')
         assert None == m.match('/findzall/view')
         
@@ -941,6 +939,22 @@ class TestRecognition(unittest.TestCase):
         self.assertEqual({'controller': 'error', 'action': 'img',
                           'id': 'icon-16.png'}, m.match('/error/img/icon-16.png'))
     
+    def test_various_periods(self):
+        m = Mapper()
+        m.connect('sites/:site/pages/:page')
+        m.create_regs(['content'])
+        
+        self.assertEqual({'action': u'index', 'controller': u'content', 
+                          'site': u'python.com', 'page': u'index.html'}, 
+                         m.match('/sites/python.com/pages/index.html'))
+        m = Mapper()
+        m.connect('sites/:site/pages/:page.:format', format='html')
+        m.create_regs(['content'])
+        
+        self.assertEqual({'action': u'index', 'controller': u'content', 
+                          'site': u'python.com', 'page': u'index', 'format': u'html'}, 
+                         m.match('/sites/python.com/pages/index.html'))
+        
     def test_empty_fails(self):
         m = Mapper()
         m.connect(':controller/:action/:id')

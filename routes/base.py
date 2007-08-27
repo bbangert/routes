@@ -268,7 +268,16 @@ class Route(object):
                 if not rest:
                     partreg = '(?P<' + var + '>[^%s]+?)' % '/'
                 else:
-                    partreg = '(?P<' + var + '>[^%s]+?)' % ''.join(self.done_chars)
+                    end = ''.join(self.done_chars)
+                    rem = rest
+                    if rem[0] == '\\' and len(rem) > 1:
+                        rem = rem[1]
+                    elif rem.startswith('(\\') and len(rem) > 2:
+                        rem = rem[2]
+                    else:
+                        rem = end
+                    rem = frozenset(rem) | frozenset(['/'])
+                    partreg = '(?P<' + var + '>[^%s]+?)' % ''.join(rem)
             
             if self.reqs.has_key(var):
                 noreqs = False

@@ -2,6 +2,8 @@ Routes Changelog
 ========================
 
 -- 1.7.1 (**svn**)
+* Added additional checking of remaining URL, to properly swallow periods in
+  the appropriate context. Fixes #57.
 * Added mapper.hardcode_names option which restricts url generation to the 
   named route during generation rather than using the routes default options
   during generation.
