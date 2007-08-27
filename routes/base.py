@@ -596,6 +596,11 @@ class Mapper(object):
         ``decode_errors``
             How to handle errors in the encoding, generally ignoring any chars 
             that don't convert should be sufficient. Defaults to 'ignore'.
+        
+        ``hardcode_names``
+            Whether or not Named Routes result in the default options for the 
+            route being used *or* if they actually force url generation to use
+            the route. Defaults to False.
         """
         self.matchlist = []
         self.maxkeys = {}
@@ -618,6 +623,7 @@ class Mapper(object):
         self.explicit = explicit
         self.encoding = 'utf-8'
         self.decode_errors = 'ignore'
+        self.hardcode_names = False
         if register:
             config = request_config()
             config.mapper = self
@@ -815,7 +821,7 @@ class Mapper(object):
         return None
         
     
-    def generate(self, **kargs):
+    def generate(self, *args, **kargs):
         """Generate a route from a set of keywords
         
         Returns the url text, or None if no URL could be generated.
@@ -844,7 +850,7 @@ class Mapper(object):
         # If the URL didn't depend on the SCRIPT_NAME, we'll cache it
         # keyed by just by kargs; otherwise we need to cache it with
         # both SCRIPT_NAME and kargs:
-        cache_key = unicode(kargs).encode('utf8')
+        cache_key = unicode(args).encode('utf8') + unicode(kargs).encode('utf8')
         if self.environ:
             cache_key_script_name = '%s:%s' % (
                 self.environ.get('SCRIPT_NAME', ''), cache_key)
@@ -868,7 +874,9 @@ class Mapper(object):
         cacheset = False
         cachekey = unicode(keys)
         cachelist = sortcache.get(cachekey)
-        if cachelist:
+        if args:
+            keylist = args
+        elif cachelist:
             keylist = cachelist
         else:
             cacheset = True

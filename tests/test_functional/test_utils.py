@@ -116,7 +116,27 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('/building/wilma/port/alljacks', url_for())
         self.assertEqual('/', url_for('home'))
         
+    def test_with_route_names_and_hardcode(self):
+        m = self.con.mapper
+        self.con.mapper_dict = {}
+        m.connect('home', '', controller='blog', action='splash')
+        m.connect('category_home', 'category/:section', controller='blog', action='view', section='home')
+        m.connect('building', 'building/:campus/:building/alljacks', controller='building', action='showjacks')
+        m.connect('gallery_thumb', 'gallery/:(img_id)_thumbnail.jpg')
+        m.connect('gallery', 'gallery/:(img_id).jpg')
+        m.create_regs(['content','blog','admin/comments','building'])
 
+        self.con.mapper_dict = dict(controller='building', action='showjacks', campus='wilma', building='port')
+        self.assertEqual('/building/wilma/port/alljacks', url_for())
+        self.assertEqual('/', url_for('home'))
+        self.assertEqual('/gallery/home_thumbnail.jpg', url_for('gallery_thumb', img_id='home'))
+        self.assertEqual('/gallery/home_thumbnail.jpg', url_for('gallery', img_id='home'))
+        
+        m.hardcode_names = True
+        self.assertEqual('/gallery/home_thumbnail.jpg', url_for('gallery_thumb', img_id='home'))
+        self.assertEqual('/gallery/home.jpg', url_for('gallery', img_id='home'))
+        m.hardcode_names = False
+    
     def test_redirect_to(self):
         m = self.con.mapper
         self.con.mapper_dict = {}

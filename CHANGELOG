@@ -2,6 +2,9 @@ Routes Changelog
 ========================
 
 -- 1.7.1 (**svn**)
+* Added mapper.hardcode_names option which restricts url generation to the 
+  named route during generation rather than using the routes default options
+  during generation.
 * Fixed the special '_method' attribute not being recognized during POST
   requests of Content-Type 'multipart/form-data'.
 
@@ -14,7 +17,7 @@ Routes Changelog
   that route parts with '.' in them aren't matched properly. Fixes #48.
 * Fixed Unicode decoding/encoding so that the URL decoding and encoding can be
   set on the mapper with mapper.encoding. Fixes #40.
-* Don't assume environ['CONTENT_TYPE'] always exists: it may be ommitted
+* Don't assume environ['CONTENT_TYPE'] always exists: it may be omitted
   according to the WSGI PEP.
 * Fixed Unicode decode/encoding of path_info dynamic/wildcard parts so that
   PATH_INFO will stay a raw string as it should. Fixes #51.

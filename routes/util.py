@@ -166,7 +166,10 @@ def url_for(*args, **kargs):
                         urllib.quote_plus(unicode(val).encode(encoding))))
                 url += '&'.join(query_args)
     if not static:
+        route_args = []
         if route:
+            if config.mapper.hardcode_names:
+                route_args.append(route)
             newargs = route.defaults.copy()
             newargs.update(kargs)
             
@@ -181,7 +184,7 @@ def url_for(*args, **kargs):
         anchor = newargs.pop('_anchor', None) or anchor
         host = newargs.pop('_host', None) or host
         protocol = newargs.pop('_protocol', None) or protocol
-        url = config.mapper.generate(**newargs)
+        url = config.mapper.generate(*route_args, **newargs)
     if anchor:
         url += '#' + _url_quote(anchor, encoding)
     if host or protocol or qualified:
