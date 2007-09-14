@@ -2,6 +2,7 @@ Routes Changelog
 ========================
 
 -- 1.7.1 (**tip**)
+* Removed duplicate assignment in map.resource. Patch by Mike Naberezny.
 * Applied test patch fix for path checking. Thanks Mike Naberezny.
 * Added additional checking of remaining URL, to properly swallow periods in
   the appropriate context. Fixes #57.

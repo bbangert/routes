@@ -1144,7 +1144,6 @@ class Mapper(object):
         new_path = path + "/new"
         member_path = path + "/:(id)"
         
-        options = {'controller':kwargs.get('controller', controller)}
         options = { 
             'controller': kwargs.get('controller', controller),
             '_member_name': member_name,
