@@ -101,7 +101,7 @@ class TestRecognition(unittest.TestCase):
     def test_dynamic_with_default_backwards(self):
         for path in [':action/hi', ':(action)/hi']:
             m = Mapper()
-            m.connect(':action/hi', controller='content')
+            m.connect(path, controller='content')
             m.create_regs([])
 
             self.assertEqual(None, m.match('/'))

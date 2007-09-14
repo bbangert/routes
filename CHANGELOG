@@ -1,7 +1,8 @@
 Routes Changelog
 ========================
 
--- 1.7.1 (**svn**)
+-- 1.7.1 (**tip**)
+* Applied test patch fix for path checking. Thanks Mike Naberezny.
 * Added additional checking of remaining URL, to properly swallow periods in
   the appropriate context. Fixes #57.
 * Added mapper.hardcode_names option which restricts url generation to the 
