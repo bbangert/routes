@@ -1,7 +1,7 @@
 Routes Changelog
 ========================
 
--- 1.7.1 (**tip**)
+-- 1.7.1 (Nov. 16th, 2007)
 * Fixed bug with sub-domains from route defaults getting encoded to unicode
   resulting in a unicode route which then caused url_for to throw an
   exception.
