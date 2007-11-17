@@ -2,6 +2,9 @@ Routes Changelog
 ========================
 
 -- 1.7.1 (**tip**)
+* Fixed bug with sub-domains from route defaults getting encoded to unicode
+  resulting in a unicode route which then caused url_for to throw an
+  exception.
 * Removed duplicate assignment in map.resource. Patch by Mike Naberezny.
 * Applied test patch fix for path checking. Thanks Mike Naberezny.
 * Added additional checking of remaining URL, to properly swallow periods in

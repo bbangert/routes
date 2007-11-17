@@ -54,6 +54,8 @@ def _subdomain_check(config, kargs):
     on the current subdomain or lack therof."""
     if config.mapper.sub_domains:
         subdomain = kargs.pop('sub_domain', None)
+        if isinstance(subdomain, unicode):
+            subdomain = str(subdomain)
         fullhost = config.environ.get('HTTP_HOST') or \
             config.environ.get('SERVER_NAME')
         hostmatch = fullhost.split(':')
