@@ -17,6 +17,13 @@ def _screenargs(kargs):
     This is responsible for the requests "memory" of the current.
     """
     config = request_config()
+    
+    # Coerce any unicode args with the encoding
+    encoding = config.mapper.encoding
+    for key, val in kargs.iteritems():
+        if isinstance(val, unicode):
+            kargs[key] = val.encode(encoding)
+    
     if config.mapper.explicit and config.mapper.sub_domains:
         return _subdomain_check(config, kargs)
     elif config.mapper.explicit:

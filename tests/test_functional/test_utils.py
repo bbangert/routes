@@ -23,6 +23,8 @@ class TestUtils(unittest.TestCase):
         
         assert '/blog' == url_for(controller='blog')
         assert '/blog/view/umulat' == url_for(controller='blog', action='view', id=u'umulat')
+        assert '/blog/view/umulat?other=%CE%B1%CF%83%CE%B4%CE%B3' == url_for(controller='blog', action='view', id=u'umulat',
+            other=u'\u03b1\u03c3\u03b4\u03b3')
         
         def raise_url():
             return url_for(u'/some/stirng')
