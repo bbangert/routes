@@ -93,6 +93,12 @@ you quickly reference the `Defaults`_ that the route was configured with. This
 is the first non-keyword argument, and if not present the first non-keyword
 argument is assumed to be the `route path`_.
 
+If you don't want to merely load the defaults for a Route, but actually force
+Routes to use **only** the named route for generation, specify the additional
+mapper option as follows:
+
+    ``m.hardcode_names = True``
+
 Route Names are mainly used when generating routes, and have no other effect on
 matching a URL.
 
