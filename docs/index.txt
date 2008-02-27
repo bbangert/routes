@@ -22,6 +22,31 @@ Buzzword Compliance: *REST*, *DRY*
 News
 ====
 
+**Feb. 26th, 2008**
+
+Routes 1.7.2:
+
+* Fixed bug with keyword args not being coerced to raw string properly.
+
+
+**Nov. 16th, 2007**
+
+Routes 1.7.1:
+
+* Fixed bug with sub-domains from route defaults getting encoded to unicode
+  resulting in a unicode route which then caused url_for to throw an
+  exception.
+* Removed duplicate assignment in map.resource. Patch by Mike Naberezny.
+* Applied test patch fix for path checking. Thanks Mike Naberezny.
+* Added additional checking of remaining URL, to properly swallow periods in
+  the appropriate context. Fixes #57.
+* Added mapper.hardcode_names option which restricts url generation to the 
+  named route during generation rather than using the routes default options
+  during generation.
+* Fixed the special '_method' attribute not being recognized during POST
+  requests of Content-Type 'multipart/form-data'.
+
+
 **June 8th, 2007**
 
 Routes 1.7:
