@@ -1,6 +1,6 @@
-from paste.fixture import TestApp
 from routes import Mapper
 from routes.middleware import RoutesMiddleware
+from webtest import TestApp
 
 def simple_app(environ, start_response):
     route_dict = environ['wsgiorg.routing_args'][1]
