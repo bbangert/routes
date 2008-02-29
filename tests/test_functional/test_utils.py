@@ -581,17 +581,17 @@ class TestUtilsWithExplicit(unittest.TestCase):
         self.assertEqual(None, url_for(controller='content'))
         self.assertEqual(None, url_for(controller='admin/comments'))
         self.assertEqual('/messages', url_for('messages'))
-        self.assertEqual('/messages;rss', url_for('rss_messages'))
+        self.assertEqual('/messages/rss', url_for('rss_messages'))
         self.assertEqual('/messages/4', url_for('message', id=4))
-        self.assertEqual('/messages/4;edit', url_for('edit_message', id=4))
-        self.assertEqual('/messages/4;mark', url_for('mark_message', id=4))
+        self.assertEqual('/messages/4/edit', url_for('edit_message', id=4))
+        self.assertEqual('/messages/4/mark', url_for('mark_message', id=4))
         self.assertEqual('/messages/new', url_for('new_message'))
         
         self.assertEqual('/messages.xml', url_for('formatted_messages', format='xml'))
-        self.assertEqual('/messages.xml;rss', url_for('formatted_rss_messages', format='xml'))
+        self.assertEqual('/messages/rss.xml', url_for('formatted_rss_messages', format='xml'))
         self.assertEqual('/messages/4.xml', url_for('formatted_message', id=4, format='xml'))
-        self.assertEqual('/messages/4.xml;edit', url_for('formatted_edit_message', id=4, format='xml'))
-        self.assertEqual('/messages/4.xml;mark', url_for('formatted_mark_message', id=4, format='xml'))
+        self.assertEqual('/messages/4/edit.xml', url_for('formatted_edit_message', id=4, format='xml'))
+        self.assertEqual('/messages/4/mark.xml', url_for('formatted_mark_message', id=4, format='xml'))
         self.assertEqual('/messages/new.xml', url_for('formatted_new_message', format='xml'))
         
 

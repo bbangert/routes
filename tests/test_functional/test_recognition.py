@@ -790,7 +790,7 @@ class TestRecognition(unittest.TestCase):
         
         test_path('/people/2', 'GET')
         assert {'controller':'people', 'action':'show', 'id':'2'} == con.mapper_dict
-        test_path('/people/2;edit', 'GET')
+        test_path('/people/2/edit', 'GET')
         assert {'controller':'people', 'action':'edit', 'id':'2'} == con.mapper_dict
 
         test_path('/people/2', 'DELETE')
@@ -836,11 +836,11 @@ class TestRecognition(unittest.TestCase):
         url = url_for('region_location', region_id=13, id=60)
         assert url == '/regions/13/locations/60'
         
-        test_path('/regions/13/locations/60;edit', 'GET')
+        test_path('/regions/13/locations/60/edit', 'GET')
         assert con.mapper_dict == {'region_id': '13', 'controller': 'locations',
                                    'id': '60', 'action': 'edit'}
         url = url_for('region_edit_location', region_id=13, id=60)
-        assert url == '/regions/13/locations/60;edit'
+        assert url == '/regions/13/locations/60/edit'
         
         test_path('/regions/13/locations/60', 'DELETE')
         assert con.mapper_dict == {'region_id': '13', 'controller': 'locations',

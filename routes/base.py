@@ -992,7 +992,7 @@ class Mapper(object):
             Example::
                 
                 map.resource('message', 'messages', collection={'rss':'GET'})
-                # GET /message;rss (maps to the rss action)
+                # GET /message/rss (maps to the rss action)
                 # also adds named route "rss_message"
         
         ``member``
@@ -1002,7 +1002,7 @@ class Mapper(object):
             Example::
                 
                 map.resource('message', 'messages', member={'mark':'POST'})
-                # POST /message/1;mark (maps to the mark action)
+                # POST /message/1/mark (maps to the mark action)
                 # also adds named route "mark_message"
         
         ``new``
@@ -1012,7 +1012,7 @@ class Mapper(object):
             Example::
                 
                 map.resource('message', 'messages', new={'preview':'POST'})
-                # POST /message/new;preview (maps to the preview action)
+                # POST /message/new/preview (maps to the preview action)
                 # also adds a url named "preview_new_message"
         
         ``path_prefix``
@@ -1065,7 +1065,7 @@ class Mapper(object):
                 >>> url_for('region_location', region_id=13, id=60) 
                 '/regions/13/locations/60'
                 >>> url_for('region_edit_location', region_id=13, id=60) 
-                '/regions/13/locations/60;edit'
+                '/regions/13/locations/60/edit'
 
             Overriding generated ``path_prefix``::
 
@@ -1166,9 +1166,9 @@ class Mapper(object):
             for action in lst:
                 route_options['action'] = action
                 route_name = "%s%s_%s" % (name_prefix, action, collection_name)
-                self.connect(route_name, "%s;%s" % (collection_path, action),
+                self.connect(route_name, "%s/%s" % (collection_path, action),
                                                     **route_options)
-                self.connect("formatted_" + route_name, "%s.:(format);%s" % \
+                self.connect("formatted_" + route_name, "%s/%s.:(format)" % \
                              (collection_path, action), **route_options)
             if primary:
                 route_options['action'] = primary
@@ -1187,7 +1187,7 @@ class Mapper(object):
         for method, lst in new_methods.iteritems():
             route_options = requirements_for(method)
             for action in lst:
-                path = (action == 'new' and new_path) or "%s;%s" % (new_path, 
+                path = (action == 'new' and new_path) or "%s/%s" % (new_path, 
                                                                     action)
                 name = "new_" + member_name
                 if action != 'new':
@@ -1195,7 +1195,7 @@ class Mapper(object):
                 route_options['action'] = action
                 self.connect(name_prefix + name, path, **route_options)
                 path = (action == 'new' and new_path + '.:(format)') or \
-                    "%s.:(format);%s" % (new_path, action)
+                    "%s/%s.:(format)" % (new_path, action)
                 self.connect("formatted_" + name_prefix + name, path, 
                              **route_options)
         
@@ -1212,10 +1212,10 @@ class Mapper(object):
             for action in lst:
                 route_options['action'] = action
                 self.connect("%s%s_%s" % (name_prefix, action, member_name),
-                    "%s;%s" % (member_path, action), **route_options)
+                    "%s/%s" % (member_path, action), **route_options)
                 self.connect("formatted_%s%s_%s" % (name_prefix, action, 
                                                     member_name),
-                    "%s.:(format);%s" % (member_path, action), **route_options)
+                    "%s/%s.:(format)" % (member_path, action), **route_options)
             if primary:
                 route_options['action'] = primary
                 self.connect(member_path, **route_options)
