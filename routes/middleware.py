@@ -1,6 +1,5 @@
 """Routes WSGI Middleware"""
 import re
-import urllib
 import logging
 
 try:
