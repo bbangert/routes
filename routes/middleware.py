@@ -80,11 +80,7 @@ class RoutesMiddleware(object):
             log.debug("Route path: '%s', defaults: %s", route.routepath, 
                       route.defaults)
             log.debug("Match dict: %s", match)
-        
-        for key, val in match.iteritems():
-            if val and isinstance(val, basestring):
-                match[key] = urllib.unquote_plus(val)
-        
+                
         environ['wsgiorg.routing_args'] = ((), match)
         environ['routes.route'] = route
 
