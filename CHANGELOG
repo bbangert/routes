@@ -1,6 +1,10 @@
 Routes Changelog
 ========================
 
+-- 1.7.3 (**tip**)
+* Fixed triple escaping bug, since WSGI servers are responsible for basic
+  unescaping.
+
 -- 1.7.2 (Feb. 27th, 2008)
 * Fixed bug with keyword args not being coerced to raw string properly.
 

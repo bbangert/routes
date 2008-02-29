@@ -423,7 +423,7 @@ class Route(object):
                 # change back into python unicode objects from the URL 
                 # representation
                 try:
-                    val = val and urllib.unquote_plus(val).decode(self.encoding, self.decode_errors)
+                    val = val and val.decode(self.encoding, self.decode_errors)
                 except UnicodeDecodeError:
                     return False
             
