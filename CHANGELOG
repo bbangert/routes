@@ -2,6 +2,8 @@ Routes Changelog
 ========================
 
 -- 1.8 (**tip**)
+* Fixed url_for to handle lists as keyword args when generating query
+  parameters.
 * WARNING: Changed map.resource to not use ';', for actions, but the
   normal '/'. This means that formatted URL's will also now have the format
   come AFTER the action. Ie: /messsages/4.xml;rss -> /messages/4/rss.xml

@@ -170,9 +170,15 @@ def url_for(*args, **kargs):
                 url += '?'
                 query_args = []
                 for key, val in kargs.iteritems():
-                    query_args.append("%s=%s" % (
-                        urllib.quote_plus(unicode(key).encode(encoding)),
-                        urllib.quote_plus(unicode(val).encode(encoding))))
+                    if isinstance(val, (list, tuple)):
+                        for value in val:
+                            query_args.append("%s=%s" % (
+                                urllib.quote_plus(unicode(key).encode(encoding)),
+                                urllib.quote_plus(unicode(value).encode(encoding))))
+                    else:
+                        query_args.append("%s=%s" % (
+                            urllib.quote_plus(unicode(key).encode(encoding)),
+                            urllib.quote_plus(unicode(val).encode(encoding))))
                 url += '&'.join(query_args)
     if not static:
         route_args = []

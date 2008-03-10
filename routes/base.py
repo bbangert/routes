@@ -539,9 +539,18 @@ class Route(object):
             if _append_slash and not url.endswith('/'):
                 url += '/'
             url += '?'
-            url += urllib.urlencode([(key, kargs[key]) for key in kargs \
-                                     if key in extras and \
-                                     (key != 'action' or key != 'controller')])
+            fragments = []
+            for key in extras:
+                if key == 'action' or key == 'controller':
+                    continue
+                val = kargs[key]
+                if isinstance(val, (tuple, list)):
+                    for value in val:
+                        fragments.append((key, value))
+                else:
+                    fragments.append((key, val))
+                
+            url += urllib.urlencode(fragments)
         elif _append_slash and not url.endswith('/'):
             url += '/'
         return url
