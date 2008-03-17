@@ -569,7 +569,7 @@ class TestGeneration(unittest.TestCase):
         options = dict(controller='messages')
         self._assert_restful_routes(m, options)
         assert '/messages/new/preview' == url_for('category_preview_new_message')
-        assert None == url_for('category_preview_new_message', method='get')
+        self.assertRaises(Exception, url_for, 'category_preview_new_message', method='get')
 
     def test_unicode(self):
         hoge = u'\u30c6\u30b9\u30c8' # the word test in Japanese
@@ -597,7 +597,6 @@ class TestGeneration(unittest.TestCase):
         assert '/2007/test.xml' == m.generate(year=2007, slug='test', format='xml')
         assert '/2007/test.xml,ja' == m.generate(year=2007, slug='test', format='xml', locale='ja')
         assert None == m.generate(year=2007, format='html')
-
 
 if __name__ == '__main__':
     unittest.main()
