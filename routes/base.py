@@ -108,6 +108,15 @@ class Route(object):
         self.hardcoded = frozenset([key for key in self.maxkeys \
             if key not in routekeys and self.defaults[key] is not None])
     
+    def make_unicode(self, s):
+        """Transform the given argument into a unicode string."""
+        if isinstance(s, unicode):
+            return s
+        elif isinstance(s, str):
+            return s.decode(self.encoding)
+        else:
+            return unicode(s)
+    
     def _pathkeys(self, routepath):
         """Utility function to walk the route, and pull out the valid 
         dynamic/wildcard keys."""
@@ -197,7 +206,7 @@ class Route(object):
                                  if key not in reserved_keys])
         for key in defaultkeys:
             if kargs[key] is not None:
-                defaults[key] = unicode(kargs[key])
+                defaults[key] = self.make_unicode(kargs[key])
             else:
                 defaults[key] = None
         if 'action' in routekeys and not defaults.has_key('action') \
@@ -208,6 +217,7 @@ class Route(object):
             defaults['id'] = None
         newdefaultkeys = frozenset([key for key in defaults.keys() \
                                     if key not in reserved_keys])
+        
         return (defaults, newdefaultkeys)
         
     def makeregexp(self, clist):
@@ -457,7 +467,7 @@ class Route(object):
         if not _ignore_req_list:
             for key in self.reqs.keys():
                 val = kargs.get(key)
-                if val and not self.req_regs[key].match(unicode(val)):
+                if val and not self.req_regs[key].match(self.make_unicode(val)):
                     return False
         
         # Verify that if we have a method arg, its in the method accept list. 
@@ -488,8 +498,8 @@ class Route(object):
                     
                 # Now check to see if there's a default and it matches the 
                 # incoming call arg
-                if (has_default and has_arg) and unicode(kargs[arg]) == \
-                    unicode(self.defaults[arg]) and not gaps: 
+                if (has_default and has_arg) and self.make_unicode(kargs[arg]) == \
+                    self.make_unicode(self.defaults[arg]) and not gaps: 
                     continue
                 
                 # We need to pull the value to append, if the arg is None and 

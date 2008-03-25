@@ -86,9 +86,16 @@ def _subdomain_check(config, kargs):
 def _url_quote(string, encoding):
     """A Unicode handling version of urllib.quote_plus."""
     if encoding:
-        return urllib.quote_plus(unicode(string).encode(encoding), '/')
+        if isinstance(string, unicode):
+            s = string.encode(encoding)
+        elif isinstance(string, str):
+            # assume the encoding is already correct
+            s = string
+        else:
+            s = unicode(string).encode(encoding)
     else:
-        return urllib.quote_plus(str(string), '/')
+        s = str(string)
+    return urllib.quote_plus(s, '/')
 
 def url_for(*args, **kargs):
     """Generates a URL 
