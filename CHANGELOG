@@ -2,6 +2,7 @@ Routes Changelog
 ========================
 
 -- 1.8 (**tip**)
+* Fixed bug of map.resource not allowing spaces in id.
 * Fixed url generation to properly handle unicode defaults in addition to
   unicode arguments.
 * Fixed url_for to handle lists as keyword args when generating query

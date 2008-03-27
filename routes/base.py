@@ -1218,7 +1218,7 @@ class Mapper(object):
                 self.connect("formatted_" + name_prefix + name, path, 
                              **route_options)
         
-        requirements_regexp = '[\w\-_]+'
+        requirements_regexp = '[\w\-_\s]+'
 
         # Add the routes that deal with member methods of a resource
         for method, lst in member_methods.iteritems():
