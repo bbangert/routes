@@ -1,7 +1,7 @@
 Routes Changelog
 ========================
 
--- 1.8 (**tip**)
+-- 1.8 (March 28, 2008)
 * Fixed bug of map.resource not allowing spaces in id.
 * Fixed url generation to properly handle unicode defaults in addition to
   unicode arguments.
