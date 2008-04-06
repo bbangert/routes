@@ -550,7 +550,11 @@ class Route(object):
                 url += '/'
             url += '?'
             fragments = []
-            for key in extras:
+            # don't assume the 'extras' set preserves order: iterate
+            # through the ordered kargs instead
+            for key in kargs:
+                if key not in extras:
+                    continue
                 if key == 'action' or key == 'controller':
                     continue
                 val = kargs[key]
