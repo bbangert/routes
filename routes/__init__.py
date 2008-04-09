@@ -33,7 +33,7 @@ class _RequestConfig(object):
         store the resulting match dict in mapper_dict.
         """
         if environ.get('HTTPS') or environ.get('wsgi.url_scheme') == 'https' \
-           or environ.get('X_FORWARDED_PROTO') == 'https':
+           or environ.get('HTTP_X_FORWARDED_PROTO') == 'https':
             self.__shared_state.protocol = 'https'
         else:
             self.__shared_state.protocol = 'http'
@@ -50,7 +50,9 @@ class _RequestConfig(object):
                 self.__shared_state.mapper_dict = None
                 self.__shared_state.route = None
         
-        if environ.get('HTTP_HOST'):
+        if environ.get('HTTP_X_FORWARDED_HOST'):
+            self.__shared_state.host = environ['HTTP_X_FORWARDED_HOST']
+        elif environ.get('HTTP_HOST'):
             self.__shared_state.host = environ['HTTP_HOST']
         else:
             self.__shared_state.host = environ['SERVER_NAME']
