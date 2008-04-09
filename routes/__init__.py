@@ -32,7 +32,8 @@ class _RequestConfig(object):
         Also, match the incoming URL if there's already a mapper, and
         store the resulting match dict in mapper_dict.
         """
-        if environ.get('HTTPS') or environ.get('wsgi.url_scheme') == 'https':
+        if environ.get('HTTPS') or environ.get('wsgi.url_scheme') == 'https' \
+           or environ.get('X_FORWARDED_PROTO') == 'https':
             self.__shared_state.protocol = 'https'
         else:
             self.__shared_state.protocol = 'http'
