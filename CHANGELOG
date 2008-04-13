@@ -2,6 +2,8 @@ Routes Changelog
 ========================
 
 -- 1.8.1 (**tip**)
+* Updated url_for to return url in a literal for use in templating that may
+  try to escape it again.
 * Added option to use X_FORWARDED_PROTO for proxying behind https to work
   easier.
 * Fixed map.resource to be less restrictive on id than just spaces.

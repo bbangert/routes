@@ -10,6 +10,13 @@ import re
 import urllib
 from routes import request_config
 
+class literal(str):
+    """Literal class for use in systems to indicate the url is already
+    escaped"""
+    def __html__(self):
+        return self
+
+
 def _screenargs(kargs):
     """
     Private function that takes a dict, and screens it against the current 
@@ -225,7 +232,7 @@ def url_for(*args, **kargs):
         raise Exception("url_for can only return a string or None, got "
                         "unicode instead: %s" % url)
     
-    return url
+    return literal(url)
 
 def redirect_to(*args, **kargs):
     """Issues a redirect based on the arguments. 
