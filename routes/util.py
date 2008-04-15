@@ -232,6 +232,8 @@ def url_for(*args, **kargs):
         raise Exception("url_for can only return a string or None, got "
                         "unicode instead: %s" % url)
     
+    if url is None:
+        return url
     return literal(url)
 
 def redirect_to(*args, **kargs):
