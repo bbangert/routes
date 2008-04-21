@@ -1,7 +1,10 @@
 Routes Changelog
 ========================
 
--- 1.8.1 (**tip**)
+-- 1.9 (**tip**)
+* WARNING: Calling url_for with a set of args that returns None now throws an
+  exception. Code that previously checked to see if a url could be made must
+  be updated accordingly.
 * Updated url_for to return url in a literal for use in templating that may
   try to escape it again.
 * Added option to use X_FORWARDED_PROTO for proxying behind https to work

@@ -966,7 +966,7 @@ class TestRecognition(unittest.TestCase):
         def call_func():
             m.match('')
         self.assertRaises(RouteException, call_func)
-
+        
 if __name__ == '__main__':
     unittest.main()
 else:
