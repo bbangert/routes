@@ -7,6 +7,8 @@ Routes Changelog
 * Added option to use X_FORWARDED_PROTO for proxying behind https to work
   easier.
 * Fixed map.resource to be less restrictive on id than just spaces.
+* Fixed Mapper.create_regs not being thread safe, particularly when
+  always_scan=True.
 
 -- 1.8 (March 28, 2008)
 * Fixed bug of map.resource not allowing spaces in id.
