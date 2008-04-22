@@ -2,6 +2,7 @@
 
 import re
 import sys
+import threading
 import urllib
 from util import _url_quote as url_quote
 from util import controller_scan, RouteException
@@ -656,6 +657,7 @@ class Mapper(object):
         self.encoding = 'utf-8'
         self.decode_errors = 'ignore'
         self.hardcode_names = False
+        self.create_regs_lock = threading.Lock()
         if register:
             config = request_config()
             config.mapper = self
@@ -756,8 +758,18 @@ class Mapper(object):
                     actiondict.setdefault(action, ([], {}))[0].append(route)
         self._gendict = gendict
         self._created_gens = True
-    
-    def create_regs(self, clist=None):
+
+    def create_regs(self, *args, **kwargs):
+        """Atomically creates regular expressions for all connected
+        routes
+        """
+        self.create_regs_lock.acquire()
+        try:
+            self._create_regs(*args, **kwargs)
+        finally:
+            self.create_regs_lock.release()
+        
+    def _create_regs(self, clist=None):
         """Creates regular expressions for all connected routes"""
         if clist is None:
             if self.directory:
