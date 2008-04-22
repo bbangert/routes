@@ -675,7 +675,7 @@ class Mapper(object):
         
         Usage:
         
-        .. code-block:: Python
+        .. code-block:: python
         
             m = Mapper()
             m.connect(':controller/:action/:id')
@@ -830,7 +830,7 @@ class Mapper(object):
         
         Will return None if no valid match is found.
         
-        .. code-block:: Python
+        .. code-block:: python
             
             resultdict = m.match('/joe/sixpack')
         
@@ -852,7 +852,7 @@ class Mapper(object):
         Will return None if no valid match is found, otherwise a
         result dict and a route object is returned.
         
-        .. code-block:: Python
+        .. code-block:: python
         
             resultdict, route_obj = m.match('/joe/sixpack')
         
@@ -870,7 +870,7 @@ class Mapper(object):
         
         Returns the url text, or None if no URL could be generated.
         
-        .. code-block:: Python
+        .. code-block:: python
             
             m.generate(controller='content',action='view',id=10)
         
