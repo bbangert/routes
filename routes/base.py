@@ -115,6 +115,8 @@ class Route(object):
             return s
         elif isinstance(s, str):
             return s.decode(self.encoding)
+        elif callable(s):
+            return s
         else:
             return unicode(s)
     
