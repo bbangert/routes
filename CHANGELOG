@@ -22,6 +22,8 @@ Routes Changelog
 * WARNING: Changed map.resource to not use ';', for actions, but the
   normal '/'. This means that formatted URL's will also now have the format
   come AFTER the action. Ie: /messsages/4.xml;rss -> /messages/4/rss.xml
+
+-- 1.7.3 (May 28th, 2008)
 * Fixed triple escaping bug, since WSGI servers are responsible for basic
   unescaping.
 
