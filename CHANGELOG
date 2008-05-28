@@ -1,7 +1,7 @@
 Routes Changelog
 ========================
 
--- 1.7.3 (**tip**)
+-- 1.7.3 (May 28th, 2008)
 * Fixed triple escaping bug, since WSGI servers are responsible for basic
   unescaping.
 
