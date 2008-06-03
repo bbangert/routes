@@ -658,7 +658,7 @@ class Mapper(object):
         self.explicit = explicit
         self.encoding = 'utf-8'
         self.decode_errors = 'ignore'
-        self.hardcode_names = False
+        self.hardcode_names = True
         self.create_regs_lock = threading.Lock()
         if register:
             config = request_config()
