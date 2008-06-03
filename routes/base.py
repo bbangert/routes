@@ -897,16 +897,18 @@ class Mapper(object):
         # keyed by just by kargs; otherwise we need to cache it with
         # both SCRIPT_NAME and kargs:
         cache_key = unicode(args).encode('utf8') + unicode(kargs).encode('utf8')
-        if self.environ:
-            cache_key_script_name = '%s:%s' % (
-                self.environ.get('SCRIPT_NAME', ''), cache_key)
-        else:
-            cache_key_script_name = cache_key
         
-        # Check the url cache to see if it exists, use it if it does
-        for key in [cache_key, cache_key_script_name]:
-            if key in self.urlcache:
-                return self.urlcache[key]
+        if self.urlcache is not None:
+            if self.environ:
+                cache_key_script_name = '%s:%s' % (
+                    self.environ.get('SCRIPT_NAME', ''), cache_key)
+            else:
+                cache_key_script_name = cache_key
+        
+            # Check the url cache to see if it exists, use it if it does
+            for key in [cache_key, cache_key_script_name]:
+                if key in self.urlcache:
+                    return self.urlcache[key]
         
         actionlist = self._gendict.get(controller) or self._gendict.get('*')
         if not actionlist:

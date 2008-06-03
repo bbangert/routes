@@ -2,6 +2,7 @@ Routes Changelog
 ========================
 
 -- 1.9 (**tip**)
+* Actually respect having urlcache disabled.
 * WARNING: Calling url_for with a set of args that returns None now throws an
   exception. Code that previously checked to see if a url could be made must
   be updated accordingly.
