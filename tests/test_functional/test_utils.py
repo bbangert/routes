@@ -102,8 +102,6 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('/admin/comments', url_for(controller='admin/comments'))
         self.assertEqual('/category', url_for('category_home'))
         self.assertEqual('/category/food', url_for('category_home', section='food'))
-        self.assertEqual('/category', url_for('home', action='view', section='home'))
-        self.assertEqual('/content/splash', url_for('home', controller='content'))
         self.assertEqual('/', url_for('home'))
         
     def test_with_route_names_and_defaults(self):
@@ -121,6 +119,8 @@ class TestUtils(unittest.TestCase):
     def test_with_route_names_and_hardcode(self):
         m = self.con.mapper
         self.con.mapper_dict = {}
+        m.hardcode_names = False
+        
         m.connect('home', '', controller='blog', action='splash')
         m.connect('category_home', 'category/:section', controller='blog', action='view', section='home')
         m.connect('building', 'building/:campus/:building/alljacks', controller='building', action='showjacks')
@@ -181,10 +181,6 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('/category', redirect_to.result)
         redirect_to('category_home', section='food')
         self.assertEqual('/category/food', redirect_to.result)
-        redirect_to('home', action='view', section='home')
-        self.assertEqual('/category', redirect_to.result)
-        redirect_to('home', controller='content')
-        self.assertEqual('/content/splash', redirect_to.result)
         redirect_to('home')
         self.assertEqual('/', redirect_to.result)
     
@@ -552,9 +548,7 @@ class TestUtilsWithExplicit(unittest.TestCase):
         self.assertRaises(Exception, url_for, controller='admin/comments')
         self.assertEqual('/category', url_for('category_home'))
         self.assertEqual('/category/food', url_for('category_home', section='food'))
-        self.assertEqual('/category', url_for('home', action='view', section='home'))
         self.assertRaises(Exception, url_for, 'home', controller='content')
-        self.assertEqual('/content/splash/2', url_for('home', controller='content', action='splash', id=2))
         self.assertEqual('/', url_for('home'))
         
     def test_with_route_names_and_defaults(self):

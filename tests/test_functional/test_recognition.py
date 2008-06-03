@@ -827,7 +827,7 @@ class TestRecognition(unittest.TestCase):
         url = url_for('region_new_location', region_id=13)
         assert url == '/regions/13/locations/new'
         # create
-        url = url_for('region_new_location', region_id=13, action='create')
+        url = url_for('region_locations', region_id=13)
         assert url == '/regions/13/locations'
         
         test_path('/regions/13/locations/60', 'GET')
@@ -845,13 +845,13 @@ class TestRecognition(unittest.TestCase):
         test_path('/regions/13/locations/60', 'DELETE')
         assert con.mapper_dict == {'region_id': '13', 'controller': 'locations',
                                    'id': '60', 'action': 'delete'}
-        url = url_for('region_location', region_id=13, id=60, action='delete')
+        url = url_for('region_location', region_id=13, id=60)
         assert url == '/regions/13/locations/60'
         
         test_path('/regions/13/locations/60', 'PUT')
         assert con.mapper_dict == {'region_id': '13', 'controller': 'locations',
                                    'id': '60', 'action': 'update'}
-        url = url_for('region_location', region_id=13, id=60, action='update')
+        url = url_for('region_location', region_id=13, id=60)
         assert url == '/regions/13/locations/60'
     
         # Make sure ``path_prefix`` overrides work

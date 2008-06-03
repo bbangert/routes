@@ -514,13 +514,13 @@ class TestGeneration(unittest.TestCase):
         m.create_regs(['messages'])
         options = dict(controller='messages')
         assert '/messages' == url_for('messages')
-        assert '/messages.xml' == url_for('messages', format='xml')
+        assert '/messages.xml' == url_for('formatted_messages', format='xml')
         assert '/messages/1' == url_for('message', id=1)
-        assert '/messages/1.xml' == url_for('message', id=1, format='xml')
+        assert '/messages/1.xml' == url_for('formatted_message', id=1, format='xml')
         assert '/messages/new' == url_for('new_message')
-        assert '/messages/1.xml' == url_for('message', id=1, format='xml')
+        assert '/messages/1.xml' == url_for('formatted_message', id=1, format='xml')
         assert '/messages/1/edit' == url_for('edit_message', id=1)
-        assert '/messages/1/edit.xml' == url_for('edit_message', id=1, format='xml')
+        assert '/messages/1/edit.xml' == url_for('formatted_edit_message', id=1, format='xml')
         self._assert_restful_routes(m, options)
     
     def test_resources_with_path_prefix(self):
@@ -560,7 +560,7 @@ class TestGeneration(unittest.TestCase):
         assert '/messages/new/preview' == m.generate(controller='messages', action='preview', method='post')
         assert '/messages/new/preview' == url_for('preview_new_message')
         assert '/messages/new/preview.xml' == m.generate(controller='messages', action='preview', method='post', format='xml')
-        assert '/messages/new/preview.xml' == url_for('preview_new_message', format='xml')
+        assert '/messages/new/preview.xml' == url_for('formatted_preview_new_message', format='xml')
     
     def test_resources_with_name_prefix(self):
         m = Mapper()

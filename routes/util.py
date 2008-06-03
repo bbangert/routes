@@ -223,7 +223,7 @@ def url_for(*args, **kargs):
             host = config.host.split(':')[0]
         elif not host:
             host = config.host
-        if not protocol: 
+        if not protocol:
             protocol = config.protocol
         if url is not None:
             url = protocol + '://' + host + url
@@ -233,8 +233,7 @@ def url_for(*args, **kargs):
                         "unicode instead: %s" % url)
     if url is None:
         raise Exception(
-            "url_for could not generate URL. Called with args: %s %s" %(
-                ', '.join(args + ["%s='%s'" %(k,v) for k,v in kargs.items()])))
+            "url_for could not generate URL. Called with args: %s %s" % (args, kargs))
     
     if url is None:
         return url
