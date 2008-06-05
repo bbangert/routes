@@ -53,6 +53,7 @@ class Route(object):
         self.routepath = routepath
         self.sub_domains = False
         self.prior = None
+        self.minimization = kargs.pop('_minimize', True)
         self.encoding = kargs.pop('_encoding', 'utf-8')
         self.decode_errors = 'replace'
         
@@ -79,8 +80,8 @@ class Route(object):
         # special chars to indicate a natural split in the URL
         self.done_chars = ('/', ',', ';', '.', '#')
         
-        # Strip preceding '/' if present
-        if routepath.startswith('/'):
+        # Strip preceding '/' if present, and not minimizing
+        if routepath.startswith('/') and self.minimization:
             routepath = routepath[1:]
         
         # Build our routelist, and the keys used in the route
@@ -232,18 +233,41 @@ class Route(object):
         matched, for this reason makeregexp should be called by the web 
         framework after it knows all available controllers that can be 
         utilized.
-        """        
-        (reg, noreqs, allblank) = self.buildnextreg(self.routelist, clist)
+        """
+        if self.minimization:
+            (reg, noreqs, allblank) = self.buildnextreg(self.routelist, clist)
+            if not reg:
+                reg = '/'
+            reg = reg + '(/)?' + '$'
         
-        if not reg:
-            reg = '/'
-        reg = reg + '(/)?' + '$'
-        if not reg.startswith('/'):
-            reg = '/' + reg
+            if not reg.startswith('/'):
+                reg = '/' + reg
+        else:
+           reg = self.buildfullreg(clist)
+        
         reg = '^' + reg
         
         self.regexp = reg
         self.regmatch = re.compile(reg)
+    
+    def buildfullreg(self, clist):
+        """Build the regexp by iterating through the routelist and replacing
+        dicts with the appropriate regexp match"""
+        regparts = []
+        for part in self.routelist:
+            if isinstance(part, dict):
+                var = part['name']
+                if var == 'controller':
+                    partmatch = '|'.join(map(re.escape, clist))
+                elif part['type'] == ':':
+                    partmatch = self.reqs.get(var) or '[^/]+?'
+                else:
+                    partmatch = self.reqs.get(var) or '.+?'
+                regparts.append('(?P<%s>%s)' % (var, partmatch))
+            else:
+                regparts.append(re.escape(part))
+        regexp = ''.join(regparts) + '$'
+        return regexp
     
     def buildnextreg(self, path, clist):
         """Recursively build our regexp given a path, and a controller list.
@@ -659,6 +683,7 @@ class Mapper(object):
         self.encoding = 'utf-8'
         self.decode_errors = 'ignore'
         self.hardcode_names = True
+        self.minimization = True
         self.create_regs_lock = threading.Lock()
         if register:
             config = request_config()
@@ -695,8 +720,10 @@ class Mapper(object):
             args = args[1:]
         if '_explicit' not in kargs:
             kargs['_explicit'] = self.explicit
+        if '_minimize' not in kargs:
+            kargs['_minimize'] = self.minimization
         route = Route(*args, **kargs)
-        
+                
         # Apply encoding and errors if its not the defaults and the route 
         # didn't have one passed in.
         if (self.encoding != 'utf-8' or self.decode_errors != 'ignore') and \
@@ -974,6 +1001,8 @@ class Mapper(object):
             if cacheset:
                 sortcache[cachekey] = keylist
         
+        # Iterate through the keylist of sorted routes (or a single route if
+        # it was passed in explicitly for hardcoded named routes)
         for route in keylist:
             fail = False
             for key in route.hardcoded:
