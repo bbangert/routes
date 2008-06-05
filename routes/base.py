@@ -55,6 +55,7 @@ class Route(object):
         self.prior = None
         self.minimization = kargs.pop('_minimize', True)
         self.encoding = kargs.pop('_encoding', 'utf-8')
+        self.reqs = kargs.get('requirements', {})
         self.decode_errors = 'replace'
         
         # Don't bother forming stuff we don't need if its a static route
@@ -90,7 +91,6 @@ class Route(object):
                                if isinstance(key, dict)])
         
         # Build a req list with all the regexp requirements for our args
-        self.reqs = kargs.get('requirements', {})
         self.req_regs = {}
         for key, val in self.reqs.iteritems():
             self.req_regs[key] = re.compile('^' + val + '$')
@@ -131,10 +131,13 @@ class Route(object):
         just_started = False
         routelist = []
         for char in routepath:
-            if char in [':', '*'] and not collecting:
+            if char in [':', '*', '{'] and not collecting:
                 just_started = True
                 collecting = True
                 var_type = char
+                if char == '{':
+                    done_on = '}'
+                    just_started = False
                 if len(current) > 0:
                     routelist.append(current)
                     current = ''
@@ -149,6 +152,12 @@ class Route(object):
                 current += char
             elif collecting:
                 collecting = False
+                if var_type == '{':
+                    opts = current.split(':')
+                    if len(opts) > 1:
+                        current = opts[0]
+                        self.reqs[current] = opts[1]
+                    var_type = ':'
                 routelist.append(dict(type=var_type, name=current))
                 if char in self.done_chars:
                     routelist.append(char)
