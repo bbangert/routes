@@ -19,7 +19,7 @@ class TestGeneration(unittest.TestCase):
         
             assert '/hi/index' == m.generate(fred='index')
             assert '/hi/show' == m.generate(fred='show')
-            assert '/hi/list+people' == m.generate(fred='list people')
+            assert '/hi/list%20people' == m.generate(fred='list people')
             assert None == m.generate()
     
     def test_dynamic_with_default(self):
@@ -29,7 +29,7 @@ class TestGeneration(unittest.TestCase):
         
             assert '/hi' == m.generate(action='index')
             assert '/hi/show' == m.generate(action='show')
-            assert '/hi/list+people' == m.generate(action='list people')
+            assert '/hi/list%20people' == m.generate(action='list people')
             assert '/hi' == m.generate()
     
     def test_dynamic_with_false_equivs(self):
@@ -573,7 +573,7 @@ class TestGeneration(unittest.TestCase):
 
     def test_unicode(self):
         hoge = u'\u30c6\u30b9\u30c8' # the word test in Japanese
-        hoge_enc = urllib.quote_plus(hoge.encode('utf-8'))
+        hoge_enc = urllib.quote(hoge.encode('utf-8'))
         m = Mapper()
         m.connect(':hoge')
         self.assertEqual("/%s" % hoge_enc, m.generate(hoge=hoge))
@@ -581,7 +581,7 @@ class TestGeneration(unittest.TestCase):
 
     def test_unicode_static(self):
         hoge = u'\u30c6\u30b9\u30c8' # the word test in Japanese
-        hoge_enc = urllib.quote_plus(hoge.encode('utf-8'))
+        hoge_enc = urllib.quote(hoge.encode('utf-8'))
         m = Mapper()
         m.connect('google-jp', 'http://www.google.co.jp/search', _static=True)
         self.assertEqual("http://www.google.co.jp/search?q=" + hoge_enc,

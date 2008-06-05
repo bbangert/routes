@@ -91,7 +91,7 @@ def _subdomain_check(config, kargs):
     
 
 def _url_quote(string, encoding):
-    """A Unicode handling version of urllib.quote_plus."""
+    """A Unicode handling version of urllib.quote."""
     if encoding:
         if isinstance(string, unicode):
             s = string.encode(encoding)
@@ -102,7 +102,7 @@ def _url_quote(string, encoding):
             s = unicode(string).encode(encoding)
     else:
         s = str(string)
-    return urllib.quote_plus(s, '/')
+    return urllib.quote(s, '/')
 
 def url_for(*args, **kargs):
     """Generates a URL 
@@ -187,12 +187,12 @@ def url_for(*args, **kargs):
                     if isinstance(val, (list, tuple)):
                         for value in val:
                             query_args.append("%s=%s" % (
-                                urllib.quote_plus(unicode(key).encode(encoding)),
-                                urllib.quote_plus(unicode(value).encode(encoding))))
+                                urllib.quote(unicode(key).encode(encoding)),
+                                urllib.quote(unicode(value).encode(encoding))))
                     else:
                         query_args.append("%s=%s" % (
-                            urllib.quote_plus(unicode(key).encode(encoding)),
-                            urllib.quote_plus(unicode(val).encode(encoding))))
+                            urllib.quote(unicode(key).encode(encoding)),
+                            urllib.quote(unicode(val).encode(encoding))))
                 url += '&'.join(query_args)
     if not static:
         route_args = []
@@ -233,7 +233,7 @@ def url_for(*args, **kargs):
                         "unicode instead: %s" % url)
     if url is None:
         raise Exception(
-            "url_for could not generate URL. Called with args: %s %s" % (args, kargs))
+            "url_for could not generate URL. Called with args: %s %s" % (args, kwar))
     
     if url is None:
         return url
