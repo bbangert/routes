@@ -2,6 +2,8 @@ Routes Changelog
 ========================
 
 -- 1.9 (**tip**)
+* Add non-minimization option to Routes and the Mapper for generation and
+  recognition.
 * Add Routes 2.0 style syntax for making routes and regexp. For example, this
   route will now work: '{controller}/{action}/{id}'.
 * Fixed Routes to not use quote_plus when making URL's.

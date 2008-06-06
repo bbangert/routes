@@ -90,6 +90,9 @@ class Route(object):
         routekeys = frozenset([key['name'] for key in routelist \
                                if isinstance(key, dict)])
         
+        if not self.minimization:
+            self.make_full_route()
+        
         # Build a req list with all the regexp requirements for our args
         self.req_regs = {}
         for key, val in self.reqs.iteritems():
@@ -109,6 +112,17 @@ class Route(object):
         # exist in the route
         self.hardcoded = frozenset([key for key in self.maxkeys \
             if key not in routekeys and self.defaults[key] is not None])
+    
+    def make_full_route(self):
+        """Make a full routelist string for use with non-minimized
+        generation"""
+        regpath = ''
+        for part in self.routelist:
+            if isinstance(part, dict):
+                regpath += '%(' + part['name'] + ')s'
+            else:
+                regpath += part
+        self.regpath = regpath
     
     def make_unicode(self, s):
         """Transform the given argument into a unicode string."""
@@ -181,6 +195,15 @@ class Route(object):
         """
         minkeys = []
         backcheck = routelist[:]
+        
+        # If we don't honor minimization, we need all the keys in the
+        # route path
+        if not self.minimization:
+            for part in backcheck:
+                if isinstance(part, dict):
+                    minkeys.append(part['name'])
+            return (frozenset(minkeys), backcheck)
+        
         gaps = False
         backcheck.reverse()
         for part in backcheck:
@@ -492,29 +515,33 @@ class Route(object):
         
         return result
     
-    def generate(self, _ignore_req_list=False, _append_slash=False, **kargs):
-        """Generate a URL from ourself given a set of keyword arguments
-        
-        Toss an exception if this
-        set of keywords would cause a gap in the url.
-        
-        """
-        # Verify that our args pass any regexp requirements
-        if not _ignore_req_list:
-            for key in self.reqs.keys():
-                val = kargs.get(key)
-                if val and not self.req_regs[key].match(self.make_unicode(val)):
-                    return False
-        
-        # Verify that if we have a method arg, its in the method accept list. 
-        # Also, method will be changed to _method for route generation
-        meth = kargs.get('method')
-        if meth:
-            if self.conditions and 'method' in self.conditions \
-                and meth.upper() not in self.conditions['method']:
-                return False
-            kargs.pop('method')
-        
+    def generate_non_minimized(self, kargs):
+        """Generate a non-minimal version of the URL"""
+        url = ''
+        all_args = self.defaults.copy()
+        for part in self.routelist:
+            if isinstance(part, dict):
+                arg = part['name']
+                
+                # For efficiency, check these just once
+                has_arg = arg in kargs
+                has_default = arg in self.defaults
+                
+                # Ensure that our dict is updated if its not None and
+                if has_arg and kargs[arg] is not None:
+                    all_args[arg] = kargs[arg]
+                
+                # Otherwise, we weren't passed the arg, but we can't use
+                # None when making the URL, so remove it from the dict
+                elif has_default and all_args[arg] is None:
+                    del all_args[arg]
+        if bool(self.minkeys - frozenset(all_args.keys())):
+            return False
+        else:
+            return self.regpath % all_args
+    
+    def generate_minimized(self, kargs):
+        """Generate a minimized version of the URL"""
         routelist = self.routebackwards
         urllist = []
         gaps = False
@@ -578,6 +605,39 @@ class Route(object):
                 urllist.append(part)
         urllist.reverse()
         url = ''.join(urllist)
+        return url
+    
+    def generate(self, _ignore_req_list=False, _append_slash=False, **kargs):
+        """Generate a URL from ourself given a set of keyword arguments
+        
+        Toss an exception if this
+        set of keywords would cause a gap in the url.
+        
+        """
+        # Verify that our args pass any regexp requirements
+        if not _ignore_req_list:
+            for key in self.reqs.keys():
+                val = kargs.get(key)
+                if val and not self.req_regs[key].match(self.make_unicode(val)):
+                    return False
+        
+        # Verify that if we have a method arg, its in the method accept list. 
+        # Also, method will be changed to _method for route generation
+        meth = kargs.get('method')
+        if meth:
+            if self.conditions and 'method' in self.conditions \
+                and meth.upper() not in self.conditions['method']:
+                return False
+            kargs.pop('method')
+        
+        if self.minimization:
+            url = self.generate_minimized(kargs)
+        else:
+            url = self.generate_non_minimized(kargs)
+        
+        if url is False:
+            return url
+        
         if not url.startswith('/'):
             url = '/' + url
         extras = frozenset(kargs.keys()) - self.maxkeys
