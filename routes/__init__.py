@@ -125,6 +125,6 @@ def request_config(original=False):
         obj.using_request_local = False
     return _RequestConfig()
     
-from base import Mapper
-from util import url_for, redirect_to
+from routes.mapper import Mapper
+from routes.util import url_for, redirect_to
 __all__=['Mapper', 'url_for', 'redirect_to', 'request_config']
