@@ -523,17 +523,13 @@ class Route(object):
             if isinstance(part, dict):
                 arg = part['name']
                 
-                # For efficiency, check these just once
-                has_arg = arg in kargs
-                has_default = arg in self.defaults
-                
                 # Ensure that our dict is updated if its not None and
-                if has_arg and kargs[arg] is not None:
+                if arg in kargs and kargs[arg] is not None:
                     all_args[arg] = kargs[arg]
                 
                 # Otherwise, we weren't passed the arg, but we can't use
                 # None when making the URL, so remove it from the dict
-                elif has_default and all_args[arg] is None:
+                elif arg in self.defaults and all_args[arg] is None:
                     del all_args[arg]
         if bool(self.minkeys - frozenset(all_args.keys())):
             return False
