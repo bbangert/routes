@@ -21,13 +21,16 @@ def strip_slashes(name):
 
 
 class Mapper(object):
-    """Mapper handles URL generation and URL recognition in a web application.
+    """Mapper handles URL generation and URL recognition in a web
+    application.
     
-    Mapper is built handling dictionary's. It is assumed that the web application will handle
-    the dictionary returned by URL recognition to dispatch appropriately.
+    Mapper is built handling dictionary's. It is assumed that the web
+    application will handle the dictionary returned by URL recognition
+    to dispatch appropriately.
     
-    URL generation is done by passing keyword parameters into the generate function, a URL is then
-    returned.
+    URL generation is done by passing keyword parameters into the
+    generate function, a URL is then returned.
+    
     """
     def __init__(self, controller_scan=controller_scan, directory=None, 
                  always_scan=False, register=True, explicit=False):
@@ -36,53 +39,61 @@ class Mapper(object):
         All keyword arguments are optional.
         
         ``controller_scan``
-            Function reference that will be used to return a list of valid 
-            controllers used during URL matching. If ``directory`` keyword arg
-            is present, it will be passed into the function during its call. 
-            This option defaults to a function that will scan a directory for
-            controllers.
+            Function reference that will be used to return a list of
+            valid controllers used during URL matching. If
+            ``directory`` keyword arg is present, it will be passed
+            into the function during its call. This option defaults to
+            a function that will scan a directory for controllers.
         
         ``directory``
-            Passed into controller_scan for the directory to scan. It should be
-            an absolute path if using the default ``controller_scan`` function.
+            Passed into controller_scan for the directory to scan. It
+            should be an absolute path if using the default 
+            ``controller_scan`` function.
         
         ``always_scan``
-            Whether or not the ``controller_scan`` function should be run 
-            during every URL match. This is typically a good idea during 
-            development so the server won't need to be restarted anytime a 
-            controller is added.
+            Whether or not the ``controller_scan`` function should be
+            run during every URL match. This is typically a good idea
+            during development so the server won't need to be restarted
+            anytime a controller is added.
         
         ``register``
             Boolean used to determine if the Mapper should use 
-            ``request_config`` to register itself as the mapper. Since it's 
-            done on a thread-local basis, this is typically best used during 
-            testing though it won't hurt in other cases.
+            ``request_config`` to register itself as the mapper. Since
+            it's done on a thread-local basis, this is typically best
+            used during testing though it won't hurt in other cases.
         
         ``explicit``
-            Boolean used to determine if routes should be connected with 
-            implicit defaults of::
+            Boolean used to determine if routes should be connected
+            with implicit defaults of::
                 
                 {'controller':'content','action':'index','id':None}
             
             When set to True, these defaults will not be added to route
             connections and ``url_for`` will not use Route memory.
         
-        Additional attributes that may be set after mapper initialization (ie,
-        map.ATTRIBUTE = 'something'):
+        ``minimization``
+            Boolean used to indicate whether or not Routes should
+            minimize URL's and the generated URL's, or require every
+            part where it appears in the path. Defaults to False.
+        
+        Additional attributes that may be set after mapper
+        initialization (ie, map.ATTRIBUTE = 'something'):
         
         ``encoding``
-            Used to indicate alternative encoding/decoding systems to use with
-            both incoming URL's, and during Route generation when passed a 
-            Unicode string. Defaults to 'utf-8'.
+            Used to indicate alternative encoding/decoding systems to
+            use with both incoming URL's, and during Route generation
+            when passed a Unicode string. Defaults to 'utf-8'.
         
         ``decode_errors``
-            How to handle errors in the encoding, generally ignoring any chars 
-            that don't convert should be sufficient. Defaults to 'ignore'.
+            How to handle errors in the encoding, generally ignoring
+            any chars that don't convert should be sufficient. Defaults
+            to 'ignore'.
         
         ``hardcode_names``
-            Whether or not Named Routes result in the default options for the 
-            route being used *or* if they actually force url generation to use
-            the route. Defaults to False.
+            Whether or not Named Routes result in the default options
+            for the route being used *or* if they actually force url
+            generation to use the route. Defaults to False.
+        
         """
         self.matchlist = []
         self.maxkeys = {}
@@ -242,16 +253,18 @@ class Mapper(object):
     def _match(self, url):
         """Internal Route matcher
         
-        Matches a URL against a route, and returns a tuple of the match dict
-        and the route object if a match is successfull, otherwise it returns 
-        empty.
+        Matches a URL against a route, and returns a tuple of the match
+        dict and the route object if a match is successfull, otherwise
+        it returns empty.
         
         For internal use only.
+        
         """
         if not self._created_regs and self.controller_scan:
             self.create_regs()
         elif not self._created_regs:
-            raise RouteException("You must generate the regular expressions before matching.")
+            raise RouteException("You must generate the regular expressions"
+                                 " before matching.")
         
         if self.always_scan:
             self.create_regs()
@@ -346,7 +359,8 @@ class Mapper(object):
         # If the URL didn't depend on the SCRIPT_NAME, we'll cache it
         # keyed by just by kargs; otherwise we need to cache it with
         # both SCRIPT_NAME and kargs:
-        cache_key = unicode(args).encode('utf8') + unicode(kargs).encode('utf8')
+        cache_key = unicode(args).encode('utf8') + \
+            unicode(kargs).encode('utf8')
         
         if self.urlcache is not None:
             if self.environ:
@@ -441,7 +455,7 @@ class Mapper(object):
             if path:
                 if self.prefix:
                     path = self.prefix + path
-                if self.environ and self.environ.get('SCRIPT_NAME', '') != '' \
+                if self.environ and self.environ.get('SCRIPT_NAME', '') != ''\
                     and not route.absolute:
                     path = self.environ['SCRIPT_NAME'] + path
                     key = cache_key_script_name
@@ -457,28 +471,29 @@ class Mapper(object):
     def resource(self, member_name, collection_name, **kwargs):
         """Generate routes for a controller resource
         
-        The member_name name should be the appropriate singular version of the
-        resource given your locale and used with members of the collection.
-        The collection_name name will be used to refer to the resource 
-        collection methods and should be a plural version of the member_name
-        argument. By default, the member_name name will also be assumed to map
-        to a controller you create.
+        The member_name name should be the appropriate singular version
+        of the resource given your locale and used with members of the
+        collection. The collection_name name will be used to refer to
+        the resource collection methods and should be a plural version
+        of the member_name argument. By default, the member_name name
+        will also be assumed to map to a controller you create.
         
         The concept of a web resource maps somewhat directly to 'CRUD' 
-        operations. The overlying things to keep in mind is that mapping a
-        resource is about handling creating, viewing, and editing that
-        resource.
+        operations. The overlying things to keep in mind is that
+        mapping a resource is about handling creating, viewing, and
+        editing that resource.
         
         All keyword arguments are optional.
         
         ``controller``
-            If specified in the keyword args, the controller will be the actual
-            controller used, but the rest of the naming conventions used for
-            the route names and URL paths are unchanged.
+            If specified in the keyword args, the controller will be
+            the actual controller used, but the rest of the naming
+            conventions used for the route names and URL paths are
+            unchanged.
         
         ``collection``
-            Additional action mappings used to manipulate/view the entire set of
-            resources provided by the controller.
+            Additional action mappings used to manipulate/view the
+            entire set of resources provided by the controller.
             
             Example::
                 
@@ -487,8 +502,8 @@ class Mapper(object):
                 # also adds named route "rss_message"
         
         ``member``
-            Additional action mappings used to access an individual 'member'
-            of this controllers resources.
+            Additional action mappings used to access an individual
+            'member' of this controllers resources.
             
             Example::
                 
@@ -497,8 +512,8 @@ class Mapper(object):
                 # also adds named route "mark_message"
         
         ``new``
-            Action mappings that involve dealing with a new member in the
-            controller resources.
+            Action mappings that involve dealing with a new member in
+            the controller resources.
             
             Example::
                 
@@ -507,15 +522,15 @@ class Mapper(object):
                 # also adds a url named "preview_new_message"
         
         ``path_prefix``
-            Prepends the URL path for the Route with the path_prefix given.
-            This is most useful for cases where you want to mix resources
-            or relations between resources.
+            Prepends the URL path for the Route with the path_prefix
+            given. This is most useful for cases where you want to mix
+            resources or relations between resources.
         
         ``name_prefix``
-            Perpends the route names that are generated with the name_prefix
-            given. Combined with the path_prefix option, it's easy to
-            generate route names and paths that represent resources that are
-            in relations.
+            Perpends the route names that are generated with the
+            name_prefix given. Combined with the path_prefix option,
+            it's easy to generate route names and paths that represent
+            resources that are in relations.
             
             Example::
                 
@@ -526,19 +541,22 @@ class Mapper(object):
                 # has named route "category_message"
                 
         ``parent_resource`` 
-            A ``dict`` containing information about the parent resource, for 
-            creating a nested resource. It should contain the ``member_name`` 
-            and ``collection_name`` of the parent resource. This ``dict`` will 
-            be available via the associated ``Route`` object which can be 
-            accessed during a request via ``request.environ['routes.route']`` 
+            A ``dict`` containing information about the parent
+            resource, for creating a nested resource. It should contain
+            the ``member_name`` and ``collection_name`` of the parent
+            resource. This ``dict`` will 
+            be available via the associated ``Route`` object which can
+            be accessed during a request via
+            ``request.environ['routes.route']``
  
-            If ``parent_resource`` is supplied and ``path_prefix`` isn't, 
-            ``path_prefix`` will be generated from ``parent_resource`` as  
+            If ``parent_resource`` is supplied and ``path_prefix``
+            isn't, ``path_prefix`` will be generated from
+            ``parent_resource`` as
             "<parent collection name>/:<parent member name>_id". 
 
-            If ``parent_resource`` is supplied and ``name_prefix`` isn't, 
-            ``name_prefix`` will be generated from ``parent_resource`` as  
-            "<parent member name>_". 
+            If ``parent_resource`` is supplied and ``name_prefix``
+            isn't, ``name_prefix`` will be generated from
+            ``parent_resource`` as  "<parent member name>_". 
  
             Example:: 
  
@@ -546,7 +564,7 @@ class Mapper(object):
                 >>> m = Mapper() 
                 >>> m.resource('location', 'locations', 
                 ...            parent_resource=dict(member_name='region', 
-                ...                                 collection_name='regions')) 
+                ...                                 collection_name='regions'))
                 >>> # path_prefix is "regions/:region_id" 
                 >>> # name prefix is "region_"  
                 >>> url_for('region_locations', region_id=13) 
@@ -718,4 +736,3 @@ class Mapper(object):
         self.connect(name_prefix + member_name, member_path, **route_options)
         self.connect("formatted_" + name_prefix + member_name, 
                      member_path + ".:(format)", **route_options)
-    

@@ -12,24 +12,25 @@ from routes.base import request_config
 log = logging.getLogger('routes.middleware')
 
 class RoutesMiddleware(object):
-    """Routing middleware that handles resolving the PATH_INFO in addition
-    to optionally recognizing method overriding."""
+    """Routing middleware that handles resolving the PATH_INFO in
+    addition to optionally recognizing method overriding."""
     def __init__(self, wsgi_app, mapper, use_method_override=True, 
                  path_info=True):
         """Create a Route middleware object
         
-        Using the use_method_override keyword will require Paste to be 
-        installed, and your application should use Paste's WSGIRequest object
-        as it will properly handle POST issues with wsgi.input should Routes
-        check it.
+        Using the use_method_override keyword will require Paste to be
+        installed, and your application should use Paste's WSGIRequest
+        object as it will properly handle POST issues with wsgi.input
+        should Routes check it.
         
-        If path_info is True, then should a route var contain path_info, the
-        SCRIPT_NAME and PATH_INFO will be altered accordingly. This should be
-        used with routes like:
+        If path_info is True, then should a route var contain
+        path_info, the SCRIPT_NAME and PATH_INFO will be altered
+        accordingly. This should be used with routes like:
         
-        .. code-block:: Python
+        .. code-block:: python
         
             map.connect('blog/*path_info', controller='blog', path_info='')
+        
         """
         self.app = wsgi_app
         self.mapper = mapper
@@ -39,8 +40,8 @@ class RoutesMiddleware(object):
                   "altering = %s", use_method_override, path_info)
     
     def __call__(self, environ, start_response):
-        """Resolves the URL in PATH_INFO, and uses wsgi.routing_args to pass 
-        on URL resolver results."""
+        """Resolves the URL in PATH_INFO, and uses wsgi.routing_args
+        to pass on URL resolver results."""
         config = request_config()
         config.mapper = self.mapper
         

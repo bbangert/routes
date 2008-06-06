@@ -9,13 +9,15 @@ from routes.util import _url_quote as url_quote
 
 
 class Route(object):
-    """The Route object holds a route recognition and generation routine.
+    """The Route object holds a route recognition and generation
+    routine.
     
     See Route.__init__ docs for usage.
-    """
     
+    """
     def __init__(self, routepath, **kargs):
-        """Initialize a route, with a given routepath for matching/generation
+        """Initialize a route, with a given routepath for
+        matching/generation
         
         The set of keyword args will be used as defaults.
         
@@ -25,18 +27,18 @@ class Route(object):
             >>> newroute = Route(':controller/:action/:id')
             >>> newroute.defaults
             {'action': 'index', 'id': None}
-            >>> newroute = Route('date/:year/:month/:day', controller="blog", 
-            ...     action="view")
+            >>> newroute = Route('date/:year/:month/:day',  
+            ...     controller="blog", action="view")
             >>> newroute = Route('archives/:page', controller="blog", 
             ...     action="by_page", requirements = { 'page':'\d{1,2}' })
             >>> newroute.reqs
             {'page': '\\\d{1,2}'}
         
         .. Note:: 
-            Route is generally not called directly, a Mapper instance connect 
-            method should be used to add routes.
-        """
+            Route is generally not called directly, a Mapper instance
+            connect method should be used to add routes.
         
+        """
         self.routepath = routepath
         self.sub_domains = False
         self.prior = None
@@ -123,7 +125,7 @@ class Route(object):
             return unicode(s)
     
     def _pathkeys(self, routepath):
-        """Utility function to walk the route, and pull out the valid 
+        """Utility function to walk the route, and pull out the valid
         dynamic/wildcard keys."""
         collecting = False
         current = ''
@@ -174,11 +176,12 @@ class Route(object):
     def _minkeys(self, routelist):
         """Utility function to walk the route backwards
         
-        Will also determine the minimum keys we can handle to generate a 
-        working route.
+        Will also determine the minimum keys we can handle to generate
+        a working route.
         
         routelist is a list of the '/' split route path
         defaults is a dict of all the defaults provided for the route
+        
         """
         minkeys = []
         backcheck = routelist[:]
@@ -210,7 +213,8 @@ class Route(object):
         """Creates default set with values stringified
         
         Put together our list of defaults, stringify non-None values
-        and add in our action/id default if they use it and didn't specify it
+        and add in our action/id default if they use it and didn't
+        specify it.
         
         defaultkeys is a list of the currently assumed default keys
         routekeys is a list of the keys found in the route path
@@ -249,12 +253,13 @@ class Route(object):
         Note: This MUST be called before match can function properly.
         
         clist should be a list of valid controller strings that can be 
-        matched, for this reason makeregexp should be called by the web 
-        framework after it knows all available controllers that can be 
+        matched, for this reason makeregexp should be called by the web
+        framework after it knows all available controllers that can be
         utilized.
+        
         """
         if self.minimization:
-            (reg, noreqs, allblank) = self.buildnextreg(self.routelist, clist)
+            reg = self.buildnextreg(self.routelist, clist)[0]
             if not reg:
                 reg = '/'
             reg = reg + '(/)?' + '$'
@@ -270,8 +275,8 @@ class Route(object):
         self.regmatch = re.compile(reg)
     
     def buildfullreg(self, clist):
-        """Build the regexp by iterating through the routelist and replacing
-        dicts with the appropriate regexp match"""
+        """Build the regexp by iterating through the routelist and
+        replacing dicts with the appropriate regexp match"""
         regparts = []
         for part in self.routelist:
             if isinstance(part, dict):
@@ -289,10 +294,12 @@ class Route(object):
         return regexp
     
     def buildnextreg(self, path, clist):
-        """Recursively build our regexp given a path, and a controller list.
+        """Recursively build our regexp given a path, and a controller
+        list.
         
-        Returns the regular expression string, and two booleans that can be
-        ignored as they're only used internally by buildnextreg.
+        Returns the regular expression string, and two booleans that
+        can be ignored as they're only used internally by buildnextreg.
+        
         """
         if path:
             part = path[0]
@@ -428,13 +435,14 @@ class Route(object):
         """Match a url to our regexp. 
         
         While the regexp might match, this operation isn't
-        guaranteed as there's other factors that can cause a match to fail 
-        even though the regexp succeeds (Default that was relied on wasn't 
-        given, requirement regexp doesn't pass, etc.).
+        guaranteed as there's other factors that can cause a match to
+        fail even though the regexp succeeds (Default that was relied
+        on wasn't given, requirement regexp doesn't pass, etc.).
         
-        Therefore the calling function shouldn't assume this will return a
-        valid dict, the other possible return is False if a match doesn't work
-        out.
+        Therefore the calling function shouldn't assume this will
+        return a valid dict, the other possible return is False if a
+        match doesn't work out.
+        
         """
         # Static routes don't match, they generate only
         if self.static:
@@ -647,4 +655,3 @@ class Route(object):
         elif _append_slash and not url.endswith('/'):
             url += '/'
         return url
-    
