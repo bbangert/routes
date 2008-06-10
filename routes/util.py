@@ -70,8 +70,17 @@ def _subdomain_check(config, kargs):
         subdomain = kargs.pop('sub_domain', None)
         if isinstance(subdomain, unicode):
             subdomain = str(subdomain)
-        fullhost = config.environ.get('HTTP_HOST') or \
-            config.environ.get('SERVER_NAME')
+        
+        # We use a try/except here, cause the only time there should be no
+        # environ is when we're unit testing, in which case we shouldn't be
+        # changing kargs and such. The exception catching also won't hurt as
+        # badly here vs doing a hasattr on every url check
+        try:
+            fullhost = config.environ.get('HTTP_HOST') or \
+                config.environ.get('SERVER_NAME')
+        except AttributeError:
+            return kargs
+        
         hostmatch = fullhost.split(':')
         host = hostmatch[0]
         port = ''

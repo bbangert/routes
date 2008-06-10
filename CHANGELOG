@@ -2,6 +2,8 @@ Routes Changelog
 ========================
 
 -- 1.9 (**tip**)
+* Fixed bug with url_for not working properly outside of a request when
+  sub-domains are active. Thanks Pavel Skvazh.
 * Add non-minimization option to Routes and the Mapper for generation and
   recognition.
 * Add Routes 2.0 style syntax for making routes and regexp. For example, this
