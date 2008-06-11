@@ -26,6 +26,7 @@ A Routing package for Python that matches URL's to dicts and vice versa
       author_email='ben@groovie.org',
       url='http://routes.groovie.org/',
       zip_safe=False,
-      test_suite = 'nose.collector',
+      test_suite='nose.collector',
+      tests_require=['nose', 'webtest', 'paste'],
       packages=find_packages(exclude=['tests', 'ez_setup']),
       )
