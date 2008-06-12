@@ -242,7 +242,7 @@ def url_for(*args, **kargs):
                         "unicode instead: %s" % url)
     if url is None:
         raise Exception(
-            "url_for could not generate URL. Called with args: %s %s" % (args, kwar))
+            "url_for could not generate URL. Called with args: %s %s" % (args, kargs))
     
     if url is None:
         return url
