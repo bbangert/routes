@@ -1,7 +1,7 @@
 Routes Changelog
 ========================
 
--- 1.9 (**tip**)
+-- 1.9 (June 12, 2008)
 * Fixed bug with url_for not working properly outside of a request when
   sub-domains are active. Thanks Pavel Skvazh.
 * Add non-minimization option to Routes and the Mapper for generation and
