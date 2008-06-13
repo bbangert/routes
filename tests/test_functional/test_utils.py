@@ -1,6 +1,7 @@
 """test_utils"""
-
 import os, sys, time, unittest
+from nose.tools import eq_, raises
+
 from routes.util import controller_scan
 from routes import *
 
@@ -39,6 +40,13 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('/content', url_for())
         self.assertEqual('https://www.test.com/viewpost', url_for(controller='post', action='view', protocol='https'))
         self.assertEqual('http://www.test.org/content', url_for(host='www.test.org'))
+    
+    @raises(Exception)
+    def test_url_raises(self):
+        con = self.con
+        con.mapper.explicit = True
+        con.mapper_dict = {}
+        url_for(id='freddiemac', action='juice')
     
     def test_url_for_with_defaults(self):
         con = self.con
