@@ -10,6 +10,9 @@ import re
 import urllib
 from routes import request_config
 
+class RouteException(Exception):
+    pass
+
 class literal(str):
     """Literal class for use in systems to indicate the url is already
     escaped"""
@@ -238,14 +241,12 @@ def url_for(*args, **kargs):
             url = protocol + '://' + host + url
     
     if not isinstance(url, str) and url is not None:
-        raise Exception("url_for can only return a string or None, got "
+        raise RouteException("url_for can only return a string, got "
                         "unicode instead: %s" % url)
     if url is None:
-        raise Exception(
-            "url_for could not generate URL. Called with args: %s %s" % (args, kargs))
-    
-    if url is None:
-        return url
+        raise RouteException(
+            "url_for could not generate URL. Called with args: %s %s" % \
+            (args, kargs))
     return literal(url)
 
 def redirect_to(*args, **kargs):

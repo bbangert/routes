@@ -510,24 +510,21 @@ class Route(object):
     
     def generate_non_minimized(self, kargs):
         """Generate a non-minimal version of the URL"""
-        url = ''
-        all_args = self.defaults.copy()
-        for part in self.routelist:
-            if isinstance(part, dict):
-                arg = part['name']
-                
-                # Ensure that our dict is updated if its not None and
-                if arg in kargs and kargs[arg] is not None:
-                    all_args[arg] = kargs[arg]
-                
-                # Otherwise, we weren't passed the arg, but we can't use
-                # None when making the URL, so remove it from the dict
-                elif arg in self.defaults and all_args[arg] is None:
-                    del all_args[arg]
-        if bool(self.minkeys - frozenset(all_args.keys())):
-            return False
-        else:
-            return self.regpath % all_args
+        # Iterate through the keys that are defaults, and NOT in the route
+        # path. If its not in kargs, or doesn't match, or is None, this
+        # route won't work
+        for k in self.maxkeys - self.minkeys:
+            if k not in kargs:
+                return False
+            elif self.make_unicode(kargs[k]) != \
+                self.make_unicode(self.defaults[k]):
+                return False
+        
+        # Ensure that all the args in the route path are present and not None
+        for arg in self.minkeys:
+            if arg not in kargs or kargs[arg] is None:
+                return False
+        return self.regpath % kargs
     
     def generate_minimized(self, kargs):
         """Generate a minimized version of the URL"""
