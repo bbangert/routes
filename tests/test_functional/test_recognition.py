@@ -4,6 +4,7 @@ import sys
 import time
 import unittest
 import urllib
+from nose.tools import eq_
 from routes import *
 from routes.util import RouteException
 
@@ -209,7 +210,25 @@ class TestRecognition(unittest.TestCase):
                          m.match('/archive/2004'))
         self.assertEqual({'controller':'blog','action':'view', 'month':'4', 'day':None,'year':'2004'}, 
                          m.match('/archive/2004/4'))
-    
+
+    def test_multiroute_with_nomin(self):
+        m = Mapper()
+        m.minimization = False
+        m.connect('/archive/:year/:month/:day', controller='blog', action='view', month=None, day=None,
+                                    requirements={'month':'\d{1,2}','day':'\d{1,2}'})
+        m.connect('/viewpost/:id', controller='post', action='view')
+        m.connect('/:controller/:action/:id')
+        m.create_regs(['post','blog','admin/user'])
+        
+        self.assertEqual(None, m.match('/'))
+        self.assertEqual(None, m.match('/archive'))
+        self.assertEqual(None, m.match('/archive/2004/ab'))
+        self.assertEqual(None, m.match('/archive/2004/4'))
+        self.assertEqual(None, m.match('/archive/2004'))
+        eq_({'controller':'blog','action':'view','id':'3'}, m.match('/blog/view/3'))
+        eq_({'controller':'blog','action':'view','month':'10','day':'23','year':'2004'}, 
+                         m.match('/archive/2004/10/23'))
+
     def test_multiroute_with_splits(self):
         m = Mapper()
         m.connect('archive/:(year)/:(month)/:(day)', controller='blog', action='view', month=None, day=None,
