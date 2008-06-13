@@ -818,6 +818,36 @@ class TestRecognition(unittest.TestCase):
         test_path('/people/2', 'PUT')
         assert {'controller':'people', 'action':'update', 'id':'2'} == con.mapper_dict        
 
+    def test_resource_with_nomin(self):
+        m = Mapper()
+        m.minimization = False
+        m.resource('person', 'people')
+        m.create_regs(['people'])
+        
+        con = request_config()
+        con.mapper = m
+        def test_path(path, method):
+            env = dict(HTTP_HOST='example.com', PATH_INFO=path, REQUEST_METHOD=method)
+            con.mapper_dict = {}
+            con.environ = env
+        
+        test_path('/people', 'GET')
+        eq_({'controller':'people', 'action':'index'}, con.mapper_dict)
+        
+        test_path('/people', 'POST')
+        assert {'controller':'people', 'action':'create'} == con.mapper_dict
+        
+        test_path('/people/2', 'GET')
+        assert {'controller':'people', 'action':'show', 'id':'2'} == con.mapper_dict
+        test_path('/people/2/edit', 'GET')
+        assert {'controller':'people', 'action':'edit', 'id':'2'} == con.mapper_dict
+
+        test_path('/people/2', 'DELETE')
+        assert {'controller':'people', 'action':'delete', 'id':'2'} == con.mapper_dict
+
+        test_path('/people/2', 'PUT')
+        assert {'controller':'people', 'action':'update', 'id':'2'} == con.mapper_dict        
+
     def test_resource_created_with_parent_resource(self): 
         m = Mapper()
         m.resource('location', 'locations',
@@ -937,6 +967,128 @@ class TestRecognition(unittest.TestCase):
                    name_prefix='place_')
         url = url_for('place_locations', area_id=51)
         assert url == '/areas/51/locations'
+
+    def test_resource_created_with_parent_resource_nomin(self): 
+        m = Mapper()
+        m.minimization = False
+        m.resource('location', 'locations',
+                   parent_resource=dict(member_name='region',
+                                        collection_name='regions'))
+        m.create_regs(['locations'])
+        
+        con = request_config()
+        con.mapper = m
+        def test_path(path, method):
+            env = dict(HTTP_HOST='example.com', PATH_INFO=path,
+                       REQUEST_METHOD=method)
+            con.mapper_dict = {}
+            con.environ = env
+        
+        test_path('/regions/13/locations', 'GET')
+        assert con.mapper_dict == {'region_id': '13', 'controller': 'locations',
+                                   'action': 'index'}
+        url = url_for('region_locations', region_id=13)
+        assert url == '/regions/13/locations'
+        
+        test_path('/regions/13/locations', 'POST')
+        assert con.mapper_dict == {'region_id': '13', 'controller': 'locations',
+                                   'action': 'create'}
+        # new
+        url = url_for('region_new_location', region_id=13)
+        assert url == '/regions/13/locations/new'
+        # create
+        url = url_for('region_locations', region_id=13)
+        assert url == '/regions/13/locations'
+        
+        test_path('/regions/13/locations/60', 'GET')
+        assert con.mapper_dict == {'region_id': '13', 'controller': 'locations',
+                                   'id': '60', 'action': 'show'}
+        url = url_for('region_location', region_id=13, id=60)
+        assert url == '/regions/13/locations/60'
+        
+        test_path('/regions/13/locations/60/edit', 'GET')
+        assert con.mapper_dict == {'region_id': '13', 'controller': 'locations',
+                                   'id': '60', 'action': 'edit'}
+        url = url_for('region_edit_location', region_id=13, id=60)
+        assert url == '/regions/13/locations/60/edit'
+        
+        test_path('/regions/13/locations/60', 'DELETE')
+        assert con.mapper_dict == {'region_id': '13', 'controller': 'locations',
+                                   'id': '60', 'action': 'delete'}
+        url = url_for('region_location', region_id=13, id=60)
+        assert url == '/regions/13/locations/60'
+        
+        test_path('/regions/13/locations/60', 'PUT')
+        assert con.mapper_dict == {'region_id': '13', 'controller': 'locations',
+                                   'id': '60', 'action': 'update'}
+        url = url_for('region_location', region_id=13, id=60)
+        assert url == '/regions/13/locations/60'
+    
+        # Make sure ``path_prefix`` overrides work
+        # empty ``path_prefix`` (though I'm not sure why someone would do this)
+        m = Mapper()
+        m.resource('location', 'locations',
+                   parent_resource=dict(member_name='region',
+                                        collection_name='regions'),
+                   path_prefix='/')
+        url = url_for('region_locations')
+        assert url == '/locations'
+        # different ``path_prefix``
+        m = Mapper()
+        m.resource('location', 'locations',
+                   parent_resource=dict(member_name='region',
+                                        collection_name='regions'),
+                   path_prefix='areas/:area_id')
+        url = url_for('region_locations', area_id=51)
+        assert url == '/areas/51/locations'
+
+        # Make sure ``name_prefix`` overrides work
+        # empty ``name_prefix``
+        m = Mapper()
+        m.resource('location', 'locations',
+                   parent_resource=dict(member_name='region',
+                                        collection_name='regions'),
+                   name_prefix='')
+        url = url_for('locations', region_id=51)
+        assert url == '/regions/51/locations'
+        # different ``name_prefix``
+        m = Mapper()
+        m.resource('location', 'locations',
+                   parent_resource=dict(member_name='region',
+                                        collection_name='regions'),
+                   name_prefix='area_')
+        url = url_for('area_locations', region_id=51)
+        assert url == '/regions/51/locations'
+
+        # Make sure ``path_prefix`` and ``name_prefix`` overrides work together
+        # empty ``path_prefix``
+        m = Mapper()
+        m.resource('location', 'locations',
+                   parent_resource=dict(member_name='region',
+                                        collection_name='regions'),
+                   path_prefix='',
+                   name_prefix='place_')
+        url = url_for('place_locations')
+        assert url == '/locations'
+        # empty ``name_prefix``
+        m = Mapper()
+        m.resource('location', 'locations',
+                   parent_resource=dict(member_name='region',
+                                        collection_name='regions'),
+                   path_prefix='areas/:area_id',
+                   name_prefix='')
+        url = url_for('locations', area_id=51)
+        assert url == '/areas/51/locations'
+        # different ``path_prefix`` and ``name_prefix``
+        m = Mapper()
+        m.resource('location', 'locations',
+                   parent_resource=dict(member_name='region',
+                                        collection_name='regions'),
+                   path_prefix='areas/:area_id',
+                   name_prefix='place_')
+        url = url_for('place_locations', area_id=51)
+        assert url == '/areas/51/locations'
+
 
     def test_other_special_chars(self):
         m = Mapper()

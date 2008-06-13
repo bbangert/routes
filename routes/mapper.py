@@ -644,10 +644,11 @@ class Mapper(object):
         # If there's a path prefix option, use it with the controller
         controller = strip_slashes(collection_name)
         path_prefix = strip_slashes(path_prefix)
-        if path_prefix:
+        path_prefix = '/' + path_prefix
+        if path_prefix and path_prefix != '/':
             path = path_prefix + '/' + controller
         else:
-            path = controller
+            path = '/' + controller
         collection_path = path
         new_path = path + "/new"
         member_path = path + "/:(id)"
