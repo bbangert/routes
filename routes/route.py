@@ -448,8 +448,6 @@ class Route(object):
         if self.static:
             return False
         
-        if url.endswith('/') and len(url) > 1:
-            url = url[:-1]
         match = self.regmatch.match(url)
         
         if not match:
