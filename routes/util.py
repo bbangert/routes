@@ -10,9 +10,6 @@ import re
 import urllib
 from routes import request_config
 
-class RouteException(Exception):
-    pass
-
 class literal(str):
     """Literal class for use in systems to indicate the url is already
     escaped"""

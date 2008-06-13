@@ -558,7 +558,23 @@ class TestUtilsWithExplicit(unittest.TestCase):
         self.assertEqual('/category/food', url_for('category_home', section='food'))
         self.assertRaises(Exception, url_for, 'home', controller='content')
         self.assertEqual('/', url_for('home'))
-        
+
+    def test_with_route_names_and_nomin(self):
+        m = self.con.mapper
+        m.minimization = False
+        self.con.mapper_dict = {}
+        m.connect('home', '', controller='blog', action='splash')
+        m.connect('category_home', 'category/:section', controller='blog', action='view', section='home')
+        m.create_regs(['content','blog','admin/comments'])
+
+        self.assertRaises(Exception, url_for, controller='content', action='view')
+        self.assertRaises(Exception, url_for, controller='content')
+        self.assertRaises(Exception, url_for, controller='admin/comments')
+        self.assertEqual('/category/home', url_for('category_home'))
+        self.assertEqual('/category/food', url_for('category_home', section='food'))
+        self.assertRaises(Exception, url_for, 'home', controller='content')
+        self.assertEqual('/', url_for('home'))
+
     def test_with_route_names_and_defaults(self):
         m = self.con.mapper
         self.con.mapper_dict = {}
@@ -576,6 +592,31 @@ class TestUtilsWithExplicit(unittest.TestCase):
         m = Mapper()
         self.con.mapper = m
         self.con.mapper_dict = {}
+        m.resource('message', 'messages', member={'mark':'GET'}, collection={'rss':'GET'})
+        m.create_regs(['messages'])
+
+        self.assertRaises(Exception, url_for, controller='content', action='view')
+        self.assertRaises(Exception, url_for, controller='content')
+        self.assertRaises(Exception, url_for, controller='admin/comments')
+        self.assertEqual('/messages', url_for('messages'))
+        self.assertEqual('/messages/rss', url_for('rss_messages'))
+        self.assertEqual('/messages/4', url_for('message', id=4))
+        self.assertEqual('/messages/4/edit', url_for('edit_message', id=4))
+        self.assertEqual('/messages/4/mark', url_for('mark_message', id=4))
+        self.assertEqual('/messages/new', url_for('new_message'))
+        
+        self.assertEqual('/messages.xml', url_for('formatted_messages', format='xml'))
+        self.assertEqual('/messages/rss.xml', url_for('formatted_rss_messages', format='xml'))
+        self.assertEqual('/messages/4.xml', url_for('formatted_message', id=4, format='xml'))
+        self.assertEqual('/messages/4/edit.xml', url_for('formatted_edit_message', id=4, format='xml'))
+        self.assertEqual('/messages/4/mark.xml', url_for('formatted_mark_message', id=4, format='xml'))
+        self.assertEqual('/messages/new.xml', url_for('formatted_new_message', format='xml'))
+
+    def test_with_resource_route_names_and_nomin(self):
+        m = Mapper()
+        self.con.mapper = m
+        self.con.mapper_dict = {}
+        m.minimization = False
         m.resource('message', 'messages', member={'mark':'GET'}, collection={'rss':'GET'})
         m.create_regs(['messages'])
 

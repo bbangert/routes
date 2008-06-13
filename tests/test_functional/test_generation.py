@@ -1,7 +1,8 @@
 """test_generation"""
-
 import sys, time, unittest
 import urllib
+
+from nose.tools import eq_
 from routes import *
 
 class TestGeneration(unittest.TestCase):
@@ -263,6 +264,46 @@ class TestGeneration(unittest.TestCase):
         assert '/articles/2004/2/20/page/1' == m.generate(controller='articles', action='find_by_date', 
                     year=2004, month=2, day=20, page=1)
         assert '/articles/category' == m.generate(controller='articles', action='category')
+        assert '/xml/index/feed.xml' == m.generate(controller='xml')
+        assert '/xml/articlerss/feed.xml' == m.generate(controller='xml', action='articlerss')
+        
+        assert None == m.generate(controller='admin/comments', id=2)
+        assert None == m.generate(controller='articles', action='find_by_date', year=2004)
+
+    def test_big_multiroute_with_nomin(self):
+        m = Mapper()
+        m.minimization = False
+        m.connect('', controller='articles', action='index')
+        m.connect('admin', controller='admin/general', action='index')
+
+        m.connect('admin/comments/article/:article_id/:action/:id', controller = 'admin/comments', action=None, id=None)
+        m.connect('admin/trackback/article/:article_id/:action/:id', controller='admin/trackback', action=None, id=None)
+        m.connect('admin/content/:action/:id', controller='admin/content')
+
+        m.connect('xml/:action/feed.xml', controller='xml')
+        m.connect('xml/articlerss/:id/feed.xml', controller='xml', action='articlerss')
+        m.connect('index.rdf', controller='xml', action='rss')
+
+        m.connect('articles', controller='articles', action='index')
+        m.connect('articles/page/:page', controller='articles', action='index', requirements = {'page':'\d+'})
+
+        m.connect('articles/:year/:month/:day/page/:page', controller='articles', action='find_by_date', month = None, day = None,
+                            requirements = {'year':'\d{4}', 'month':'\d{1,2}','day':'\d{1,2}'})
+        m.connect('articles/category/:id', controller='articles', action='category')
+        m.connect('pages/*name', controller='articles', action='view_page')
+        
+        
+        assert '/pages/the/idiot/has/spoken' == m.generate(controller='articles', action='view_page',
+                            name='the/idiot/has/spoken')
+        assert '/' == m.generate(controller='articles', action='index')
+        assert '/xml/articlerss/4/feed.xml' == m.generate(controller='xml', action='articlerss', id=4)
+        assert '/xml/rss/feed.xml' == m.generate(controller='xml', action='rss')
+        assert '/admin/comments/article/4/view/2' == m.generate(controller='admin/comments', action='view', article_id=4, id=2)
+        assert '/admin' == m.generate(controller='admin/general')
+        assert '/articles/2004/2/20/page/1' == m.generate(controller='articles', action='find_by_date', 
+                    year=2004, month=2, day=20, page=1)
+        assert None == m.generate(controller='articles', action='category')
+        assert '/articles/category/4' == m.generate(controller='articles', action='category', id=4)
         assert '/xml/index/feed.xml' == m.generate(controller='xml')
         assert '/xml/articlerss/feed.xml' == m.generate(controller='xml', action='articlerss')
         

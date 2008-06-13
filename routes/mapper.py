@@ -70,12 +70,7 @@ class Mapper(object):
             
             When set to True, these defaults will not be added to route
             connections and ``url_for`` will not use Route memory.
-        
-        ``minimization``
-            Boolean used to indicate whether or not Routes should
-            minimize URL's and the generated URL's, or require every
-            part where it appears in the path. Defaults to False.
-        
+                
         Additional attributes that may be set after mapper
         initialization (ie, map.ATTRIBUTE = 'something'):
         
@@ -88,6 +83,11 @@ class Mapper(object):
             How to handle errors in the encoding, generally ignoring
             any chars that don't convert should be sufficient. Defaults
             to 'ignore'.
+        
+        ``minimization``
+            Boolean used to indicate whether or not Routes should
+            minimize URL's and the generated URL's, or require every
+            part where it appears in the path. Defaults to True.
         
         ``hardcode_names``
             Whether or not Named Routes result in the default options
@@ -231,7 +231,7 @@ class Mapper(object):
             self._create_regs(*args, **kwargs)
         finally:
             self.create_regs_lock.release()
-        
+    
     def _create_regs(self, clist=None):
         """Creates regular expressions for all connected routes"""
         if clist is None:
@@ -289,7 +289,7 @@ class Mapper(object):
             if match:
                 return (match, route, matchlog)
         return (None, None, matchlog)
-        
+    
     def match(self, url):
         """Match a URL against against one of the routes contained.
         
@@ -310,7 +310,7 @@ class Mapper(object):
         if result[0]:
             return result[0]
         return None
-        
+    
     def routematch(self, url):
         """Match a URL against against one of the routes contained.
         
@@ -328,7 +328,6 @@ class Mapper(object):
         if result[0]:
             return result[0], result[1]
         return None
-        
     
     def generate(self, *args, **kargs):
         """Generate a route from a set of keywords
