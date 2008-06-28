@@ -675,22 +675,22 @@ class Mapper(object):
             for action in lst:
                 route_options['action'] = action
                 route_name = "%s%s_%s" % (name_prefix, action, collection_name)
-                self.connect(route_name, "%s/%s" % (collection_path, action),
-                                                    **route_options)
                 self.connect("formatted_" + route_name, "%s/%s.:(format)" % \
                              (collection_path, action), **route_options)
+                self.connect(route_name, "%s/%s" % (collection_path, action),
+                                                    **route_options)
             if primary:
                 route_options['action'] = primary
-                self.connect(collection_path, **route_options)
                 self.connect("%s.:(format)" % collection_path, **route_options)
+                self.connect(collection_path, **route_options)
         
         # Specifically add in the built-in 'index' collection method and its 
         # formatted version
-        self.connect(name_prefix + collection_name, collection_path, 
-                     action='index', conditions={'method':['GET']}, **options)
         self.connect("formatted_" + name_prefix + collection_name, 
             collection_path + ".:(format)", action='index', 
             conditions={'method':['GET']}, **options)
+        self.connect(name_prefix + collection_name, collection_path, 
+                     action='index', conditions={'method':['GET']}, **options)
         
         # Add the routes that deal with new resource methods
         for method, lst in new_methods.iteritems():
@@ -702,11 +702,11 @@ class Mapper(object):
                 if action != 'new':
                     name = action + "_" + name
                 route_options['action'] = action
-                self.connect(name_prefix + name, path, **route_options)
-                path = (action == 'new' and new_path + '.:(format)') or \
+                formatted_path = (action == 'new' and new_path + '.:(format)') or \
                     "%s/%s.:(format)" % (new_path, action)
-                self.connect("formatted_" + name_prefix + name, path, 
+                self.connect("formatted_" + name_prefix + name, formatted_path, 
                              **route_options)
+                self.connect(name_prefix + name, path, **route_options)
         
         requirements_regexp = '[^\/]+'
 
@@ -720,19 +720,20 @@ class Mapper(object):
                 primary = None
             for action in lst:
                 route_options['action'] = action
-                self.connect("%s%s_%s" % (name_prefix, action, member_name),
-                    "%s/%s" % (member_path, action), **route_options)
                 self.connect("formatted_%s%s_%s" % (name_prefix, action, 
                                                     member_name),
                     "%s/%s.:(format)" % (member_path, action), **route_options)
+                self.connect("%s%s_%s" % (name_prefix, action, member_name),
+                    "%s/%s" % (member_path, action), **route_options)
             if primary:
                 route_options['action'] = primary
+                self.connect("%s.:(format)" % member_path, **route_options)
                 self.connect(member_path, **route_options)
         
         # Specifically add the member 'show' method
         route_options = requirements_for('GET')
         route_options['action'] = 'show'
         route_options['requirements'] = {'id':requirements_regexp}
-        self.connect(name_prefix + member_name, member_path, **route_options)
         self.connect("formatted_" + name_prefix + member_name, 
                      member_path + ".:(format)", **route_options)
+        self.connect(name_prefix + member_name, member_path, **route_options)
