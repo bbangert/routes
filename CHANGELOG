@@ -1,6 +1,10 @@
 Routes Changelog
 ========================
 
+-- 1.9.2 (July 8, 2008)
+* Fixed bug in url_for which caused it to return a literal when it shouldn't
+  have.
+
 -- 1.9.1 (June 28, 2008)
 * Fixed bug in formatted route recognition with formatting being absorbed
   into the id.
