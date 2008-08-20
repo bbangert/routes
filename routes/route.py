@@ -25,8 +25,8 @@ class Route(object):
         
             >>> from routes.base import Route
             >>> newroute = Route(':controller/:action/:id')
-            >>> newroute.defaults
-            {'action': 'index', 'id': None}
+            >>> sorted(newroute.defaults.items())
+            [('action', 'index'), ('id', None)]
             >>> newroute = Route('date/:year/:month/:day',  
             ...     controller="blog", action="view")
             >>> newroute = Route('archives/:page', controller="blog", 
