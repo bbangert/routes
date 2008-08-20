@@ -98,8 +98,13 @@ class RoutesMiddleware(object):
                 environ['SCRIPT_NAME'] = environ['SCRIPT_NAME'][:-1]
         
         response = self.app(environ, start_response)
-        del config.environ
-        del self.mapper.environ
+        
+        # Wrapped in try as in rare cases the attribute will be gone already
+        try:
+            del config.environ
+            del self.mapper.environ
+        except AttributeError:
+            pass
         return response
 
 def is_form_post(environ):
