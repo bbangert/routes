@@ -216,7 +216,7 @@ def url_for(*args, **kargs):
         host = newargs.pop('_host', None) or host
         protocol = newargs.pop('_protocol', None) or protocol
         url = config.mapper.generate(*route_args, **newargs)
-    if anchor:
+    if anchor is not None:
         url += '#' + _url_quote(anchor, encoding)
     if host or protocol or qualified:
         if not host and not qualified:
