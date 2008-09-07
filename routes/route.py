@@ -474,6 +474,8 @@ class Route(object):
             use_sd = self.conditions.get('sub_domain')
             if use_sd and not sub_domain:
                 return False
+            elif not use_sd and 'sub_domain' in self.conditions and sub_domain:
+                return False
             if isinstance(use_sd, list) and sub_domain not in use_sd:
                 return False
         

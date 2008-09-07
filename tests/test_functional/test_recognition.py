@@ -750,14 +750,40 @@ class TestRecognition(unittest.TestCase):
         
         env['HTTP_HOST'] = 'fred.example.com'
         con.environ = env
-        print con.mapper_dict
         eq_({'action': 'home', 'controller': 'users', 'sub_domain': 'fred'}, con.mapper_dict)
         
         m.sub_domains_ignore = ['www']
         env['HTTP_HOST'] = 'www.example.com'
         con.environ = env
-        print con.mapper_dict
         eq_(None, con.mapper_dict)
+    
+    def test_subdomain_with_conditions2(self):
+        m = Mapper()
+        m.sub_domains = True
+        m.connect('admin/comments', controller='admin', action='comments',
+                  conditions={'sub_domain':True})
+        m.connect('admin/comments', controller='blog_admin', action='comments')
+        m.connect('admin/view', controller='blog_admin', action='view',
+                  conditions={'sub_domain':False})
+        m.connect('admin/view', controller='admin', action='view')
+        m.create_regs(['content', 'blog_admin', 'admin'])
+        
+        con = request_config()
+        con.mapper = m
+        env = dict(PATH_INFO='/nowhere', HTTP_HOST='example.com')
+        con.mapper_dict = {}
+        con.environ = env
+        
+        eq_(None, con.mapper_dict)
+        
+        env['PATH_INFO'] = '/admin/comments'
+        con.environ = env
+        eq_({'action': 'comments', 'controller':'blog_admin', 'sub_domain': None}, con.mapper_dict)
+        
+        env['PATH_INFO'] = '/admin/view'
+        env['HTTP_HOST'] = 'fred.example.com'
+        con.environ = env
+        eq_({'action': 'view', 'controller':'admin', 'sub_domain': 'fred'}, con.mapper_dict)
     
     def test_subdomains_with_ignore(self):
         m = Mapper()
