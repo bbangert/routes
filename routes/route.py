@@ -5,7 +5,7 @@ import urllib
 if sys.version < '2.4':
     from sets import ImmutableSet as frozenset
 
-from routes.util import _url_quote as url_quote
+from routes.util import _url_quote as url_quote, _str_encode
 
 
 class Route(object):
@@ -48,7 +48,7 @@ class Route(object):
         self.decode_errors = 'replace'
         
         # Don't bother forming stuff we don't need if its a static route
-        self.static = kargs.get('_static', False)
+        self.static = kargs.pop('_static', False)
         self.filter = kargs.pop('_filter', None)
         self.absolute = kargs.pop('_absolute', False)
         
@@ -69,6 +69,11 @@ class Route(object):
         
         # special chars to indicate a natural split in the URL
         self.done_chars = ('/', ',', ';', '.', '#')
+        
+        # Since static need to be generated exactly, treat them as
+        # non-minimized
+        if self.static:
+            self.minimization = False
         
         # Strip preceding '/' if present, and not minimizing
         if routepath.startswith('/') and self.minimization:
@@ -134,7 +139,8 @@ class Route(object):
         just_started = False
         routelist = []
         for char in routepath:
-            if char in [':', '*', '{'] and not collecting:
+            if char in [':', '*', '{'] and not collecting and not self.static \
+               or char in ['{'] and not collecting:
                 just_started = True
                 collecting = True
                 var_type = char
@@ -626,13 +632,12 @@ class Route(object):
         if url is False:
             return url
         
-        if not url.startswith('/'):
+        if not url.startswith('/') and not self.static:
             url = '/' + url
         extras = frozenset(kargs.keys()) - self.maxkeys
         if extras:
             if _append_slash and not url.endswith('/'):
                 url += '/'
-            url += '?'
             fragments = []
             # don't assume the 'extras' set preserves order: iterate
             # through the ordered kargs instead
@@ -646,9 +651,10 @@ class Route(object):
                     for value in val:
                         fragments.append((key, value))
                 else:
-                    fragments.append((key, val))
-                
-            url += urllib.urlencode(fragments)
+                    fragments.append((key, _str_encode(val, self.encoding)))
+            if fragments:
+                url += '?'
+                url += urllib.urlencode(fragments)
         elif _append_slash and not url.endswith('/'):
             url += '/'
         return url

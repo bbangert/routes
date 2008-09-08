@@ -217,8 +217,24 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('http://www.groovie.org/', url_for('home'))
         self.assertEqual('http://www.groovie.org/?s=stars', url_for('home', s='stars'))
         self.assertEqual('/webapp/content/view', url_for(controller='content', action='view'))
-        self.assertEqual('/webapp/nasa/images?search=all', url_for('space', search='all'))
-        self.assertEqual('http://example.com/webapp/nasa/images', url_for('space', protocol='http'))
+        self.assertEqual('/nasa/images?search=all', url_for('space', search='all'))
+        self.assertEqual('http://example.com/nasa/images', url_for('space', protocol='http'))
+    
+    def test_static_route_with_vars(self):
+        m = self.con.mapper
+        self.con.mapper_dict = {}
+        self.con.environ = dict(SCRIPT_NAME='/webapp', HTTP_HOST='example.com')
+        m.connect(':controller/:action/:id')
+        m.connect('home', 'http://{domain}.groovie.org/{location}', _static=True)
+        m.connect('space', '/nasa/images', _static=True)
+        m.create_regs(['content', 'blog'])
+        
+        assert_raises(RouteException, url_for, 'home')
+        assert_raises(RouteException, url_for, 'home', domain='fred')
+        self.assertEqual('http://fred.groovie.org/index', url_for('home', domain='fred', location='index'))
+        self.assertEqual('/webapp/content/view', url_for(controller='content', action='view'))
+        self.assertEqual('/nasa/images?search=all', url_for('space', search='all'))
+        self.assertEqual('http://example.com/nasa/images', url_for('space', protocol='http'))
     
     def test_no_named_path(self):
         m = self.con.mapper

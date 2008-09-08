@@ -659,7 +659,7 @@ class TestRecognition(unittest.TestCase):
         m.connect(':controller/:action/:id')
         m.debug = True
         m.create_regs(['content'])
-        route = m.matchlist[1]
+        route = m.matchlist[0]
         
         resultdict, route_obj, debug = m.match('/content')
         eq_({'action':'index', 'controller':'content','id':None}, resultdict)
@@ -667,7 +667,7 @@ class TestRecognition(unittest.TestCase):
         resultdict, route_obj, debug = m.match('/nowhere')
         assert resultdict is None
         assert route_obj is None
-        eq_(len(debug), 2)
+        eq_(len(debug), 1)
     
     def test_conditions(self):
         m = Mapper()

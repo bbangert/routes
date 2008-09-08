@@ -165,7 +165,9 @@ class Mapper(object):
             route.encoding = self.encoding
             route.decode_errors = self.decode_errors
         
-        self.matchlist.append(route)
+        if not route.static:
+            self.matchlist.append(route)
+        
         if routename:
             self._routenames[routename] = route
         if route.static:
@@ -345,7 +347,7 @@ class Mapper(object):
         
         if self.append_slash:
             kargs['_append_slash'] = True
-                
+        
         if not self.explicit:
             if 'controller' not in kargs:
                 kargs['controller'] = 'content'
@@ -373,14 +375,14 @@ class Mapper(object):
                 if key in self.urlcache:
                     return self.urlcache[key]
         
-        actionlist = self._gendict.get(controller) or self._gendict.get('*')
-        if not actionlist:
+        actionlist = self._gendict.get(controller) or self._gendict.get('*', {})
+        if not actionlist and not args:
             return None
         (keylist, sortcache) = actionlist.get(action) or \
-                               actionlist.get('*', (None, None))
-        if not keylist:
+                               actionlist.get('*', (None, {}))
+        if not keylist and not args:
             return None
-        
+
         keys = frozenset(kargs.keys())
         cacheset = False
         cachekey = unicode(keys)
@@ -455,7 +457,7 @@ class Mapper(object):
                 if self.prefix:
                     path = self.prefix + path
                 if self.environ and self.environ.get('SCRIPT_NAME', '') != ''\
-                    and not route.absolute:
+                    and not route.absolute and not route.static:
                     path = self.environ['SCRIPT_NAME'] + path
                     key = cache_key_script_name
                 else:

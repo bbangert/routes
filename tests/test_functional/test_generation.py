@@ -625,6 +625,7 @@ class TestGeneration(unittest.TestCase):
         hoge_enc = urllib.quote(hoge.encode('utf-8'))
         m = Mapper()
         m.connect('google-jp', 'http://www.google.co.jp/search', _static=True)
+        m.create_regs(['messages'])
         self.assertEqual("http://www.google.co.jp/search?q=" + hoge_enc,
                          url_for('google-jp', q=hoge))
         self.assert_(isinstance(url_for('google-jp', q=hoge), str))

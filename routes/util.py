@@ -106,6 +106,19 @@ def _url_quote(string, encoding):
         s = str(string)
     return urllib.quote(s, '/')
 
+def _str_encode(string, encoding):
+    if encoding:
+        if isinstance(string, unicode):
+            s = string.encode(encoding)
+        elif isinstance(string, str):
+            # assume the encoding is already correct
+            s = string
+        else:
+            s = unicode(string).encode(encoding)
+    else:
+        s = str(string)
+    return s
+
 def url_for(*args, **kargs):
     """Generates a URL 
     
@@ -168,10 +181,6 @@ def url_for(*args, **kargs):
     if len(args) > 0:
         route = config.mapper._routenames.get(args[0])
         
-        if route and route.defaults.has_key('_static'):
-            static = True
-            url = route.routepath
-        
         # No named route found, assume the argument is a relative path
         if not route:
             static = True
@@ -208,8 +217,9 @@ def url_for(*args, **kargs):
             if route.filter:
                 newargs = route.filter(newargs)
             
-            # Handle sub-domains
-            newargs = _subdomain_check(config, newargs)
+            if not route.static:
+                # Handle sub-domains
+                newargs = _subdomain_check(config, newargs)
         else:
             newargs = _screenargs(kargs)
         anchor = newargs.pop('_anchor', None) or anchor
