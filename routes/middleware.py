@@ -37,8 +37,10 @@ class RoutesMiddleware(object):
         self.mapper = mapper
         self.use_method_override = use_method_override
         self.path_info = path_info
-        log.debug("Initialized with method overriding = %s, and path info "
-                  "altering = %s", use_method_override, path_info)
+        log_debug = self.log_debug = logging.DEBUG >= log.getEffectiveLevel()
+        if self.log_debug:
+            log.debug("Initialized with method overriding = %s, and path "
+                  "info altering = %s", use_method_override, path_info)
     
     def __call__(self, environ, start_response):
         """Resolves the URL in PATH_INFO, and uses wsgi.routing_args
@@ -54,13 +56,15 @@ class RoutesMiddleware(object):
                 '_method' in req.GET:
                 old_method = environ['REQUEST_METHOD']
                 environ['REQUEST_METHOD'] = req.GET['_method'].upper()
-                log.debug("_method found in QUERY_STRING, altering request"
-                          " method to %s", environ['REQUEST_METHOD'])
+                if self.log_debug:
+                    log.debug("_method found in QUERY_STRING, altering request"
+                            " method to %s", environ['REQUEST_METHOD'])
             elif is_form_post(environ) and '_method' in req.POST:
                 old_method = environ['REQUEST_METHOD']
                 environ['REQUEST_METHOD'] = req.POST['_method'].upper()
-                log.debug("_method found in POST data, altering request "
-                          "method to %s", environ['REQUEST_METHOD'])
+                if self.log_debug:
+                    log.debug("_method found in POST data, altering request "
+                              "method to %s", environ['REQUEST_METHOD'])
         
         # Run the actual route matching
         # -- Assignment of environ to config triggers route matching
@@ -75,8 +79,9 @@ class RoutesMiddleware(object):
         urlinfo = "%s %s" % (environ['REQUEST_METHOD'], environ['PATH_INFO'])
         if not match:
             match = {}
-            log.debug("No route matched for %s", urlinfo)
-        else:
+            if self.log_debug:
+                log.debug("No route matched for %s", urlinfo)
+        elif self.log_debug:
             log.debug("Matched %s", urlinfo)
             log.debug("Route path: '%s', defaults: %s", route.routepath, 
                       route.defaults)
