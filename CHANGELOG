@@ -2,10 +2,8 @@ Routes Changelog
 ========================
 
 -- 1.10 (**tip**)
-* WARNING: Static routes can now interpolate variable parts in the path if
-  using {} variable part syntax. The full route path is also used as-is, with
-  no changes done at all, this changes prior behavior where the SCRIPT_NAME
-  would be used.
+* Static routes can now interpolate variable parts in the path if using {}
+  variable part syntax.
 * Added sub_domain condition option to accept False or None, to require that
   there be no sub-domain provided for the route to match.
 

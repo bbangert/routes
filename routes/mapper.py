@@ -456,8 +456,9 @@ class Mapper(object):
             if path:
                 if self.prefix:
                     path = self.prefix + path
+                external_static = route.static and route.external
                 if self.environ and self.environ.get('SCRIPT_NAME', '') != ''\
-                    and not route.absolute and not route.static:
+                    and not route.absolute and not external_static:
                     path = self.environ['SCRIPT_NAME'] + path
                     key = cache_key_script_name
                 else:

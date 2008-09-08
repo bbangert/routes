@@ -73,6 +73,7 @@ class Route(object):
         # Since static need to be generated exactly, treat them as
         # non-minimized
         if self.static:
+            self.external = '://' in self.routepath
             self.minimization = False
         
         # Strip preceding '/' if present, and not minimizing
