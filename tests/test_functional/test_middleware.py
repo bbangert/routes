@@ -35,6 +35,26 @@ def test_path_info():
     assert "'SCRIPT_NAME': '/myapp'" in res
     assert "'PATH_INFO': '/some/other/url'" in res
 
+def test_redirect_middleware():
+    map = Mapper()
+    map.connect('myapp/*path_info', controller='myapp')
+    map.redirect("faq/{section}", "/static/faq/{section}.html")
+    map.create_regs(['content', 'myapp'])
+    
+    app = TestApp(RoutesMiddleware(simple_app, map))
+    res = app.get('/')
+    assert 'matchdict items are []' in res
+    
+    res = app.get('/faq/home')
+    assert '302 Found' == res.status
+    assert res.headers['Location'] == '/static/faq/home.html'
+    
+    res = app.get('/myapp/some/other/url')
+    print res
+    assert "matchdict items are [('action', u'index'), ('controller', u'myapp'), ('path_info', 'some/other/url')]" in res
+    assert "'SCRIPT_NAME': '/myapp'" in res
+    assert "'PATH_INFO': '/some/other/url'" in res
+
 def test_method_conversion():
     map = Mapper()
     map.connect('content/:type', conditions=dict(method='DELETE'))

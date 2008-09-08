@@ -740,3 +740,27 @@ class Mapper(object):
         self.connect("formatted_" + name_prefix + member_name, 
                      member_path + ".:(format)", **route_options)
         self.connect(name_prefix + member_name, member_path, **route_options)
+    
+    def redirect(self, match_path, destination_path, *args, **kwargs):
+        both_args = ['_encoding', '_explicit', '_minimize']
+        gen_args = ['_filter']
+        
+        gen_dict, match_dict = {}, {}
+        
+        # Create the dict of args for the generation route
+        for key in both_args + gen_args:
+            if key in kwargs:
+                gen_dict = kwargs[key]
+        gen_dict['_static'] = True
+        
+        # Create the dict of args for the matching route
+        for key in kwargs:
+            if key not in gen_args:
+                match_dict[key] = kwargs[key]
+        
+        self.connect(match_path, **match_dict)
+        match_route = self.matchlist[-1]
+        
+        self.connect('_redirect_%s' % id(match_route), destination_path,
+                     **gen_dict)
+        match_route.redirect = True

@@ -8,6 +8,7 @@ except:
     pass
 
 from routes.base import request_config
+from routes.util import url_for
 
 log = logging.getLogger('routes.middleware')
 
@@ -83,6 +84,13 @@ class RoutesMiddleware(object):
                 
         environ['wsgiorg.routing_args'] = ((), match)
         environ['routes.route'] = route
+
+        if hasattr(route, 'redirect'):
+            route_name = '_redirect_%s' % id(route)
+            location = url_for(route_name, **match)
+            start_response('302 Found', [('Content-Type', 'text/plain; charset=utf8'), 
+                                         ('Location', location)])
+            return []
 
         # If the route included a path_info attribute and it should be used to
         # alter the environ, we'll pull it out
