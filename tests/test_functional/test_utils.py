@@ -224,17 +224,57 @@ class TestUtils(unittest.TestCase):
         m = self.con.mapper
         self.con.mapper_dict = {}
         self.con.environ = dict(SCRIPT_NAME='/webapp', HTTP_HOST='example.com')
-        m.connect(':controller/:action/:id')
         m.connect('home', 'http://{domain}.groovie.org/{location}', _static=True)
-        m.connect('space', '/nasa/images', _static=True)
-        m.create_regs(['content', 'blog'])
+        m.connect('space', '/nasa/{location}', _static=True)
+        m.create_regs(['home', 'space'])
         
         assert_raises(RouteException, url_for, 'home')
         assert_raises(RouteException, url_for, 'home', domain='fred')
+        assert_raises(RouteException, url_for, 'home', location='index')
         self.assertEqual('http://fred.groovie.org/index', url_for('home', domain='fred', location='index'))
-        self.assertEqual('/webapp/content/view', url_for(controller='content', action='view'))
+        self.assertEqual('http://fred.groovie.org/index?search=all', url_for('home', domain='fred', location='index', search='all'))
+        self.assertEqual('/webapp/nasa/images?search=all', url_for('space', location='images', search='all'))
+        self.assertEqual('http://example.com/webapp/nasa/images', url_for('space', location='images', protocol='http'))
+    
+    def test_static_route_with_vars_and_defaults(self):
+        m = self.con.mapper
+        self.con.mapper_dict = {}
+        self.con.environ = dict(SCRIPT_NAME='/webapp', HTTP_HOST='example.com')
+        m.connect('home', 'http://{domain}.groovie.org/{location}', domain='routes', _static=True)
+        m.connect('space', '/nasa/{location}', location='images', _static=True)
+        m.create_regs(['home', 'space'])
+        
+        assert_raises(RouteException, url_for, 'home')
+        assert_raises(RouteException, url_for, 'home', domain='fred')
+        self.assertEqual('http://routes.groovie.org/index', url_for('home', location='index'))
+        self.assertEqual('http://fred.groovie.org/index', url_for('home', domain='fred', location='index'))
+        self.assertEqual('http://routes.groovie.org/index?search=all', url_for('home', location='index', search='all'))
+        self.assertEqual('http://fred.groovie.org/index?search=all', url_for('home', domain='fred', location='index', search='all'))
+        self.assertEqual('/webapp/nasa/articles?search=all', url_for('space', location='articles', search='all'))
+        self.assertEqual('http://example.com/webapp/nasa/articles', url_for('space', location='articles', protocol='http'))
         self.assertEqual('/webapp/nasa/images?search=all', url_for('space', search='all'))
         self.assertEqual('http://example.com/webapp/nasa/images', url_for('space', protocol='http'))
+    
+    def test_static_route_with_vars_and_requirements(self):
+        m = self.con.mapper
+        self.con.mapper_dict = {}
+        self.con.environ = dict(SCRIPT_NAME='/webapp', HTTP_HOST='example.com')
+        m.connect('home', 'http://{domain}.groovie.org/{location}', requirements=dict(domain='fred|bob'), _static=True)
+        m.connect('space', '/nasa/articles/{year}/{month}', requirements=dict(year=r'\d{2,4}', month=r'\d{1,2}'), _static=True)
+        m.create_regs(['home', 'space'])
+        
+        assert_raises(RouteException, url_for, 'home', domain='george', location='index')
+        assert_raises(RouteException, url_for, 'space', year='asdf', month='1')
+        assert_raises(RouteException, url_for, 'space', year='2004', month='a')
+        assert_raises(RouteException, url_for, 'space', year='1', month='1')
+        assert_raises(RouteException, url_for, 'space', year='20045', month='1')
+        assert_raises(RouteException, url_for, 'space', year='2004', month='123')
+        self.assertEqual('http://fred.groovie.org/index', url_for('home', domain='fred', location='index'))
+        self.assertEqual('http://bob.groovie.org/index', url_for('home', domain='bob', location='index'))
+        self.assertEqual('http://fred.groovie.org/asdf', url_for('home', domain='fred', location='asdf'))
+        self.assertEqual('/webapp/nasa/articles/2004/6', url_for('space', year='2004', month='6'))
+        self.assertEqual('/webapp/nasa/articles/2004/12', url_for('space', year='2004', month='12'))
+        self.assertEqual('/webapp/nasa/articles/89/6', url_for('space', year='89', month='6'))
     
     def test_no_named_path(self):
         m = self.con.mapper
