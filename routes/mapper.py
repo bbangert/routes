@@ -170,6 +170,7 @@ class Mapper(object):
         
         if routename:
             self._routenames[routename] = route
+            route.name = routename
         if route.static:
             return
         exists = False
