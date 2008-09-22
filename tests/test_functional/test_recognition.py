@@ -6,7 +6,7 @@ import unittest
 import urllib
 from nose.tools import eq_
 from routes import *
-from routes.util import RouteException
+from routes.util import RoutesException
 
 class TestRecognition(unittest.TestCase):
     
@@ -625,7 +625,7 @@ class TestRecognition(unittest.TestCase):
         m.controller_scan = False
         def call_func():
             m.match('/group/view-3')
-        self.assertRaises(RouteException, call_func)        
+        self.assertRaises(RoutesException, call_func)        
     
     def test_routematch(self):
         m = Mapper()
@@ -1173,7 +1173,7 @@ class TestRecognition(unittest.TestCase):
         eq_({'controller':'content','action':'view','id':'4'}, m.match('/'))
         def call_func():
             m.match('')
-        self.assertRaises(RouteException, call_func)
+        self.assertRaises(RoutesException, call_func)
         
 if __name__ == '__main__':
     unittest.main()

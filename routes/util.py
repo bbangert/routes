@@ -241,10 +241,10 @@ def url_for(*args, **kargs):
             url = protocol + '://' + host + url
     
     if not isinstance(url, str) and url is not None:
-        raise RouteException("url_for can only return a string, got "
+        raise GenerationException("url_for can only return a string, got "
                         "unicode instead: %s" % url)
     if url is None:
-        raise RouteException(
+        raise GenerationException(
             "url_for could not generate URL. Called with args: %s %s" % \
             (args, kargs))
     return url
@@ -286,6 +286,14 @@ def controller_scan(directory=None):
     controllers.sort(longest_first)
     return controllers
 
-class RouteException(Exception):
+
+class RoutesException(Exception):
     """Tossed during Route exceptions"""
-    pass
+
+
+class MatchException(RoutesException):
+    """Tossed during URL matching exceptions"""
+
+
+class GenerationException(RoutesException):
+    """Tossed during URL generation exceptions"""

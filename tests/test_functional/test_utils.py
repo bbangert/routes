@@ -2,7 +2,7 @@
 import os, sys, time, unittest
 from nose.tools import eq_, assert_raises
 
-from routes.util import controller_scan, RouteException
+from routes.util import controller_scan, GenerationException
 from routes import *
 
 class TestUtils(unittest.TestCase):
@@ -45,7 +45,7 @@ class TestUtils(unittest.TestCase):
         con = self.con
         con.mapper.explicit = True
         con.mapper_dict = {}
-        assert_raises(RouteException, url_for, action='juice')
+        assert_raises(GenerationException, url_for, action='juice')
     
     def test_url_for_with_defaults(self):
         con = self.con
@@ -228,9 +228,9 @@ class TestUtils(unittest.TestCase):
         m.connect('space', '/nasa/{location}', _static=True)
         m.create_regs(['home', 'space'])
         
-        assert_raises(RouteException, url_for, 'home')
-        assert_raises(RouteException, url_for, 'home', domain='fred')
-        assert_raises(RouteException, url_for, 'home', location='index')
+        assert_raises(GenerationException, url_for, 'home')
+        assert_raises(GenerationException, url_for, 'home', domain='fred')
+        assert_raises(GenerationException, url_for, 'home', location='index')
         self.assertEqual('http://fred.groovie.org/index', url_for('home', domain='fred', location='index'))
         self.assertEqual('http://fred.groovie.org/index?search=all', url_for('home', domain='fred', location='index', search='all'))
         self.assertEqual('/webapp/nasa/images?search=all', url_for('space', location='images', search='all'))
@@ -244,8 +244,8 @@ class TestUtils(unittest.TestCase):
         m.connect('space', '/nasa/{location}', location='images', _static=True)
         m.create_regs(['home', 'space'])
         
-        assert_raises(RouteException, url_for, 'home')
-        assert_raises(RouteException, url_for, 'home', domain='fred')
+        assert_raises(GenerationException, url_for, 'home')
+        assert_raises(GenerationException, url_for, 'home', domain='fred')
         self.assertEqual('http://routes.groovie.org/index', url_for('home', location='index'))
         self.assertEqual('http://fred.groovie.org/index', url_for('home', domain='fred', location='index'))
         self.assertEqual('http://routes.groovie.org/index?search=all', url_for('home', location='index', search='all'))
@@ -263,12 +263,12 @@ class TestUtils(unittest.TestCase):
         m.connect('space', '/nasa/articles/{year}/{month}', requirements=dict(year=r'\d{2,4}', month=r'\d{1,2}'), _static=True)
         m.create_regs(['home', 'space'])
         
-        assert_raises(RouteException, url_for, 'home', domain='george', location='index')
-        assert_raises(RouteException, url_for, 'space', year='asdf', month='1')
-        assert_raises(RouteException, url_for, 'space', year='2004', month='a')
-        assert_raises(RouteException, url_for, 'space', year='1', month='1')
-        assert_raises(RouteException, url_for, 'space', year='20045', month='1')
-        assert_raises(RouteException, url_for, 'space', year='2004', month='123')
+        assert_raises(GenerationException, url_for, 'home', domain='george', location='index')
+        assert_raises(GenerationException, url_for, 'space', year='asdf', month='1')
+        assert_raises(GenerationException, url_for, 'space', year='2004', month='a')
+        assert_raises(GenerationException, url_for, 'space', year='1', month='1')
+        assert_raises(GenerationException, url_for, 'space', year='20045', month='1')
+        assert_raises(GenerationException, url_for, 'space', year='2004', month='123')
         self.assertEqual('http://fred.groovie.org/index', url_for('home', domain='fred', location='index'))
         self.assertEqual('http://bob.groovie.org/index', url_for('home', domain='bob', location='index'))
         self.assertEqual('http://fred.groovie.org/asdf', url_for('home', domain='fred', location='asdf'))

@@ -7,7 +7,7 @@ if sys.version < '2.4':
     from sets import ImmutableSet as frozenset
 
 from routes import request_config
-from routes.util import controller_scan, RouteException
+from routes.util import controller_scan, MatchException, RoutesException
 from routes.route import Route
 
 
@@ -266,7 +266,7 @@ class Mapper(object):
         if not self._created_regs and self.controller_scan:
             self.create_regs()
         elif not self._created_regs:
-            raise RouteException("You must generate the regular expressions"
+            raise RoutesException("You must generate the regular expressions"
                                  " before matching.")
         
         if self.always_scan:
@@ -304,7 +304,7 @@ class Mapper(object):
         
         """
         if not url:
-            raise RouteException('No URL provided, the minimum URL necessary'
+            raise RoutesException('No URL provided, the minimum URL necessary'
                                  ' to match is "/".')
         
         result = self._match(url)
