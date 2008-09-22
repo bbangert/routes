@@ -39,6 +39,7 @@ def test_redirect_middleware():
     map = Mapper()
     map.connect('myapp/*path_info', controller='myapp')
     map.redirect("faq/{section}", "/static/faq/{section}.html")
+    map.redirect("home/index", "/", _redirect_code='301 Moved Permanently')
     map.create_regs(['content', 'myapp'])
     
     app = TestApp(RoutesMiddleware(simple_app, map))
@@ -54,6 +55,10 @@ def test_redirect_middleware():
     assert "matchdict items are [('action', u'index'), ('controller', u'myapp'), ('path_info', 'some/other/url')]" in res
     assert "'SCRIPT_NAME': '/myapp'" in res
     assert "'PATH_INFO': '/some/other/url'" in res
+    
+    res = app.get('/home/index')
+    assert '301 Moved Permanently' in res.status
+    assert res.headers['Location'] == '/'
 
 def test_method_conversion():
     map = Mapper()

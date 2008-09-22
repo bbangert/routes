@@ -742,9 +742,35 @@ class Mapper(object):
         self.connect(name_prefix + member_name, member_path, **route_options)
     
     def redirect(self, match_path, destination_path, *args, **kwargs):
+        """Add a redirect route to the mapper
+        
+        Redirect routes bypass the wrapped WSGI application and instead
+        result in a redirect being issued by the RoutesMiddleware. As
+        such, this method is only meaningful when using
+        RoutesMiddleware.
+        
+        By default, a 302 Found status code is used, this can be
+        changed by providing a ``_redirect_code`` keyword argument
+        which will then be used instead. Note that the entire status
+        code string needs to be present.
+        
+        When using keyword arguments, all arguments that apply to
+        matching will be used for the match, while generation specific
+        options will be used during generation. Thus all options
+        normally available to connected Routes may be used with
+        redirect routes as well.
+        
+        Example::
+            
+            map = Mapper()
+            map.redirect('/legacyapp/archives/{url:.*}, '/archives/{url})
+            map.redirect('/home/index', '/', _redirect_code='301 Moved Permanently')
+        
+        """
         both_args = ['_encoding', '_explicit', '_minimize']
         gen_args = ['_filter']
         
+        status_code = kwargs.pop('_redirect_code', '302 Found')
         gen_dict, match_dict = {}, {}
         
         # Create the dict of args for the generation route
@@ -764,3 +790,4 @@ class Mapper(object):
         self.connect('_redirect_%s' % id(match_route), destination_path,
                      **gen_dict)
         match_route.redirect = True
+        match_route.redirect_status = status_code
