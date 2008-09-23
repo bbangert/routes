@@ -27,54 +27,83 @@ class TestUtils(unittest.TestCase):
         assert '/blog/view/umulat?other=%CE%B1%CF%83%CE%B4%CE%B3' == url_for(controller='blog', action='view', id=u'umulat',
             other=u'\u03b1\u03c3\u03b4\u03b3')
         
-        def raise_url():
-            return url_for(u'/some/stirng')
-        self.assertRaises(Exception, raise_url)
-        
-        
+        url = URLGenerator(con.mapper, {})
+        for urlobj in [url_for, url]:
+            def raise_url():
+                return urlobj(u'/some/stirng')
+            self.assertRaises(Exception, raise_url)
+    
     def test_url_for(self):
         con = self.con
         con.mapper_dict = {}
+        url = URLGenerator(con.mapper, {'HTTP_HOST':'www.test.com:80'})
         
-        self.assertEqual('/blog', url_for(controller='blog'))
-        self.assertEqual('/content', url_for())
-        self.assertEqual('https://www.test.com/viewpost', url_for(controller='post', action='view', protocol='https'))
-        self.assertEqual('http://www.test.org/content', url_for(host='www.test.org'))
+        for urlobj in [url_for, url]:
+            self.assertEqual('/blog', urlobj(controller='blog'))
+            self.assertEqual('/content', urlobj())
+            self.assertEqual('https://www.test.com/viewpost', urlobj(controller='post', action='view', protocol='https'))
+            self.assertEqual('http://www.test.org/content', urlobj(host='www.test.org'))
     
     def test_url_raises(self):
         con = self.con
         con.mapper.explicit = True
         con.mapper_dict = {}
+        url = URLGenerator(con.mapper, {})
         assert_raises(GenerationException, url_for, action='juice')
+        assert_raises(GenerationException, url, action='juice')
     
     def test_url_for_with_defaults(self):
         con = self.con
         con.mapper_dict = {'controller':'blog','action':'view','id':4}
+        url = URLGenerator(con.mapper, {'wsgiorg.routing_args':((), con.mapper_dict)})
         
         self.assertEqual('/blog/view/4', url_for())
         self.assertEqual('/post/index/4', url_for(controller='post'))
         self.assertEqual('/blog/view/2', url_for(id=2))
         self.assertEqual('/viewpost/4', url_for(controller='post', action='view', id=4))
+
+        self.assertEqual('/blog/view/4', url.current())
+        self.assertEqual('/post/index/4', url.current(controller='post'))
+        self.assertEqual('/blog/view/2', url.current(id=2))
+        self.assertEqual('/viewpost/4', url.current(controller='post', action='view', id=4))
         
         con.mapper_dict = {'controller':'blog','action':'view','year':2004}
+        url = URLGenerator(con.mapper, {'wsgiorg.routing_args':((), con.mapper_dict)})
+        
         self.assertEqual('/archive/2004/10', url_for(month=10))
         self.assertEqual('/archive/2004/9/2', url_for(month=9, day=2))
         self.assertEqual('/blog', url_for(controller='blog', year=None))
+
+        self.assertEqual('/archive/2004/10', url.current(month=10))
+        self.assertEqual('/archive/2004/9/2', url.current(month=9, day=2))
+        self.assertEqual('/blog', url.current(controller='blog', year=None))
     
     def test_url_for_with_more_defaults(self):
         con = self.con
         con.mapper_dict = {'controller':'blog','action':'view','id':4}
+        url = URLGenerator(con.mapper, {'wsgiorg.routing_args':((), con.mapper_dict)})
         
         self.assertEqual('/blog/view/4', url_for())
         self.assertEqual('/post/index/4', url_for(controller='post'))
         self.assertEqual('/blog/view/2', url_for(id=2))
         self.assertEqual('/viewpost/4', url_for(controller='post', action='view', id=4))
+
+        self.assertEqual('/blog/view/4', url.current())
+        self.assertEqual('/post/index/4', url.current(controller='post'))
+        self.assertEqual('/blog/view/2', url.current(id=2))
+        self.assertEqual('/viewpost/4', url.current(controller='post', action='view', id=4))
         
         con.mapper_dict = {'controller':'blog','action':'view','year':2004}
+        url = URLGenerator(con.mapper, {'wsgiorg.routing_args':((), con.mapper_dict)})
         self.assertEqual('/archive/2004/10', url_for(month=10))
         self.assertEqual('/archive/2004/9/2', url_for(month=9, day=2))
         self.assertEqual('/blog', url_for(controller='blog', year=None))
         self.assertEqual('/archive/2004', url_for())
+
+        self.assertEqual('/archive/2004/10', url.current(month=10))
+        self.assertEqual('/archive/2004/9/2', url.current(month=9, day=2))
+        self.assertEqual('/blog', url.current(controller='blog', year=None))
+        self.assertEqual('/archive/2004', url.current())
     
     def test_url_for_with_defaults_and_qualified(self):
         m = self.con.mapper
@@ -83,18 +112,32 @@ class TestUtils(unittest.TestCase):
         m.connect(':controller/:action/:id')
         m.create_regs(['content','blog','admin/comments'])
         self.con.environ = dict(SCRIPT_NAME='', HTTP_HOST='www.example.com', PATH_INFO='/blog/view/4')
+        self.con.environ.update({'wsgiorg.routing_args':((), self.con.mapper_dict)})
+        url = URLGenerator(m, self.con.environ)
         
         self.assertEqual('/blog/view/4', url_for())
         self.assertEqual('/post/index/4', url_for(controller='post'))
         self.assertEqual('http://www.example.com/blog/view/4', url_for(qualified=True))
         self.assertEqual('/blog/view/2', url_for(id=2))
         self.assertEqual('/viewpost/4', url_for(controller='post', action='view', id=4))
+
+        self.assertEqual('/blog/view/4', url.current())
+        self.assertEqual('/post/index/4', url.current(controller='post'))
+        self.assertEqual('http://www.example.com/blog/view/4', url.current(qualified=True))
+        self.assertEqual('/blog/view/2', url.current(id=2))
+        self.assertEqual('/viewpost/4', url.current(controller='post', action='view', id=4))
         
         env = dict(SCRIPT_NAME='', SERVER_NAME='www.example.com', SERVER_PORT='8080', PATH_INFO='/blog/view/4')
         env['wsgi.url_scheme'] = 'http'
         self.con.environ = env
+        self.con.environ.update({'wsgiorg.routing_args':((), self.con.mapper_dict)})
+        url = URLGenerator(m, self.con.environ)
+        
         self.assertEqual('/post/index/4', url_for(controller='post'))
         self.assertEqual('http://www.example.com:8080/blog/view/4', url_for(qualified=True))
+        
+        self.assertEqual('/post/index/4', url.current(controller='post'))
+        self.assertEqual('http://www.example.com:8080/blog/view/4', url.current(qualified=True))
         
     
     def test_with_route_names(self):
@@ -103,13 +146,15 @@ class TestUtils(unittest.TestCase):
         m.connect('home', '', controller='blog', action='splash')
         m.connect('category_home', 'category/:section', controller='blog', action='view', section='home')
         m.create_regs(['content','blog','admin/comments'])
-
-        self.assertEqual('/content/view', url_for(controller='content', action='view'))
-        self.assertEqual('/content', url_for(controller='content'))
-        self.assertEqual('/admin/comments', url_for(controller='admin/comments'))
-        self.assertEqual('/category', url_for('category_home'))
-        self.assertEqual('/category/food', url_for('category_home', section='food'))
-        self.assertEqual('/', url_for('home'))
+        url = URLGenerator(m, {})
+        
+        for urlobj in [url, url_for]:
+            self.assertEqual('/content/view', urlobj(controller='content', action='view'))
+            self.assertEqual('/content', urlobj(controller='content'))
+            self.assertEqual('/admin/comments', urlobj(controller='admin/comments'))
+            self.assertEqual('/category', urlobj('category_home'))
+            self.assertEqual('/category/food', urlobj('category_home', section='food'))
+            self.assertEqual('/', urlobj('home'))
         
     def test_with_route_names_and_defaults(self):
         m = self.con.mapper

@@ -126,5 +126,5 @@ def request_config(original=False):
     return _RequestConfig()
     
 from routes.mapper import Mapper
-from routes.util import url_for, redirect_to
-__all__=['Mapper', 'url_for', 'redirect_to', 'request_config']
+from routes.util import redirect_to, url_for, URLGenerator
+__all__=['Mapper', 'url_for', 'URLGenerator', 'redirect_to', 'request_config']

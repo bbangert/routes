@@ -375,6 +375,8 @@ class URLGenerator(object):
                                                self.environ)
             elif use_current:
                 newargs = _screenargs(kargs, self.mapper, self.environ)
+            else:
+                newargs = kargs
             anchor = newargs.pop('_anchor', None) or anchor
             host = newargs.pop('_host', None) or host
             protocol = newargs.pop('_protocol', None) or protocol
@@ -382,9 +384,9 @@ class URLGenerator(object):
         if anchor is not None:
             url += '#' + _url_quote(anchor, encoding)
         if host or protocol or qualified:
-            if 'routes.cached_hostinfo' not in environ:
-                cache_hostinfo(environ)
-            hostinfo = environ['routes.cached_hostinfo']
+            if 'routes.cached_hostinfo' not in self.environ:
+                cache_hostinfo(self.environ)
+            hostinfo = self.environ['routes.cached_hostinfo']
             
             if not host and not qualified:
                 # Ensure we don't use a specific port, as changing the protocol
