@@ -2,6 +2,7 @@ Routes Changelog
 ========================
 
 -- 1.10 (**tip**)
+* Adding URLGenerator object.
 * Adding redirect routes.
 * Static routes can now interpolate variable parts in the path if using {}
   variable part syntax.

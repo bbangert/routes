@@ -8,7 +8,7 @@ except:
     pass
 
 from routes.base import request_config
-from routes.util import url_for
+from routes.util import URLGenerator, url_for
 
 log = logging.getLogger('routes.middleware')
 
@@ -72,7 +72,7 @@ class RoutesMiddleware(object):
         
         match = config.mapper_dict
         route = config.route
-        
+                
         if old_method:
             environ['REQUEST_METHOD'] = old_method
         
@@ -87,8 +87,10 @@ class RoutesMiddleware(object):
                       route.defaults)
             log.debug("Match dict: %s", match)
                 
-        environ['wsgiorg.routing_args'] = ((), match)
+        url = URLGenerator(self.mapper, environ)
+        environ['wsgiorg.routing_args'] = ((url), match)
         environ['routes.route'] = route
+        environ['routes.url'] = url
 
         if hasattr(route, 'redirect'):
             route_name = '_redirect_%s' % id(route)
