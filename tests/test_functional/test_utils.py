@@ -293,13 +293,16 @@ class TestUtils(unittest.TestCase):
         m.connect('space', '/nasa/{location}', _static=True)
         m.create_regs(['home', 'space'])
         
-        assert_raises(GenerationException, url_for, 'home')
-        assert_raises(GenerationException, url_for, 'home', domain='fred')
-        assert_raises(GenerationException, url_for, 'home', location='index')
-        self.assertEqual('http://fred.groovie.org/index', url_for('home', domain='fred', location='index'))
-        self.assertEqual('http://fred.groovie.org/index?search=all', url_for('home', domain='fred', location='index', search='all'))
-        self.assertEqual('/webapp/nasa/images?search=all', url_for('space', location='images', search='all'))
-        self.assertEqual('http://example.com/webapp/nasa/images', url_for('space', location='images', protocol='http'))
+        self.con.environ.update({'wsgiorg.routing_args':((), {})})
+        url = URLGenerator(m, self.con.environ)
+        for urlobj in [url_for, url]:
+            assert_raises(GenerationException, urlobj, 'home')
+            assert_raises(GenerationException, urlobj, 'home', domain='fred')
+            assert_raises(GenerationException, urlobj, 'home', location='index')
+            self.assertEqual('http://fred.groovie.org/index', urlobj('home', domain='fred', location='index'))
+            self.assertEqual('http://fred.groovie.org/index?search=all', urlobj('home', domain='fred', location='index', search='all'))
+            self.assertEqual('/webapp/nasa/images?search=all', urlobj('space', location='images', search='all'))
+            self.assertEqual('http://example.com/webapp/nasa/images', urlobj('space', location='images', protocol='http'))
     
     def test_static_route_with_vars_and_defaults(self):
         m = self.con.mapper
@@ -308,6 +311,9 @@ class TestUtils(unittest.TestCase):
         m.connect('home', 'http://{domain}.groovie.org/{location}', domain='routes', _static=True)
         m.connect('space', '/nasa/{location}', location='images', _static=True)
         m.create_regs(['home', 'space'])
+        
+        self.con.environ.update({'wsgiorg.routing_args':((), {})})
+        url = URLGenerator(m, self.con.environ)
         
         assert_raises(GenerationException, url_for, 'home')
         assert_raises(GenerationException, url_for, 'home', domain='fred')
@@ -319,6 +325,18 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('http://example.com/webapp/nasa/articles', url_for('space', location='articles', protocol='http'))
         self.assertEqual('/webapp/nasa/images?search=all', url_for('space', search='all'))
         self.assertEqual('http://example.com/webapp/nasa/images', url_for('space', protocol='http'))
+        
+        assert_raises(GenerationException, url.current, 'home')
+        assert_raises(GenerationException, url.current, 'home', domain='fred')
+        self.assertEqual('http://routes.groovie.org/index', url.current('home', location='index'))
+        self.assertEqual('http://fred.groovie.org/index', url.current('home', domain='fred', location='index'))
+        self.assertEqual('http://routes.groovie.org/index?search=all', url.current('home', location='index', search='all'))
+        self.assertEqual('http://fred.groovie.org/index?search=all', url.current('home', domain='fred', location='index', search='all'))
+        self.assertEqual('/webapp/nasa/articles?search=all', url.current('space', location='articles', search='all'))
+        self.assertEqual('http://example.com/webapp/nasa/articles', url.current('space', location='articles', protocol='http'))
+        self.assertEqual('/webapp/nasa/images?search=all', url.current('space', search='all'))
+        self.assertEqual('http://example.com/webapp/nasa/images', url.current('space', protocol='http'))
+    
     
     def test_static_route_with_vars_and_requirements(self):
         m = self.con.mapper
@@ -328,6 +346,10 @@ class TestUtils(unittest.TestCase):
         m.connect('space', '/nasa/articles/{year}/{month}', requirements=dict(year=r'\d{2,4}', month=r'\d{1,2}'), _static=True)
         m.create_regs(['home', 'space'])
         
+        
+        self.con.environ.update({'wsgiorg.routing_args':((), {})})
+        url = URLGenerator(m, self.con.environ)
+
         assert_raises(GenerationException, url_for, 'home', domain='george', location='index')
         assert_raises(GenerationException, url_for, 'space', year='asdf', month='1')
         assert_raises(GenerationException, url_for, 'space', year='2004', month='a')
@@ -340,6 +362,19 @@ class TestUtils(unittest.TestCase):
         self.assertEqual('/webapp/nasa/articles/2004/6', url_for('space', year='2004', month='6'))
         self.assertEqual('/webapp/nasa/articles/2004/12', url_for('space', year='2004', month='12'))
         self.assertEqual('/webapp/nasa/articles/89/6', url_for('space', year='89', month='6'))
+
+        assert_raises(GenerationException, url.current, 'home', domain='george', location='index')
+        assert_raises(GenerationException, url.current, 'space', year='asdf', month='1')
+        assert_raises(GenerationException, url.current, 'space', year='2004', month='a')
+        assert_raises(GenerationException, url.current, 'space', year='1', month='1')
+        assert_raises(GenerationException, url.current, 'space', year='20045', month='1')
+        assert_raises(GenerationException, url.current, 'space', year='2004', month='123')
+        self.assertEqual('http://fred.groovie.org/index', url.current('home', domain='fred', location='index'))
+        self.assertEqual('http://bob.groovie.org/index', url.current('home', domain='bob', location='index'))
+        self.assertEqual('http://fred.groovie.org/asdf', url.current('home', domain='fred', location='asdf'))
+        self.assertEqual('/webapp/nasa/articles/2004/6', url.current('space', year='2004', month='6'))
+        self.assertEqual('/webapp/nasa/articles/2004/12', url.current('space', year='2004', month='12'))
+        self.assertEqual('/webapp/nasa/articles/89/6', url.current('space', year='89', month='6'))
     
     def test_no_named_path(self):
         m = self.con.mapper
@@ -350,10 +385,12 @@ class TestUtils(unittest.TestCase):
         m.connect('space', '/nasa/images', _static=True)
         m.create_regs(['content', 'blog'])
         
-        self.assertEqual('http://www.google.com/search', url_for('http://www.google.com/search'))
-        self.assertEqual('http://www.google.com/search?q=routes', url_for('http://www.google.com/search', q='routes'))
-        self.assertEqual('/delicious.jpg', url_for('/delicious.jpg'))
-        self.assertEqual('/delicious/search?v=routes', url_for('/delicious/search', v='routes'))
+        url = URLGenerator(m, {})
+        for urlobj in [url_for, url]:
+            self.assertEqual('http://www.google.com/search', urlobj('http://www.google.com/search'))
+            self.assertEqual('http://www.google.com/search?q=routes', urlobj('http://www.google.com/search', q='routes'))
+            self.assertEqual('/delicious.jpg', urlobj('/delicious.jpg'))
+            self.assertEqual('/delicious/search?v=routes', urlobj('/delicious/search', v='routes'))
     
     def test_append_slash(self):
         m = self.con.mapper
@@ -365,12 +402,14 @@ class TestUtils(unittest.TestCase):
         m.connect('space', '/nasa/images', _static=True)
         m.create_regs(['content', 'blog'])
         
-        self.assertEqual('http://www.google.com/search', url_for('http://www.google.com/search'))
-        self.assertEqual('http://www.google.com/search?q=routes', url_for('http://www.google.com/search', q='routes'))
-        self.assertEqual('/delicious.jpg', url_for('/delicious.jpg'))
-        self.assertEqual('/delicious/search?v=routes', url_for('/delicious/search', v='routes'))
-        self.assertEqual('/content/list/', url_for(controller='/content', action='list'))
-        self.assertEqual('/content/list/?page=1', url_for(controller='/content', action='list', page='1'))
+        url = URLGenerator(m, {})
+        for urlobj in [url_for, url]:
+            self.assertEqual('http://www.google.com/search', urlobj('http://www.google.com/search'))
+            self.assertEqual('http://www.google.com/search?q=routes', urlobj('http://www.google.com/search', q='routes'))
+            self.assertEqual('/delicious.jpg', urlobj('/delicious.jpg'))
+            self.assertEqual('/delicious/search?v=routes', urlobj('/delicious/search', v='routes'))
+            self.assertEqual('/content/list/', urlobj(controller='/content', action='list'))
+            self.assertEqual('/content/list/?page=1', urlobj(controller='/content', action='list', page='1'))
 
     def test_no_named_path_with_script(self):
         m = self.con.mapper
@@ -381,10 +420,12 @@ class TestUtils(unittest.TestCase):
         m.connect('space', '/nasa/images', _static=True)
         m.create_regs(['content', 'blog'])
         
-        self.assertEqual('http://www.google.com/search', url_for('http://www.google.com/search'))
-        self.assertEqual('http://www.google.com/search?q=routes', url_for('http://www.google.com/search', q='routes'))
-        self.assertEqual('/webapp/delicious.jpg', url_for('/delicious.jpg'))
-        self.assertEqual('/webapp/delicious/search?v=routes', url_for('/delicious/search', v='routes'))
+        url = URLGenerator(m, self.con.environ)
+        for urlobj in [url_for, url]:
+            self.assertEqual('http://www.google.com/search', urlobj('http://www.google.com/search'))
+            self.assertEqual('http://www.google.com/search?q=routes', urlobj('http://www.google.com/search', q='routes'))
+            self.assertEqual('/webapp/delicious.jpg', urlobj('/delicious.jpg'))
+            self.assertEqual('/webapp/delicious/search?v=routes', urlobj('/delicious/search', v='routes'))
 
     def test_route_filter(self):
         def article_filter(kargs):
@@ -409,20 +450,22 @@ class TestUtils(unittest.TestCase):
         m.create_regs(['content','archives','admin/comments'])
         self.con.mapper = m
         
-        self.assertRaises(Exception, url_for, controller='content', action='view')
-        self.assertRaises(Exception, url_for, controller='content')
+        url = URLGenerator(m, self.con.environ)
+        for urlobj in [url_for, url]:
+            self.assertRaises(Exception, urlobj, controller='content', action='view')
+            self.assertRaises(Exception, urlobj, controller='content')
         
-        self.assertEqual('/content/view-3.html', url_for(controller='content', action='view', id=3))
-        self.assertEqual('/content/index-2.html', url_for(controller='content', id=2))
+            self.assertEqual('/content/view-3.html', urlobj(controller='content', action='view', id=3))
+            self.assertEqual('/content/index-2.html', urlobj(controller='content', id=2))
         
-        self.assertEqual('/archives/2005/10/5/happy', 
-            url_for('archives',year=2005, month=10, day=5, slug='happy'))
-        story = dict(year=2003, month=8, day=2, slug='woopee')
-        empty = {}
-        self.assertEqual({'controller':'archives','action':'view','year':'2005',
-            'month':'10','day':'5','slug':'happy'}, m.match('/archives/2005/10/5/happy'))
-        self.assertEqual('/archives/2003/8/2/woopee', url_for('archives', article=story))
-        self.assertEqual('/archives/2004/12/20/default', url_for('archives', article=empty))
+            self.assertEqual('/archives/2005/10/5/happy', 
+                urlobj('archives',year=2005, month=10, day=5, slug='happy'))
+            story = dict(year=2003, month=8, day=2, slug='woopee')
+            empty = {}
+            self.assertEqual({'controller':'archives','action':'view','year':'2005',
+                'month':'10','day':'5','slug':'happy'}, m.match('/archives/2005/10/5/happy'))
+            self.assertEqual('/archives/2003/8/2/woopee', urlobj('archives', article=story))
+            self.assertEqual('/archives/2004/12/20/default', urlobj('archives', article=empty))
     
     def test_with_ssl_environ(self):
         base_environ = dict(SCRIPT_NAME='', HTTPS='on', SERVER_PORT='443', PATH_INFO='/', 
@@ -435,21 +478,24 @@ class TestUtils(unittest.TestCase):
         m.create_regs(['content','archives','admin/comments'])
         self.con.mapper = m
         
-        # HTTPS is on, but we're running on a different port internally
-        self.assertEqual(self.con.protocol, 'https')
-        self.assertEqual('/content/view', url_for(controller='content', action='view'))
-        self.assertEqual('/content/index/2', url_for(controller='content', id=2))
-        self.assertEqual('https://nowhere.com/content', url_for(host='nowhere.com', controller='content'))
+        url = URLGenerator(m, self.con.environ)
+        for urlobj in [url_for, url]:
+    
+            # HTTPS is on, but we're running on a different port internally
+            self.assertEqual(self.con.protocol, 'https')
+            self.assertEqual('/content/view', urlobj(controller='content', action='view'))
+            self.assertEqual('/content/index/2', urlobj(controller='content', id=2))
+            self.assertEqual('https://nowhere.com/content', urlobj(host='nowhere.com', controller='content'))
         
-        # If HTTPS is on, but the port isn't 443, we'll need to include the port info
-        environ = base_environ.copy()
-        environ.update(dict(SERVER_PORT='8080'))
-        self.con.environ = environ
-        self.con.mapper_dict = {}
-        self.assertEqual('/content/index/2', url_for(controller='content', id=2))
-        self.assertEqual('https://nowhere.com/content', url_for(host='nowhere.com', controller='content'))
-        self.assertEqual('https://nowhere.com:8080/content', url_for(host='nowhere.com:8080', controller='content'))
-        self.assertEqual('http://nowhere.com/content', url_for(host='nowhere.com', protocol='http', controller='content'))
+            # If HTTPS is on, but the port isn't 443, we'll need to include the port info
+            environ = base_environ.copy()
+            environ.update(dict(SERVER_PORT='8080'))
+            self.con.environ = environ
+            self.con.mapper_dict = {}
+            self.assertEqual('/content/index/2', urlobj(controller='content', id=2))
+            self.assertEqual('https://nowhere.com/content', urlobj(host='nowhere.com', controller='content'))
+            self.assertEqual('https://nowhere.com:8080/content', urlobj(host='nowhere.com:8080', controller='content'))
+            self.assertEqual('http://nowhere.com/content', urlobj(host='nowhere.com', protocol='http', controller='content'))
     
     def test_with_http_environ(self):
         base_environ = dict(SCRIPT_NAME='', SERVER_PORT='1080', PATH_INFO='/', 
@@ -463,10 +509,12 @@ class TestUtils(unittest.TestCase):
         m.create_regs(['content','archives','admin/comments'])
         self.con.mapper = m
         
-        self.assertEqual(self.con.protocol, 'http')
-        self.assertEqual('/content/view', url_for(controller='content', action='view'))
-        self.assertEqual('/content/index/2', url_for(controller='content', id=2))
-        self.assertEqual('https://example.com/content', url_for(protocol='https', controller='content'))
+        url = URLGenerator(m, self.con.environ)
+        for urlobj in [url_for, url]:
+            self.assertEqual(self.con.protocol, 'http')
+            self.assertEqual('/content/view', urlobj(controller='content', action='view'))
+            self.assertEqual('/content/index/2', urlobj(controller='content', id=2))
+            self.assertEqual('https://example.com/content', urlobj(protocol='https', controller='content'))
     
         
     def test_subdomains(self):
@@ -480,15 +528,16 @@ class TestUtils(unittest.TestCase):
         m.create_regs(['content','archives','admin/comments'])
         self.con.mapper = m
         
-        self.assertEqual('/content/view', url_for(controller='content', action='view'))
-        self.assertEqual('/content/index/2', url_for(controller='content', id=2))
-        
-        environ = base_environ.copy()
-        environ.update(dict(HTTP_HOST='sub.example.com'))
-        self.con.environ = environ
-        self.con.mapper_dict = {'sub_domain':'sub'}
-        self.assertEqual('/content/view/3', url_for(controller='content', action='view', id=3))
-        self.assertEqual('http://new.example.com/content', url_for(controller='content', sub_domain='new'))
+        url = URLGenerator(m, self.con.environ)
+        for urlobj in [url_for, url]:
+            self.assertEqual('/content/view', urlobj(controller='content', action='view'))
+            self.assertEqual('/content/index/2', urlobj(controller='content', id=2))
+            environ = base_environ.copy()
+            environ.update(dict(HTTP_HOST='sub.example.com'))
+            self.con.environ = environ
+            self.con.mapper_dict = {'sub_domain':'sub'}
+            self.assertEqual('/content/view/3', urlobj(controller='content', action='view', id=3))
+            self.assertEqual('http://new.example.com/content', urlobj(controller='content', sub_domain='new'))
 
     def test_subdomains_with_exceptions(self):
         base_environ = dict(SCRIPT_NAME='', PATH_INFO='/', HTTP_HOST='example.com', SERVER_NAME='example.com')

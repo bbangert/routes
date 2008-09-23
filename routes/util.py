@@ -375,6 +375,8 @@ class URLGenerator(object):
                                                self.environ)
             elif use_current:
                 newargs = _screenargs(kargs, self.mapper, self.environ)
+            elif 'sub_domain' in kargs:
+                newargs = _subdomain_check(kargs, self.mapper, self.environ)
             else:
                 newargs = kargs
             anchor = newargs.pop('_anchor', None) or anchor
