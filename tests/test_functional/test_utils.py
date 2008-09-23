@@ -16,6 +16,8 @@ class TestUtils(unittest.TestCase):
         con.mapper = m
         con.host = 'www.test.com'
         con.protocol = 'http'
+        if hasattr(con, 'environ'):
+            del con.environ
         self.con = con
     
     def test_url_for_with_unicode(self):
@@ -158,15 +160,19 @@ class TestUtils(unittest.TestCase):
         
     def test_with_route_names_and_defaults(self):
         m = self.con.mapper
-        self.con.mapper_dict = {}
+        self.con.mapper_dict = {}        
         m.connect('home', '', controller='blog', action='splash')
         m.connect('category_home', 'category/:section', controller='blog', action='view', section='home')
         m.connect('building', 'building/:campus/:building/alljacks', controller='building', action='showjacks')
         m.create_regs(['content','blog','admin/comments','building'])
 
         self.con.mapper_dict = dict(controller='building', action='showjacks', campus='wilma', building='port')
+        url = URLGenerator(m, {'wsgiorg.routing_args':((), self.con.mapper_dict)})
+
         self.assertEqual('/building/wilma/port/alljacks', url_for())
         self.assertEqual('/', url_for('home'))
+        self.assertEqual('/building/wilma/port/alljacks', url.current())
+        self.assertEqual('/', url.current('home'))
         
     def test_with_route_names_and_hardcode(self):
         m = self.con.mapper
@@ -181,14 +187,23 @@ class TestUtils(unittest.TestCase):
         m.create_regs(['content','blog','admin/comments','building'])
 
         self.con.mapper_dict = dict(controller='building', action='showjacks', campus='wilma', building='port')
+        url = URLGenerator(m, {'wsgiorg.routing_args':((), self.con.mapper_dict)})
         self.assertEqual('/building/wilma/port/alljacks', url_for())
         self.assertEqual('/', url_for('home'))
         self.assertEqual('/gallery/home_thumbnail.jpg', url_for('gallery_thumb', img_id='home'))
         self.assertEqual('/gallery/home_thumbnail.jpg', url_for('gallery', img_id='home'))
+
+        self.assertEqual('/building/wilma/port/alljacks', url.current())
+        self.assertEqual('/', url.current('home'))
+        self.assertEqual('/gallery/home_thumbnail.jpg', url.current('gallery_thumb', img_id='home'))
+        self.assertEqual('/gallery/home_thumbnail.jpg', url.current('gallery', img_id='home'))
         
         m.hardcode_names = True
         self.assertEqual('/gallery/home_thumbnail.jpg', url_for('gallery_thumb', img_id='home'))
         self.assertEqual('/gallery/home.jpg', url_for('gallery', img_id='home'))
+
+        self.assertEqual('/gallery/home_thumbnail.jpg', url.current('gallery_thumb', img_id='home'))
+        self.assertEqual('/gallery/home.jpg', url.current('gallery', img_id='home'))
         m.hardcode_names = False
     
     def test_redirect_to(self):
@@ -245,10 +260,12 @@ class TestUtils(unittest.TestCase):
         m.connect('space', '/nasa/images', _static=True)
         m.create_regs(['content', 'blog'])
         
-        self.assertEqual('http://www.groovie.org/', url_for('home'))
-        self.assertEqual('http://www.groovie.org/?s=stars', url_for('home', s='stars'))
-        self.assertEqual('/content/view', url_for(controller='content', action='view'))
-        self.assertEqual('/nasa/images?search=all', url_for('space', search='all'))
+        url = URLGenerator(m, {})
+        for urlobj in [url_for, url]:
+            self.assertEqual('http://www.groovie.org/', urlobj('home'))
+            self.assertEqual('http://www.groovie.org/?s=stars', urlobj('home', s='stars'))
+            self.assertEqual('/content/view', urlobj(controller='content', action='view'))
+            self.assertEqual('/nasa/images?search=all', urlobj('space', search='all'))
     
     def test_static_route_with_script(self):
         m = self.con.mapper
@@ -259,11 +276,14 @@ class TestUtils(unittest.TestCase):
         m.connect('space', '/nasa/images', _static=True)
         m.create_regs(['content', 'blog'])
         
-        self.assertEqual('http://www.groovie.org/', url_for('home'))
-        self.assertEqual('http://www.groovie.org/?s=stars', url_for('home', s='stars'))
-        self.assertEqual('/webapp/content/view', url_for(controller='content', action='view'))
-        self.assertEqual('/webapp/nasa/images?search=all', url_for('space', search='all'))
-        self.assertEqual('http://example.com/webapp/nasa/images', url_for('space', protocol='http'))
+        self.con.environ.update({'wsgiorg.routing_args':((), {})})
+        url = URLGenerator(m, self.con.environ)
+        for urlobj in [url_for, url]:
+            self.assertEqual('http://www.groovie.org/', urlobj('home'))
+            self.assertEqual('http://www.groovie.org/?s=stars', urlobj('home', s='stars'))
+            self.assertEqual('/webapp/content/view', urlobj(controller='content', action='view'))
+            self.assertEqual('/webapp/nasa/images?search=all', urlobj('space', search='all'))
+            self.assertEqual('http://example.com/webapp/nasa/images', urlobj('space', protocol='http'))
     
     def test_static_route_with_vars(self):
         m = self.con.mapper

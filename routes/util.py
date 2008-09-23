@@ -408,7 +408,7 @@ class URLGenerator(object):
                 (args, kargs))
         return url
     
-    def current(self, **kwargs):
+    def current(self, *args, **kwargs):
         """Generate a route that includes params used on the current
         request
         
@@ -417,7 +417,7 @@ class URLGenerator(object):
         matches of the same name from the set of arguments used to
         construct a URL.
         """
-        return self(_use_current=True, **kwargs)
+        return self(_use_current=True, *args, **kwargs)
 
 
 def redirect_to(*args, **kargs):
