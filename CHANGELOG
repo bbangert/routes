@@ -1,6 +1,8 @@
 Routes Changelog
 ========================
 
+-- 1.10.1 (**tip**)
+
 -- 1.10 (September 24, 2008)
 * Adding LRU cache instead of just dict for caching generated routes. This
   avoids slow memory leakage over long-running and non-existent route
