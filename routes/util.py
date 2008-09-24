@@ -363,8 +363,7 @@ class URLGenerator(object):
                     route_args.append(route)
                 newargs = route.defaults.copy()
                 newargs.update(kargs)
-            
-
+                
                 # If this route has a filter, apply it
                 if route.filter:
                     newargs = route.filter(newargs)

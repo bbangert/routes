@@ -1,3 +1,5 @@
 recursive-include docs *
 include CHANGELOG
 include LICENSE
+
+global-exclude .DS_Store *.hgignore *.hgtags
