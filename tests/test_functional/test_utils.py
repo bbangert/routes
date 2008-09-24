@@ -551,21 +551,38 @@ class TestUtils(unittest.TestCase):
         m.create_regs(['content','archives','admin/comments'])
         self.con.mapper = m
         
+        url = URLGenerator(m, self.con.environ)
         self.assertEqual('/content/view', url_for(controller='content', action='view'))
         self.assertEqual('/content/index/2', url_for(controller='content', id=2))
+        self.assertEqual('/content/view', url(controller='content', action='view'))
+        self.assertEqual('/content/index/2', url(controller='content', id=2))
         
         environ = base_environ.copy()
         environ.update(dict(HTTP_HOST='sub.example.com'))
         self.con.environ = environ
         self.con.mapper_dict = {'sub_domain':'sub'}
+        self.con.environ.update({'wsgiorg.routing_args':((), self.con.mapper_dict)})
+        url = URLGenerator(m, self.con.environ)
+        
         self.assertEqual('/content/view/3', url_for(controller='content', action='view', id=3))
         self.assertEqual('http://new.example.com/content', url_for(controller='content', sub_domain='new'))
         self.assertEqual('http://example.com/content', url_for(controller='content', sub_domain='www'))
+        self.assertEqual('/content/view/3', url(controller='content', action='view', id=3))
+        self.assertEqual('http://new.example.com/content', url(controller='content', sub_domain='new'))
+        self.assertEqual('http://example.com/content', url(controller='content', sub_domain='www'))
         
         self.con.mapper_dict = {'sub_domain':'www'}
+        self.con.environ.update({'wsgiorg.routing_args':((), self.con.mapper_dict)})
+        url = URLGenerator(m, self.con.environ)
+        
         self.assertEqual('http://example.com/content/view/3', url_for(controller='content', action='view', id=3))
         self.assertEqual('http://new.example.com/content', url_for(controller='content', sub_domain='new'))
         self.assertEqual('/content', url_for(controller='content', sub_domain='sub'))
+        
+        # This requires the sub-domain, because we don't automatically go to the existing match dict
+        self.assertEqual('http://example.com/content/view/3', url(controller='content', action='view', id=3, sub_domain='www'))
+        self.assertEqual('http://new.example.com/content', url(controller='content', sub_domain='new'))
+        self.assertEqual('/content', url(controller='content', sub_domain='sub'))
     
     def test_subdomains_with_named_routes(self):
         base_environ = dict(SCRIPT_NAME='', PATH_INFO='/', HTTP_HOST='example.com', SERVER_NAME='example.com')
@@ -580,19 +597,30 @@ class TestUtils(unittest.TestCase):
         m.create_regs(['content','blog','admin/comments','building'])
         self.con.mapper = m
         
-        self.assertEqual('/content/view', url_for(controller='content', action='view'))
-        self.assertEqual('/content/index/2', url_for(controller='content', id=2))
-        self.assertEqual('/category', url_for('category_home'))
-        self.assertEqual('http://new.example.com/category', url_for('category_home', sub_domain='new'))
+        url = URLGenerator(m, self.con.environ)
+        for urlobj in [url_for, url]:
+            self.assertEqual('/content/view', urlobj(controller='content', action='view'))
+            self.assertEqual('/content/index/2', urlobj(controller='content', id=2))
+            self.assertEqual('/category', urlobj('category_home'))
+            self.assertEqual('http://new.example.com/category', urlobj('category_home', sub_domain='new'))
         
         environ = base_environ.copy()
         environ.update(dict(HTTP_HOST='sub.example.com'))
         self.con.environ = environ
         self.con.mapper_dict = {'sub_domain':'sub'}
+        self.con.environ.update({'wsgiorg.routing_args':((), self.con.mapper_dict)})
+        url = URLGenerator(m, self.con.environ)
+        
         self.assertEqual('/content/view/3', url_for(controller='content', action='view', id=3))
         self.assertEqual('http://joy.example.com/building/west/merlot/alljacks', 
             url_for('building', campus='west', building='merlot', sub_domain='joy'))
         self.assertEqual('http://example.com/category/feeds', url_for('category_home', section='feeds', sub_domain=None))
+
+        self.assertEqual('/content/view/3', url(controller='content', action='view', id=3))
+        self.assertEqual('http://joy.example.com/building/west/merlot/alljacks', 
+            url('building', campus='west', building='merlot', sub_domain='joy'))
+        self.assertEqual('http://example.com/category/feeds', url('category_home', section='feeds', sub_domain=None))
+
     
     def test_subdomains_with_ports(self):
         base_environ = dict(SCRIPT_NAME='', PATH_INFO='/', HTTP_HOST='example.com:8000', SERVER_NAME='example.com')
@@ -607,14 +635,18 @@ class TestUtils(unittest.TestCase):
         m.create_regs(['content','blog','admin/comments','building'])
         self.con.mapper = m
         
-        self.assertEqual('/content/view', url_for(controller='content', action='view'))
-        self.assertEqual('/category', url_for('category_home'))
-        self.assertEqual('http://new.example.com:8000/category', url_for('category_home', sub_domain='new'))
-        self.assertEqual('http://joy.example.com:8000/building/west/merlot/alljacks', 
-            url_for('building', campus='west', building='merlot', sub_domain='joy'))
+        url = URLGenerator(m, self.con.environ)
+        for urlobj in [url, url_for]:
+            self.con.environ['HTTP_HOST'] = 'example.com:8000'
+            self.assertEqual('/content/view', urlobj(controller='content', action='view'))
+            self.assertEqual('/category', urlobj('category_home'))
+            self.assertEqual('http://new.example.com:8000/category', urlobj('category_home', sub_domain='new'))
+            self.assertEqual('http://joy.example.com:8000/building/west/merlot/alljacks', 
+                urlobj('building', campus='west', building='merlot', sub_domain='joy'))
         
-        self.con.environ['HTTP_HOST'] = 'example.com'
-        self.assertEqual('http://new.example.com/category', url_for('category_home', sub_domain='new'))
+            self.con.environ['HTTP_HOST'] = 'example.com'
+            del self.con.environ['routes.cached_hostinfo']
+            self.assertEqual('http://new.example.com/category', urlobj('category_home', sub_domain='new'))
     
     def test_controller_scan(self):
         here_dir = os.path.dirname(__file__)
