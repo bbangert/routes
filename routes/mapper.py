@@ -7,7 +7,6 @@ if sys.version < '2.4':
     from sets import ImmutableSet as frozenset
 
 from routes import request_config
-from routes.lru import LRU
 from routes.util import controller_scan, MatchException, RoutesException
 from routes.route import Route
 
@@ -99,7 +98,7 @@ class Mapper(object):
         self.matchlist = []
         self.maxkeys = {}
         self.minkeys = {}
-        self.urlcache = LRU(4000)
+        self.urlcache = {}
         self._created_regs = False
         self._created_gens = False
         self.prefix = None
