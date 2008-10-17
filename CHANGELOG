@@ -1,6 +1,9 @@
 Routes Changelog
 ========================
 
+-- 1.10.2 (**tip**)
+* Bugfix for when environ is {} in unit tests.
+
 -- 1.10.1 (September 27, 2008)
 * Removing LRU cache due to performance and threading issues. Cache does hit
   a max-size for the given routes.

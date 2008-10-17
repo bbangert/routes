@@ -5,7 +5,7 @@ except ImportError:
     use_setuptools()
     from setuptools import setup, find_packages
 
-version = '1.10.1'
+version = '1.10.2'
 
 setup(name="Routes",
       version=version,

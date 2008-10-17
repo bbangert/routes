@@ -76,6 +76,10 @@ def _subdomain_check(kargs, mapper, environ):
         except AttributeError:
             return kargs
         
+        # In case environ defaulted to {}
+        if not fullhost:
+            return kargs
+        
         hostmatch = fullhost.split(':')
         host = hostmatch[0]
         port = ''
