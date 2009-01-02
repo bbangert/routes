@@ -534,6 +534,11 @@ class Route(object):
         for arg in self.minkeys:
             if arg not in kargs or kargs[arg] is None:
                 return False
+        
+        # Encode all the argument that the regpath can use
+        for k in kargs:
+            if k in self.maxkeys:
+                kargs[k] = url_quote(kargs[k], self.encoding)
         return self.regpath % kargs
     
     def generate_minimized(self, kargs):
