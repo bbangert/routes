@@ -1,7 +1,7 @@
 Routes Changelog
 ========================
 
--- 1.10.2 (**tip**)
+-- 1.10.2 (January 11, 2008)
 * Bugfix for unicode encoding problems with non-minimized Route generation.
   Spotted by Wichert Akkerman.
 * Bugfix for when environ is {} in unit tests.
