@@ -23,6 +23,7 @@ def test_basic():
 def test_path_info():
     map = Mapper()
     map.connect('myapp/*path_info', controller='myapp')
+    map.connect('project/*path_info', controller='myapp')
     map.create_regs(['content', 'myapp'])
     
     app = TestApp(RoutesMiddleware(simple_app, map))
@@ -34,6 +35,11 @@ def test_path_info():
     assert "matchdict items are [('action', u'index'), ('controller', u'myapp'), ('path_info', 'some/other/url')]" in res
     assert "'SCRIPT_NAME': '/myapp'" in res
     assert "'PATH_INFO': '/some/other/url'" in res
+    
+    res = app.get('/project/pylonshq/browser/pylons/templates/default_project/+package+/pylonshq/browser/pylons/templates/default_project/+package+/controllers')
+    print res
+    assert "'SCRIPT_NAME': '/project'" in res
+    assert "'PATH_INFO': '/pylonshq/browser/pylons/templates/default_project/+package+/pylonshq/browser/pylons/templates/default_project/+package+/controllers'" in res    
 
 def test_redirect_middleware():
     map = Mapper()
