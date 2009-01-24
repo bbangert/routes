@@ -5,7 +5,7 @@ import os
 import time
 from routes import Mapper
 
-def bench_rec(n):
+def get_mapper():
     m = Mapper()
     m.connect('', controller='articles', action='index')
     m.connect('admin', controller='admin/general', action='index')
@@ -34,18 +34,22 @@ def bench_rec(n):
     m.connect('articles/category/:id', controller='articles', action='category')
     m.connect('pages/*name', controller='articles', action='view_page')
     m.create_regs(['content','admin/why', 'admin/user'])
+    return m
 
+def bench_rec(mapper, n):
     ts = time.time()
     for x in range(1,n):
         pass
     en = time.time()
 
+    match = mapper.match
+
     # hits
     start = time.time()
     for x in range(1,n):
-        m.match('/admin')
-        m.match('/xml/1/feed.xml')
-        m.match('/index.rdf')
+        match('/admin')
+        match('/xml/1/feed.xml')
+        match('/index.rdf')
     end = time.time()
     total = end-start-(en-ts)
     per_url = total / (n*10)
@@ -56,9 +60,9 @@ def bench_rec(n):
     # misses
     start = time.time()
     for x in range(1,n):
-        m.match('/content')
-        m.match('/content/list')
-        m.match('/content/show/10')
+        match('/content')
+        match('/content/list')
+        match('/content/show/10')
     end = time.time()
     total = end-start-(en-ts)
     per_url = total / (n*10)
@@ -79,14 +83,15 @@ def do_profile(cmd, globals, locals, sort_order, callers):
         # calls,time,cumulative and cumulative,calls,time are useful
         stats.sort_stats(*sort_order or ('cumulative', 'calls', 'time'))
         if callers:
-            stats.print_callers(.3)
+            stats.print_callers()
         else:
-            stats.print_stats(.3)
+            stats.print_stats()
     finally:
         os.remove(fn)
 
 def main(n=300):
-    do_profile('bench_rec(%s)' % n, globals(), locals(),
+    mapper = get_mapper()
+    do_profile('bench_rec(mapper, %s)' % n, globals(), locals(),
                ('time', 'cumulative', 'calls'), None)
 
 if __name__ == '__main__':
