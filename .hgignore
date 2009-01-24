@@ -4,5 +4,6 @@ syntax:glob
 .svn
 *.pyc
 *.egg-info
+*.egg
 build
 dist
