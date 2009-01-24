@@ -1202,18 +1202,18 @@ else:
         m.create_regs(['content','admin/why', 'admin/user'])
         start = time.time()
         for x in range(1,n):
-            a = m.match('/content')
-            a = m.match('/content/list')
-            a = m.match('/content/show/10')
-
-            a = m.match('/admin/user')
-            a = m.match('/admin/user/list')
-            a = m.match('/admin/user/show/bbangert')
-
-            a = m.match('/admin/user/show/bbangert/dude')
-            a = m.match('/admin/why/show/bbangert')
-            a = m.match('/content/show/10/20')
-            a = m.match('/food')
+            a = m.match('/admin/comments/article/42/show/52')
+            a = m.match('/admin/content/view/5')
+            a = m.match('/index.rdf')
+            
+            a = m.match('/xml/view/feed.xml')
+            a = m.match('/xml/articlerss/42/feed.xml')
+            a = m.match('/articles')
+            
+            a = m.match('/articles/2004/12/20/page/2')
+            a = m.match('/articles/category/42')
+            a = m.match('/pages/this/is/long')
+            a = m.match('/miss')
         end = time.time()
         ts = time.time()
         for x in range(1,n):
