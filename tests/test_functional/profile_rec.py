@@ -37,19 +37,16 @@ def bench_rec(n):
 
     start = time.time()
     for x in range(1,n):
-        a = m.match('/content')
-        a = m.match('/content/list')
-        a = m.match('/content/show/10')
+        # misses
+        m.match('/content')
+        m.match('/content/list')
+        m.match('/content/show/10')
 
-        a = m.match('/admin/user')
-        a = m.match('/admin/user/list')
-        a = m.match('/admin/user/show/bbangert')
-
-        a = m.match('/admin/user/show/bbangert/dude')
-        a = m.match('/admin/why/show/bbangert')
-        a = m.match('/content/show/10/20')
-        a = m.match('/food')
-
+        # hits
+        m.match('/admin')
+        m.match('/xml/1/feed.xml')
+        m.match('/index.rdf')
+        
     end = time.time()
     ts = time.time()
     for x in range(1,n):
