@@ -35,30 +35,37 @@ def bench_rec(n):
     m.connect('pages/*name', controller='articles', action='view_page')
     m.create_regs(['content','admin/why', 'admin/user'])
 
-    start = time.time()
-    for x in range(1,n):
-        # misses
-        m.match('/content')
-        m.match('/content/list')
-        m.match('/content/show/10')
-
-        # hits
-        m.match('/admin')
-        m.match('/xml/1/feed.xml')
-        m.match('/index.rdf')
-        
-    end = time.time()
     ts = time.time()
     for x in range(1,n):
         pass
     en = time.time()
 
+    # hits
+    start = time.time()
+    for x in range(1,n):
+        m.match('/admin')
+        m.match('/xml/1/feed.xml')
+        m.match('/index.rdf')
+    end = time.time()
     total = end-start-(en-ts)
     per_url = total / (n*10)
-    print "Recognition\n"
+    print "Hit recognition\n"
     print "%s ms/url" % (per_url*1000)
     print "%s urls/s\n" % (1.00/per_url)
 
+    # misses
+    start = time.time()
+    for x in range(1,n):
+        m.match('/content')
+        m.match('/content/list')
+        m.match('/content/show/10')
+    end = time.time()
+    total = end-start-(en-ts)
+    per_url = total / (n*10)
+    print "Miss recognition\n"
+    print "%s ms/url" % (per_url*1000)
+    print "%s urls/s\n" % (1.00/per_url)
+        
 def do_profile(cmd, globals, locals, sort_order, callers):
     fd, fn = tempfile.mkstemp()
     try:
