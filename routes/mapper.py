@@ -124,7 +124,10 @@ class Mapper(object):
             config.mapper = self
     
     def _envget(self):
-        return getattr(self.req_data, 'environ', None)
+        try:
+            return self.req_data.environ
+        except AttributeError:
+            return None
     def _envset(self, env):
         self.req_data.environ = env
     def _envdel(self):
@@ -280,14 +283,19 @@ class Mapper(object):
                     url = '/'
             else:
                 return (None, None, matchlog)
+        environ = self.environ
+        sub_domains = self.sub_domains
+        sub_domains_ignore = self.sub_domains_ignore
+        domain_match = self.domain_match
+        debug = self.debug
         for route in self.matchlist:
             if route.static:
-                if self.debug:
+                if debug:
                     matchlog.append(dict(route=route, static=True))
                 continue
-            match = route.match(url, self.environ, self.sub_domains, 
-                self.sub_domains_ignore, self.domain_match)
-            if self.debug:
+            match = route.match(url, environ, sub_domains, sub_domains_ignore,
+                                domain_match)
+            if debug:
                 matchlog.append(dict(route=route, regexp=bool(match)))
             if match:
                 return (match, route, matchlog)
