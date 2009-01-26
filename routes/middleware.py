@@ -3,7 +3,7 @@ import re
 import logging
 
 try:
-    from paste.wsgiwrappers import WSGIRequest
+    from webob import Request
 except:
     pass
 
@@ -50,7 +50,7 @@ class RoutesMiddleware(object):
         
         old_method = None
         if self.use_method_override:
-            req = WSGIRequest(environ)
+            req = Request(environ)
             req.errors = 'ignore'
             if '_method' in environ.get('QUERY_STRING', '') and \
                 '_method' in req.GET:
