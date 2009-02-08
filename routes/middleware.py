@@ -50,21 +50,26 @@ class RoutesMiddleware(object):
         
         old_method = None
         if self.use_method_override:
-            req = Request(environ)
-            req.errors = 'ignore'
-            if '_method' in environ.get('QUERY_STRING', '') and \
-                '_method' in req.GET:
-                old_method = environ['REQUEST_METHOD']
-                environ['REQUEST_METHOD'] = req.GET['_method'].upper()
-                if self.log_debug:
-                    log.debug("_method found in QUERY_STRING, altering request"
-                            " method to %s", environ['REQUEST_METHOD'])
-            elif is_form_post(environ) and '_method' in req.POST:
-                old_method = environ['REQUEST_METHOD']
-                environ['REQUEST_METHOD'] = req.POST['_method'].upper()
-                if self.log_debug:
-                    log.debug("_method found in POST data, altering request "
-                              "method to %s", environ['REQUEST_METHOD'])
+            req = None
+            if '_method' in environ.get('QUERY_STRING', ''):
+                req = Request(environ)
+                req.errors = 'ignore'
+                if '_method' in req.GET:
+                    old_method = environ['REQUEST_METHOD']
+                    environ['REQUEST_METHOD'] = req.GET['_method'].upper()
+                    if self.log_debug:
+                        log.debug("_method found in QUERY_STRING, altering request"
+                                " method to %s", environ['REQUEST_METHOD'])
+            elif is_form_post(environ):
+                if req is None:
+                    req = Request(environ)
+                    req.errors = 'ignore'
+                if '_method' in req.POST:
+                    old_method = environ['REQUEST_METHOD']
+                    environ['REQUEST_METHOD'] = req.POST['_method'].upper()
+                    if self.log_debug:
+                        log.debug("_method found in POST data, altering request "
+                                  "method to %s", environ['REQUEST_METHOD'])
         
         # Run the actual route matching
         # -- Assignment of environ to config triggers route matching
@@ -92,7 +97,7 @@ class RoutesMiddleware(object):
         environ['routes.route'] = route
         environ['routes.url'] = url
 
-        if route.redirect:
+        if route and route.redirect:
             route_name = '_redirect_%s' % id(route)
             location = url_for(route_name, **match)
             log.debug("Using redirect route, redirect to '%s' with status"
