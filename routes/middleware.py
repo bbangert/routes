@@ -60,7 +60,7 @@ class RoutesMiddleware(object):
                     if self.log_debug:
                         log.debug("_method found in QUERY_STRING, altering request"
                                 " method to %s", environ['REQUEST_METHOD'])
-            elif is_form_post(environ):
+            elif environ['REQUEST_METHOD'] == 'POST' and is_form_post(environ):
                 if req is None:
                     req = Request(environ)
                     req.errors = 'ignore'
@@ -132,8 +132,6 @@ class RoutesMiddleware(object):
 
 def is_form_post(environ):
     """Determine whether the request is a POSTed html form"""
-    if environ['REQUEST_METHOD'] != 'POST':
-        return False
     content_type = environ.get('CONTENT_TYPE', '').lower()
     if ';' in content_type:
         content_type = content_type.split(';', 1)[0]
