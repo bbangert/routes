@@ -51,7 +51,7 @@ class RoutesMiddleware(object):
         old_method = None
         if self.use_method_override:
             req = None
-            if '_method' in environ.get('QUERY_STRING', ''):
+            if '_method' in environ['QUERY_STRING']:
                 req = Request(environ)
                 req.errors = 'ignore'
                 if '_method' in req.GET:
@@ -81,12 +81,13 @@ class RoutesMiddleware(object):
         if old_method:
             environ['REQUEST_METHOD'] = old_method
         
-        urlinfo = "%s %s" % (environ['REQUEST_METHOD'], environ['PATH_INFO'])
         if not match:
             match = {}
             if self.log_debug:
+                urlinfo = "%s %s" % (environ['REQUEST_METHOD'], environ['PATH_INFO'])
                 log.debug("No route matched for %s", urlinfo)
         elif self.log_debug:
+            urlinfo = "%s %s" % (environ['REQUEST_METHOD'], environ['PATH_INFO'])
             log.debug("Matched %s", urlinfo)
             log.debug("Route path: '%s', defaults: %s", route.routepath, 
                       route.defaults)
@@ -109,7 +110,7 @@ class RoutesMiddleware(object):
 
         # If the route included a path_info attribute and it should be used to
         # alter the environ, we'll pull it out
-        if self.path_info and match.get('path_info'):
+        if self.path_info and 'path_info' in match:
             oldpath = environ['PATH_INFO']
             newpath = match.get('path_info') or ''
             environ['PATH_INFO'] = newpath
