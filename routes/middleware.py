@@ -92,7 +92,7 @@ class RoutesMiddleware(object):
         environ['routes.route'] = route
         environ['routes.url'] = url
 
-        if hasattr(route, 'redirect'):
+        if route.redirect:
             route_name = '_redirect_%s' % id(route)
             location = url_for(route_name, **match)
             log.debug("Using redirect route, redirect to '%s' with status"

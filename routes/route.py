@@ -42,6 +42,7 @@ class Route(object):
         self.routepath = routepath
         self.sub_domains = False
         self.prior = None
+        self.redirect = False
         self.name = None
         self.minimization = kargs.pop('_minimize', True)
         self.encoding = kargs.pop('_encoding', 'utf-8')
