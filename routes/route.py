@@ -109,6 +109,9 @@ class Route(object):
         # exist in the route
         self.hardcoded = frozenset([key for key in self.maxkeys \
             if key not in routekeys and self.defaults[key] is not None])
+        
+        # Cache our default keys
+        self._default_keys = frozenset(self.defaults.keys())
     
     def make_full_route(self):
         """Make a full routelist string for use with non-minimized
@@ -462,12 +465,9 @@ class Route(object):
         if not match:
             return False
             
-        if not environ:
-            environ = {}
-        
         sub_domain = None
         
-        if environ.get('HTTP_HOST') and sub_domains:
+        if sub_domains and environ and 'HTTP_HOST' in environ:
             host = environ['HTTP_HOST'].split(':')[0]
             sub_match = re.compile('^(.+?)\.%s$' % domain_match)
             subdomain = re.sub(sub_match, r'\1', host)
@@ -475,8 +475,8 @@ class Route(object):
                 sub_domain = subdomain
         
         if self.conditions:
-            if self.conditions.has_key('method') and \
-                environ.get('REQUEST_METHOD') not in self.conditions['method']:
+            if 'method' in self.conditions and environ and \
+                environ['REQUEST_METHOD'] not in self.conditions['method']:
                 return False
             
             # Check sub-domains?
@@ -490,7 +490,7 @@ class Route(object):
         
         matchdict = match.groupdict()
         result = {}
-        extras = frozenset(self.defaults.keys()) - frozenset(matchdict.keys())
+        extras = self._default_keys - frozenset(matchdict.keys())
         for key, val in matchdict.iteritems():
             if key != 'path_info' and self.encoding:
                 # change back into python unicode objects from the URL 
@@ -500,7 +500,7 @@ class Route(object):
                 except UnicodeDecodeError:
                     return False
             
-            if not val and self.defaults.has_key(key) and self.defaults[key]:
+            if not val and key in self.defaults and self.defaults[key]:
                 result[key] = self.defaults[key]
             else:
                 result[key] = val
@@ -513,7 +513,7 @@ class Route(object):
         
         # If there's a function, call it with environ and expire if it
         # returns False
-        if self.conditions and self.conditions.has_key('function') and \
+        if self.conditions and 'function' in self.conditions and \
             not self.conditions['function'](environ, result):
             return False
         
