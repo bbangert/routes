@@ -32,27 +32,35 @@ class _RequestConfig(object):
         Also, match the incoming URL if there's already a mapper, and
         store the resulting match dict in mapper_dict.
         """
-        if environ.get('HTTPS') or environ.get('wsgi.url_scheme') == 'https' \
+        if 'HTTPS' in environ or environ.get('wsgi.url_scheme') == 'https' \
            or environ.get('HTTP_X_FORWARDED_PROTO') == 'https':
             self.__shared_state.protocol = 'https'
         else:
             self.__shared_state.protocol = 'http'
-        if hasattr(self, 'mapper'):
+        try:
             self.mapper.environ = environ
-        if 'PATH_INFO' in environ and hasattr(self, 'mapper'):
-            mapper = self.mapper
-            path = environ['PATH_INFO']
-            result = mapper.routematch(path)
-            if result is not None:
-                self.__shared_state.mapper_dict = result[0]
-                self.__shared_state.route = result[1]
-            else:
-                self.__shared_state.mapper_dict = None
-                self.__shared_state.route = None
+        except AttributeError:
+            pass
         
-        if environ.get('HTTP_X_FORWARDED_HOST'):
+        # Wrap in try/except as common case is that there is a mapper
+        # attached to self
+        try:
+            if 'PATH_INFO' in environ:
+                mapper = self.mapper
+                path = environ['PATH_INFO']
+                result = mapper.routematch(path)
+                if result is not None:
+                    self.__shared_state.mapper_dict = result[0]
+                    self.__shared_state.route = result[1]
+                else:
+                    self.__shared_state.mapper_dict = None
+                    self.__shared_state.route = None
+        except AttributeError:
+            pass
+        
+        if 'HTTP_X_FORWARDED_HOST' in environ:
             self.__shared_state.host = environ['HTTP_X_FORWARDED_HOST']
-        elif environ.get('HTTP_HOST'):
+        elif 'HTTP_HOST' in environ:
             self.__shared_state.host = environ['HTTP_HOST']
         else:
             self.__shared_state.host = environ['SERVER_NAME']
@@ -119,9 +127,11 @@ def request_config(original=False):
     this behavior, call request_config(original=True).
     """
     obj = _RequestConfig()
-    if hasattr(obj, 'request_local') and original is False:
-        return getattr(obj, 'request_local')()
-    else:
+    try:
+        if obj.request_local and original is False:
+            return getattr(obj, 'request_local')()
+    except AttributeError:
+        obj.request_local = False
         obj.using_request_local = False
     return _RequestConfig()
     
