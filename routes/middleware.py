@@ -51,7 +51,13 @@ class RoutesMiddleware(object):
         old_method = None
         if self.use_method_override:
             req = None
-            if '_method' in environ['QUERY_STRING']:
+            
+            # In some odd cases, there's no query string
+            try:
+                qs = environ['QUERY_STRING']
+            except KeyError:
+                qs = ''
+            if '_method' in qs:
                 req = Request(environ)
                 req.errors = 'ignore'
                 if '_method' in req.GET:
