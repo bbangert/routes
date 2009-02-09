@@ -1,13 +1,13 @@
 Routes Changelog
 ========================
 
--- 1.10.3 (**tip**)
+-- 1.10.3 (February 8, 2009)
 * Tweak to use WebOb Request rather than Paste.
 * Performance tweaks for URL recognition.
 * Bugfix for routes.middleware not re.escaping the path_info before moving it
   to the script name.
 
--- 1.10.2 (January 11, 2008)
+-- 1.10.2 (January 11, 2009)
 * Bugfix for unicode encoding problems with non-minimized Route generation.
   Spotted by Wichert Akkerman.
 * Bugfix for when environ is {} in unit tests.
