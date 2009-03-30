@@ -7,3 +7,4 @@ syntax:glob
 *.egg
 build
 dist
+docs/_build
