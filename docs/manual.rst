@@ -1,0 +1,901 @@
+Routes Manual
+%%%%%%%%%%%%%
+
+*Updated 2009-03-30*
+
+Introduction
+============
+
+Routes tackles an interesting problem that comes up frequently in web
+development, *how do you map URLs to your application's actions*? That is, how
+do you say that *this* should be accessed as "/blog/2008/01/08", and "/login"
+should do *that*? Many web frameworks have a fixed dispatching system; e.g., 
+"/A/B/C" means to read file "C" in directory "B", or to call method "C" of
+class "B" in module "A.B". These work fine until you need to refactor your code
+and realize that moving a method changes its public URL and invalidates users'
+bookmarks.  Likewise, if you want to reorganize your URLs and make a section
+into a subsection, you have to change your carefully-tested logic code.
+
+Routes takes a different approach. You determine your URL hierarchy and and
+actions separately, and then link them together in whichever ways you decide.
+If you change your mind about a particular URL, just change one line in your
+route map and never touch your action logic. You can even have multiple URLs
+pointing to the same action; e.g., to support legacy bookmarks.  Routes was
+originally inspired by the dispatcher in Ruby on Rails but has since diverged.
+
+Routes is the primary dispatching system in the Pylons web framework, and an
+optional choice in CherryPy. It can be added to any
+framework without much fuss, and used for an entire site or a URL subtree.
+It can also forward subtrees to other dispatching systems, which is how
+TurboGears 2 is implemented on top of Pylons.
+
+..
+    Routes 2 is a rewrite which makes Routes simpler and more deterministic,
+    following the Python slogan "Explicit is better than implicit".
+
+Most of this manual is written from the user's perspective: how to use Routes in a framework that already supports it. The last section shows how to add Routes support to a new framework.
+
+Current features:
+
+* Sophisticated route lookup and URL generation
+* Named routes
+* Redirect routes
+* Wildcard paths before and after static parts
+* Sub-domain support built-in
+* Conditional matching based on domain, cookies, HTTP method (RESTful), and more
+* Easily extensible utilizing custom condition functions and route generation
+  functions
+* Extensive unit tests
+
+
+
+
+Buzzword compliance:  REST, DRY.
+
+A rewrite of Routes called "Routes 2" is in progress but no release date has
+been set.  Many of Routes 2's features have been backported to Routes 1, making
+the future of Routes 2 less certain.
+
+Vocabulary
+==========
+
+A **route** is a rule for mapping a URL pattern to a dict of **routing
+variables**.  For instance, if the pattern is "/{controller}/{action}" and the
+requested URL is "/help/about", Routes would return::
+
+    {"controller": "help", "action": "about"}``
+    
+What the application does with these variables is none of Routes' business, but
+Pylons would look for a ``HelpController`` class and call its ``about`` method.
+
+A **mapper** is an object that holds a collection of routes and can match and
+generate them.  **Matching** is the act of finding a corresponding route for a
+given URL and returning routing variables.  **Generation** is the opposite,
+creating a URL based on a route name and variable values.
+
+The URL pattern is called the **route path**, and variables defined in it are
+**path variables**.  Variables defined outside the path (which we'll see later)
+are called **extra variables** or **default variables**.
+
+The routing variables returned by the matcher are thus a combination of path
+variables and extra variables.  wsgi.org confusingly calls routing variables
+"routing args".  This manual avoids the term because it can be confused with
+extra variables, which are defined via keyword arguments.
+
+
+Setting up routes
+=================
+
+It is assumed that you are using a framework that has preconfigured Routes for
+you.  In Pylons, you define your routes in the ``make_map`` function in your
+*myapp/config/routing.py* module.  Here is a typical configuration::
+
+    1   from routes import Mapper
+    2   map = Mapper()
+    3   map.minimization = False
+    4   map.connect("/error/{action}/{id}, controller="error")
+    5   map.connect("home", "/", controller="main", action="index")
+    6   # ADD CUSTOM ROUTES HERE
+    7   map.connect("/{controller}/{action}")
+    8   map.connect("/{controller}/{action}/{id}")
+
+The last two routes (lines 7 and 8) should be familiar from the example above.
+They match any two-component or three-component URL.  
+
+Line 4 matches any three-component route that starts with "/error", and sets
+the "controller" variable to a constant, so that a URL
+"/error/images/arrow.jpg" would produce::
+
+    {"controller": "error", "action": "images", "id": "arrow.jpg"}
+
+Line 5 matches the single URL "/" and sets both the controller and action to
+constants.  It also has a route name "home", which can be used in generation.
+Note that the route path moves from the first argument to the second if the
+route has a name.  Routes with a name are called **named routes**; those
+without are called **nameless routes**.  It's recommended to name all routes
+that may be used for generation.
+
+Note that a URL "/error/images/arrow.jpg" could match both line 4 and line 8.
+The mapper resolves this by trying routes in the order defined, so this URL
+would match line 4.
+
+Line 3 is a backward compatibility option which you should set to false.
+Minimization allowed a route to match if some rightmost components are missing
+and default values are supplied in the route definition.  With minimization,
+line 8 could match "/mycontroller/myaction", "/mycontroller", or even "/" if
+the missing variables were specified in the route definition, so line 7 would
+not be necessary.  In practice, minimization led to application bugs when an
+unintended route matched, so it is no longer recommended.  Without
+minimization, you just have to add additional routes to match the shorter URLs.
+
+If no routes match the URL, the mapper returns a "match failed" condition,
+which is seen in Pylons as HTTP 404 "Not Found".
+
+Here are some more examples of valid routes::
+
+    m.connect("/feeds/{category}/atom.xml", controller="feeds", action="atom")
+    m.connect("history", "/archives/by_eon/{century}", controller="archives",
+              action="aggregate")
+    m.connect("article", "/article/{section}/{slug}/{page}.html",
+              controller="article", action="view")
+
+Extra variables may be any Python type, not just strings.  However, if the
+route is used in generation, ``str()`` will  be called on the value unless
+the generation call specifies an overriding value.
+
+.. tip:: Version differences
+
+    The ``{varname}`` syntax for path variables was introduced in Routes 1.9
+    for forward compatibility with Routes 2.  Earlier versions used
+    ``:varname`` and ``:(varname)``.  The older syntax is still supported but
+    deprecated.
+
+    Previous versions would match a URL beginning with a slash ("/") even if
+    the route was defined without it.  This is no longer
+    supported, so always define your URL patterns with an initial slash.
+
+    Previous versions also had implicit default values for "controller", 
+    "action", and "id".  These are now disabled by default.
+
+    Non-minimization was also introduced in Routes 1.9.
+
+
+
+Requirements
+------------
+
+It's possible to restrict a path variable to a regular expression; e.g., to
+match only a numeric component or a restricted choice of words.  There are two
+syntaxes for this: inline and the ``requirements`` argument.  An inline
+requirement looks like this::
+
+    map.connect(R"/blog/{id:\d+}")
+    map.connect(R"/download/{platform:windows|mac}/{filename}")
+
+This matches "/blog/123" but not "/blog/12A".  The equivalent ``requirements``
+syntax is::
+
+    map.connect("/blog/{id}", requirements={"id": R"\d+"}
+    map.connect("/download/{platform}/{filename}",
+        requirements={"platform": R"windows|mac"})
+
+Note the use of raw string syntax (``R""``) for regexes which might contain
+backslashes.  Without the R you'd have to double every backslash.
+
+Another example::
+
+    m.connect("archives/{year}/{month}/{day}", controller="archives",
+              action="view", year=2004,
+              requirements=dict(year=R"\d{2,4}", month=R"\d{1,2}"))
+
+The inline syntax was added in Routes (XXX 1.10?? not in changelog).  Previous
+versions had only the ``requirements`` argument.  Two advantages of the
+``requirements`` argument are that if you have several variables with identical
+requirements, you can set one variable or even the entire argument to a
+global::
+
+    NUMERIC = R"\d+"
+    map.connect(..., requirements={"id": NUMERIC})
+
+    ARTICLE_REQS = {"year": R"\d\d\d\d", "month": R"\d\d", "day": R"\d\d"}
+    map.connect(..., requirements=ARTICLE_REQS)
+
+Because the argument ``requirements`` is reserved, you can't define a routing
+variable by that name.
+
+Magic path_info
+---------------
+
+If the "path_info" variable is used at the end of the URL, Routes moves
+everything preceding it into the "SCRIPT_NAME" environment variable.  This is
+useful when delegating to another WSGI application that does its own routing:
+the subapplication will route on the remainder of the URL rather than the
+entire URL.  You still
+need the ":.*" requirement to capture the following URL components into the
+variable.  ::
+
+    map.connect("cards", "/cards/{path_info:.*}",
+        controller="main", action="cards")
+    # Incoming URL "/cards/diamonds/4.png"
+    => {"controller": "main", action: "cards", "path_info": "/diamonds/4.png"}
+    # Second WSGI application sees: 
+    # SCRIPT_NAME="/cards"   PATH_INFO="/diamonds/4.png"
+
+A future version of Routes may delegate directly to WSGI applications, but for
+now this must be done in the framework.  In Pylons, you can do this in a
+controller action as follows::
+
+    from paste.fileapp import DirectoryApp
+    def cards(self, environ, start_response):
+        app = DirectoryApp("/cards-directory")
+        return app(environ, start_response)
+
+Or create a fake controller module with a ``__controller__`` variable set to
+the WSGI application::
+
+    import paste.fileapp
+    __controller__ = DirectoryApp("/cards-directory")
+
+Conditions
+----------
+
+Conditions impose additional constraints on what kinds of requests can match.
+The ``conditions`` argument is a dict with up to three keys:
+
+    method
+
+        A list of uppercase HTTP methods.  The request must be one of the
+        listed methods.
+
+    sub_domain
+
+        Can be a list of subdomains, ``True``, ``False``, or ``None``.  If a
+        list, the request must be for one of the specified subdomains.  If
+        ``True``, the request must contain a subdomain but it can be anything.
+        If ``False`` or ``None``, do not match if there's a subdomain.
+
+        (New in Routes 1.10: ``False`` and ``None`` values.)
+
+    function
+
+        A function that evaluates the request.  Its signature must be
+        ``func(environ, match_dict) => bool``.  It should return true if the
+        match is successful or false otherwise.  The first arg is the WSGI
+        environment; the second is the routing variables that would be
+        returned if the match succeeds.  The function can modify ``match_dict``
+        in place to affect which variables are returned.  This allows a wide
+        range of transformations.
+
+Examples::
+
+    # Match only if the HTTP method is "GET" or "HEAD".
+    m.connect("/user/list", controller="user", action="list",
+              conditions=dict(method=["GET", "HEAD"]))
+
+    # A sub-domain should be present.
+    m.connect("/", controller="user", action="home",
+              conditions=dict(sub_domain=True))
+
+    # Sub-domain should be either "fred" or "george".
+    m.connect("/", controller="user", action="home",
+              conditions=dict(sub_domain=["fred", "george"]))
+
+    # Put the referrer into the resulting match dictionary.
+    # This function always returns true, so it never prevents the match
+    # from succeeding.
+    def referals(environ, result):
+        result["referer"] = environ.get("HTTP_REFERER")
+        return True
+    m.connect("/{controller}/{action}/{id}", 
+        conditions=dict(function=referals))
+
+Wildcard routes
+---------------
+
+By default, path variables do not match a slash.  This ensures that each
+variable will match exactly one component.  You can use requirements to
+override this::
+
+    map.connect("/static/{filename:.*?}")
+
+This matches "/static/foo.jpg", "/static/bar/foo.jpg", etc.  
+
+Older versions of Routes had a different syntax for wildcard routes:
+``*varname`` or ``*(varname)``.  This syntax is still supported but deprecated.
+
+Beware that careless regexes may eat the entire rest of the URL and cause
+components to the right of it not to match::
+
+    # OK because the following component is static and the regex has a "?".
+    map.connect("/static/{filename:.*?}/download")
+
+    # Deprecated syntax.  OK because the following component is static.
+    map.connect("/static/*filename/download")
+
+    # Deprecated syntax.  WRONG because the wildcard will eat the rest of the
+    # URL, leaving nothing for the following variable, which will cause the
+    # match to fail.
+    map.connect("/static/*filename/:action")
+
+The lesson is to always test wildcard patterns.
+
+
+Generation
+==========
+
+To generate URLs, use the ``url`` or ``url_for`` object provided by your
+framework.  ``url`` is an instance of Routes ``URLGenerator``, while
+``url_for`` is the older ``routes.url_for()`` function.
+
+To generate a named route, specify the route name as a positional argument::
+
+    url("home")   =>  "/"
+
+If the route contains path variables, you must specify values for them using
+keyword arguments::
+
+    url("blog", year=2008, month=10, day=2)
+
+Non-string values are automatically converted to strings using ``str()``.
+(This may break with Unicode values containing non-ASCII characters.)
+
+However, if the route defines an extra variable with the same name as a path
+variable, the extra variable is used as the default if that keyword is not
+specified.  Example::
+
+    m.connect("archives", "/archives/{id}",
+        controller="archives", action="view", id=1)
+    url("blog", id=123)  =>  "/blog/123"
+    url("blog")  =>  "/blog/1"
+
+(The extra variable is *not* used for matching unless minimization is enabled.)
+
+Any keyword args that do not correspond to path variables will be put in the
+query string.  Append a "_" if the variable name collides with a Python
+keyword::
+
+    map.connect("archive", "/archive/{year}")
+    url("archive", year=2009, font=large)  =>  "/archive/2009?font=large"
+    url("archive", year=2009, print_=1)  =>  "/archive/2009?print=1"
+
+If the application is mounted at a subdirectory of the URL space,
+all generated URLs will have the application prefix.  The application prefix is
+the "SCRIPT_NAME" variable in the request's WSGI environment.
+
+If the positional argument corresponds to no named route, it is assumed to be a
+literal URL.  The application's mount point is prefixed to it, and keyword args
+are converted to query parameters::
+
+    url("/search", q="My question")  =>  "/search?q=My+question"
+
+If there is no positional argument, Routes will use the keyword args to choose
+a route.  The first route that has all path variables specified by keyword args
+and the fewest number of extra variables not overridden by keyword args will be
+chosen.  This was common in older versions of Routes but can cause application
+bugs if an unexpected route is chosen, so using route names is much preferable
+because that guarantees only the named route will be chosen.  The most common
+use for unnamed generation is when you have a seldom-used controller with a lot
+of ad hoc methods; e.g., ``url(controller="admin", action="session")``.
+
+An exception is raised if no route corresponds to the arguments.  The exception
+is ``routes.util.GenerationException``.  (Prior to Routes 1.9, ``None`` was
+returned instead.  It was changed to an exception to prevent invalid blank URLs
+from being insered into templates.)  
+
+You'll also get this exception if Python produces a Unicode URL (which could
+happen if the route path or a variable value is Unicode).  Routes generates
+only ``str`` URLs.
+
+The following keyword args are special:
+
+    anchor
+
+        Specifies the URL anchor (the part to the right of "#"). ::
+
+            url("home", "summary")  =>  "/#summary"
+
+    host
+
+        Make the URL fully qualified and override the host (domain).
+
+    protocol
+
+        Make the URL fully qualified and override the protocol (e.g., "ftp").
+
+    qualified
+
+        Make the URL fully qualified (i.e., add "protocol://host:port" prefix).
+
+    sub_domain
+
+        See "Generating URLs with subdomains" below.
+
+The syntax in this section is the same for both ``url`` and ``url_for``.
+
+Generating routes based on the current URL
+------------------------------------------
+
+``url.current()`` returns the URL of the current request, without the query
+string.  This is called "route memory", and works only if the RoutesMiddleware
+is in the middleware stack.  Keyword arguments override path variables or are
+put on the query string.
+
+``url_for`` combines the behavior of ``url`` and ``url_current``.  This is
+deprecated because nameless routes and route memory have the same syntax, which
+can lead to the wrong route being chosen in some cases.
+
+Here's an example of route memory::
+
+    # Deprecated route memory example.
+    m.connect("/archives/{year}/{month}/{day}", year=2004)
+
+    # Current URL is "/archives/2005/10/4".
+    # Routing variables are {"controller": "archive", "action": "view",
+      "year": "2005", "month": "10", "day": "4"}
+
+    url_for(day=6)    =>  "/archives/2005/10/6"
+    url_for(month=4)  =>  "/archives/2005/4/4"
+    url_for()         =>  "/archives/2005/10/4"
+
+Route memory can be disabled globally with ``map.explicit = True``.
+
+Generation-only routes (aka. static routes)
+-------------------------------------------
+
+A static route is used only for generation -- not matching -- and it must be
+named.  To define a static route, use the argument ``_static=True``.  
+
+This example provides a convenient way to link to a search::
+
+    map.connect("google", "http://google.com/", _static=True)
+    url("google", q="search term")  =>  "/http://google.com/?q=search+term")
+
+This example generates a URL to a static image in a Pylons public directory.
+Pylons serves the public directory in a way that bypasses Routes, so there's no
+reason to match URLs under it. ::
+
+    map.connect("attachment", "/images/attachments/{category}/{id}.jpg",
+        _static=True)
+    url("attachment", category="dogs", id="Mastiff") =>
+        "/images/attachments/dogs/Mastiff.jpg"
+
+In Routes 1.10 and later, static routes are exactly the same as regular routes
+except they're not added to the internal match table.  In older versions of
+Routes they could not contain path variables and they had to point to external
+URLs.  These restrictions no longer apply.
+
+Filter functions
+----------------
+
+A filter function modifies how a named route is generated.  Don't confuse it
+with a function condition, which is used in matching.  A filter function is its
+opposite counterpart.
+
+One use case is when you have a ``story`` object with attributes for year,
+month, and day.  You don't want to hardcode these attributes in every ``url``
+call because the interface may change someday.  Instead you pass the story as a
+pseudo-argument, and the filter produces the actual generation args.  Here's an
+example::
+
+    class Story(object):
+        def __init__(self, year, month, day):
+            self.year = year
+            self.month = month
+            self.day = day
+
+        @staticmethod
+        def expand(kw):
+            try:
+                story = kw["story"]
+            except KeyError:
+                pass   # Don't modify dict if ``story`` key not present.
+            else:
+                # Set the actual generation args from the story.
+                kw["year"] = story.year
+                kw["month"] = story.month
+                kw["day"] = story.day
+            return kw
+
+    m.connect("archives", "/archives/{year}/{month}/{day}",
+        controller="archives", action="view", _filter=Story.expand)
+
+    my_story = Story(2009, 1, 2)
+    url("archives", story=my_story)  =>  "/archives/2009/1/2"
+
+The ``_filter`` argument can be any function that takes a dict and returns a
+dict.  In the example we've used a static method of the ``Story`` class to keep
+everything story-related together, but you may prefer to use a standalone
+function to keep Routes-related code away from your model.
+
+Generating URLs with subdomains
+-------------------------------
+
+If subdomain support is enabled and the ``sub_domain`` arg is passed to
+``url_for``, Routes ensures the generated route points to that subdomain. ::
+
+    # Enable subdomain support.
+    map.sub_domains = True
+    
+    # Ignore the www subdomain.
+    map.sub_domains_ignore = "www"
+
+    map.connect("/users/{action}")
+
+    # Add a subdomain.
+    url_for(action="update", sub_domain="fred")  =>  "http://fred.example.com/users/update"
+
+    # Delete a subdomain.  Assume current URL is fred.example.com.
+    url_for(action="new", sub_domain=None)  =>  "http://example.com/users/new"
+
+Unicode
+=======
+
+Routes assumes UTF-8 encoding on incoming URLs, and ``url`` and ``url_for``
+also generate UTF-8.  You can change the encoding with the ``map.charset``
+attribute::
+
+   map.charset = "latin-1"
+
+New in Routes 1.10: several bugfixes.
+
+RESTful services
+================
+
+Routes makes it easy to configure RESTful web services.  ``map.resource``
+creates a set of add/modify/delete routes conforming to the Atom publishing
+protocol.  
+
+A resource route addresses *members* in a *collection*, and the collection
+itself.  Normally a collection is a plural word, and a member is the
+corresponding singular word.  For instance, consider a collection of messages::
+
+    map.resource("message", "messages")
+
+    # The above command sets up several routes as if you had typed the
+    # following commands:
+    map.connect("messages", "/messages",
+        controller="messages", action="create",
+        conditions=dict(method=["POST"]))
+    map.connect("messages", "/messages", 
+        controller="messages", action="index",
+        conditions=dict(method=["GET"]))
+    map.connect("formatted_messages", "/messages.{format}", 
+        controller="messages", action="index", 
+        conditions=dict(method=["GET"]))
+    map.connect("new_message", "/messages/new", 
+        controller="messages", action="new",
+        conditions=dict(method=["GET"]))
+    map.connect("formatted_new_message", "/messages/new.{format}", 
+        controller="messages", action="new",
+        conditions=dict(method=["GET"]))
+    map.connect("/messages/{id}", 
+        controller="messages", action="update",
+        conditions=dict(method=["PUT"]))
+    map.connect("/messages/{id}", 
+        controller="messages", action="delete",
+        conditions=dict(method=["DELETE"]))
+    map.connect("edit_message", "/messages/{id}/edit", 
+        controller="messages, action="edit",
+        conditions=dict(method=[""GET"]))
+    map.connect("formatted_edit_message", "/messages/{id}.{format}/edit", 
+        controller="messages, action="edit", 
+        conditions=dict(method=[""GET"]))
+    map.connect("message", "/messages/{id}", 
+        controller="messages", action="show",
+        conditions=dict(method=["GET"]))
+    map.connect("formatted_message", "/messages/{id}.{format}", 
+        controller="messages", action="show",
+        conditions=dict(method=["GET"]))
+
+This establishes the following convention::
+
+    GET    /messages        => messages.index()    => url("messages")
+    POST   /messages        => messages.create()   => url("messages")
+    GET    /messages/new    => messages.new()      => url("new_message")
+    PUT    /messages/1      => messages.update(id) => url("message", id=1)
+    DELETE /messages/1      => messages.delete(id) => url("message", id=1)
+    GET    /messages/1      => messages.show(id)   => url("message", id=1)
+    GET    /messages/1/edit => messages.edit(id)   => url("edit_message", id=1)
+
+Thus, you GET the collection to see an index of links to members ("index"
+method).  You GET a member to see it ("show").  You GET "COLLECTION/new" to
+obtain a new message form ("new"), which you POST to the collection ("create").
+You GET "MEMBER/edit" to obtain an edit for ("edit"), which you PUT to the
+member ("update").  You DELETE the member to delete it.  Note that there are
+only four route names because multiple actions are doubled up on the same URLs.
+
+This URL structure may look strange if you're not used to the Atom protocol.
+REST is a vague term, and some people think it means proper URL syntax (every
+component contains the one on its right), others think it means not putting IDs
+in query parameters, and others think it means using HTTP methods beyond GET
+and POST.  ``map.resource`` does all three, but it may be overkill for
+applications that don't need Atom compliance or prefer to stick with GET and
+POST.  ``map.resource`` has the advantage that many automated tools and
+non-browser agents will be able to list and modify your resources without any
+programming on your part.  But you don't have to use it if you prefer a simpler
+add/modify/delete structure.
+
+HTML forms can produce only GET and POST requests.  As a workaround, if a POST
+request contains a ``_method`` parameter, the Routes middleware changes the
+HTTP method to whatever the parameter specifies, as if it had been requested
+that way in the first place.  This convention is becoming increasingly common
+in other frameworks.  If you're using WebHelpers, the The WebHelpers ``form``
+function has a ``method`` argument which automatically sets the HTTP method and
+"_method" parameter.
+
+Several routes are paired with an identical route containing the ``format``
+variable.  The intention is to allow users to obtain different formats by means
+of filename suffixes; e.g., "/messages/1.xml".  This produces a routing
+variable "xml", which in Pylons will be passed to the controller action if it
+defines a formal argument for it.  In generation you can pass the ``format``
+argument to produce a URL with that suffix::
+
+    url("message", id=1, format="xml")  =>  "/messages/1.xml"
+
+Routes does not recognize any particular formats or know which ones are valid
+for your application.  It merely passes the ``format`` attribute through if it
+appears.
+
+New in Routes 1.7.3: changed URL suffix from ";edit" to "/edit".  Semicolons
+are not allowed in the path portion of a URL except to delimit path parameters,
+which nobody uses.
+
+Resource options
+----------------
+
+The ``map.resource`` method recognizes a number of keyword args which modifies
+its behavior:
+
+controller
+
+    Use the specified controller rather than deducing it from the collection
+    name.
+
+collection
+
+    Additional URLs to allow for the collection.  Example::
+
+        map.resource("message", "messages", collection={"rss": "GET"})
+        # "GET /message/rss"  =>  ``Messages.rss()``.
+        # Defines a named route "rss_messages".
+
+member
+
+    Additional URLs to allow for a member.  Example::
+
+        map.resource('message', 'messages', member={'mark':'POST'})
+        # "POST /message/1/mark"  =>  ``Messages.mark(1)``
+        # also adds named route "mark_message"
+
+    This can be used to display a delete confirmation form::
+
+        map.resource("message", "messages", member={"ask_delete": "GET"}
+        # "GET /message/1/ask_delete"   =>   ``Messages.ask_delete(1)``.
+        # Also adds a named route "ask_delete_message".
+
+new
+
+    Additional URLs to allow for new-member functionality. ::
+
+        map.resource("message", "messages", new={"preview": "POST"})
+        # "POST /messages/new/preview"  
+
+path_prefix
+
+    Prepend the specified prefix to all URL patterns.  The prefix may include
+    path variables.  This is mainly used to nest resources within resources.
+
+name_prefix
+
+    Prefix the specified string to all route names.  This is most often
+    combined with ``path_prefix`` to nest resources::
+
+        map.resource("message", "messages", controller="categories",
+            path_prefix="/category/{category_id}",
+            name_prefix="category_")
+        # GET /category/7/message/1
+        # Adds named route "category_message"
+
+parent_resource
+
+        A dict containing information about the parent resource, for creating a
+        nested resource. It should contain the member_name and collection_name
+        of the parent resource. This dict will be available via the associated
+        Route object which can be accessed during a request via
+        ``request.environ["routes.route"]``.
+
+        If parent_resource is supplied and path_prefix isn't, path_prefix will
+        be generated from parent_resource as "<parent collection name>/:<parent
+        member name>_id".
+
+        If parent_resource is supplied and name_prefix isn't, name_prefix will
+        be generated from parent_resource as "<parent member name>_".
+
+        Example::
+
+            >>> from routes.util import url_for
+            >>> m = Mapper()
+            >>> m.resource('location', 'locations',
+            ...            parent_resource=dict(member_name='region',
+            ...                                 collection_name='regions'))
+            >>> # path_prefix is "regions/:region_id"
+            >>> # name prefix is "region_"
+            >>> url_for('region_locations', region_id=13)
+            '/regions/13/locations'
+            >>> url_for('region_new_location', region_id=13)
+            '/regions/13/locations/new'
+            >>> url_for('region_location', region_id=13, id=60)
+            '/regions/13/locations/60'
+            >>> url_for('region_edit_location', region_id=13, id=60)
+            '/regions/13/locations/60/edit'
+
+            Overriding generated path_prefix:
+
+            >>> m = Mapper()
+            >>> m.resource('location', 'locations',
+            ...            parent_resource=dict(member_name='region',
+            ...                                 collection_name='regions'),
+            ...            path_prefix='areas/:area_id')
+            >>> # name prefix is "region_"
+            >>> url_for('region_locations', area_id=51)
+            '/areas/51/locations'
+
+            Overriding generated name_prefix:
+
+            >>> m = Mapper()
+            >>> m.resource('location', 'locations',
+            ...            parent_resource=dict(member_name='region',
+            ...                                 collection_name='regions'),
+            ...            name_prefix='')
+            >>> # path_prefix is "regions/:region_id"
+            >>> url_for('locations', region_id=51)
+            '/regions/51/locations'
+
+
+Redirect routes
+===============
+
+Redirect routes allow you to specify redirects in the route map, similar to
+RewriteRule in an Apache configuration.  This avoids the need to define dummy
+controller actions just to handle redirects.  It's especially useful when the
+URL structure changes and you want to redirect legacy URLs to their new
+equivalents.  The redirection is done by the Routes middleware, and the WSGI
+application is not called.
+
+``map.redirect`` takes two positional arguments:  the route path and the
+destination URL.  Redirect routes do not have a name.  Both paths can contain
+variables, and the route path can take inline requirements.  Keyword arguments
+are the same as ``map.connect``, both in regards to extra variables and to route
+options. ::
+
+    map.redirect("/legacyapp/archives/{url:.*}", "/archives/{url}")
+
+    map.redirect("/legacyapp/archives/{url:.*}", "/archives/{url}")
+
+By default a "302 Found" HTTP status is issued.  You can override this with the
+``_redirect_code`` keyword argument.  The value must be an entire status
+string. ::
+
+    map.redirect("/home/index", "/", _redirect_code="301 Moved Permanently")
+
+Redirect routes are new in Routes 1.10.
+
+Other
+=====
+
+If your application is behind an HTTP proxy such a load balancer on another
+host, the WSGI environment will refer to the internal server rather than to the
+proxy, which will mess up generated URLs.  Use the ProxyMiddleware in
+PasteDeploy to fix the WSGI environment to what it would have been without the
+proxy.
+
+Using Routes with Pylons and WebHelpers
+=======================================
+
+As mentioned above, Pylons applications should define their routes in the
+``make_map`` function in *myapp/config/routing.py*.
+
+Templates can use ``h.url(...)`` to generate URLs (starting with Pylons 0.9.7),
+or the older ``h.url_for(...)``.  Controllers will have to import these to use
+them::
+
+   from pylons import url   
+   from routes import url_for
+   from pylons.controllers.util import redirect_to
+
+Previously, ``url_for`` and ``redirect_to`` were imported via WebHelpers by
+this line in *myapp/lib/helpers.py*:  "from webhelpers.rails import \*".
+``webhelpers.rails`` is deprecated and will soon be removed.  If you want to
+use ``url_for`` or ``redirect_to``, import them as shown above.
+
+Routes is implemented in Pylons using the RoutesMiddleware, which is activated
+in *myapp/config/middleware.py*.
+
+To debug routes, turn on debug logging for the "routes.middleware" logger.
+
+
+Porting Routes to other frameworks
+==================================
+
+An application can create a raw mapper object and call its ``.match`` and
+``.generate`` methods.  However, WSGI applications will probably want to use
+the ``RoutesMiddleware`` as Pylons does::
+
+    # In myapp/config/middleware.py
+    from routes.middleware import RoutesMiddleware
+    app = RoutesMiddleware(app, map)     # ``map`` is a routes.Mapper.
+
+The middleware matches the requested URL and sets the following WSGI
+variables::
+
+        environ['wsgiorg.routing_args'] = ((url, match))
+        environ['routes.route'] = route
+        environ['routes.url'] = url
+
+where ``match`` is the routing variables dict, ``route`` is the matched route,
+and ``url`` is a ``URLGenerator`` object.  In Pylons, ``match`` is used by the
+dispatcher, and ``url`` is accessible as ``pylons.url``.
+
+The middleware handles redirect routes itself, issuing the appropriate
+redirect.  The application is not called in this case.
+
+To debug routes, turn on debug logging for the "routes.middleware" logger.
+
+See the Routes source for other features which may have been added.
+
+URL Resolution
+--------------
+
+When the URL is looked up, it should be matched against the Mapper. When
+matching an incoming URL, it is assumed that the URL path is the only string
+being matched. All query args should be stripped before matching::
+
+    m.connect('articles/{year}/{month}', controller='blog', action='view', year=None)
+
+    m.match('/articles/2003/10')
+    # {'controller':'blog', 'action':'view', 'year':'2003', 'month':'10'}
+
+Matching a URL will return a dict of the match results, if you'd like to
+differentiate between where the argument came from you can use routematch which
+will return the Route object that has all these details::
+
+    m.connect('articles/{year}/{month}', controller='blog', action='view', year=None)
+
+    result = m.routematch('/articles/2003/10')
+    # result is a tuple of the match dict, and the Route object
+
+    # result[0] - {'controller':'blog', 'action':'view', 'year':'2003', 'month':'10'}
+    # result[1] - Route object
+    # result[1].defaults - {'controller':'blog', 'action':'view', 'year':None}
+    # result[1].hardcoded - ['controller', 'action']
+
+Your integration code is then expected to dispatch to a controller and action
+in the dict. How it does this is entirely up to the framework integrator. Your
+integration should also typically provide the web developer a mechanism to
+access the additional dict values.  
+
+Setting up the Request Configuration
+------------------------------------
+
+Before you dispatch the request to the Controller, a few things need to be
+configured to ensure that the redirect_to and url_for function properly.
+
+A special thread-safe singleton class is used to hold this information::
+
+    from routes import request_config
+
+    config = request_config()
+
+    config.mapper = m                  # Your mapper object
+    config.mapper_dict = result        # The dict from m.match for this URL request
+    config.host = hostname             # The server hostname
+    config.protocol = port             # Protocol used, http, https, etc.
+    config.redirect = redir_func       # A redirect function used by your framework, that is
+                                       # expected to take as the first non-keyword arg a single
+                                       # full or relative URL
+
+Reference the docs for request_config when setting this object up to ensure
+you've initialized everything needed.
+
+This object needs to be configured for every request before controller dispatch.
+
