@@ -670,6 +670,7 @@ class Mapper(object):
             '_member_name': member_name,
             '_collection_name': collection_name,
             '_parent_resource': parent_resource,
+            '_filter': kwargs.get('_filter')
         }
         
         def requirements_for(meth):
