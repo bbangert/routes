@@ -20,7 +20,7 @@ class LRUCache(object):
     def __contains__(self, key):
         return key in self.data
 
-    def _getitem__(self, key, default=None):
+    def __getitem__(self, key, default=None):
         try:
             datum = self.data[key]
         except KeyError:
