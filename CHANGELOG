@@ -1,6 +1,10 @@
 Routes Changelog
 ========================
 
+-- 1.11 (**tip**)
+* Added optional LRU object for use with Routes when URL's change too often
+  for the Routes urlcache dict to be a viable option.
+
 -- 1.10.3 (February 8, 2009)
 * Tweak to use WebOb Request rather than Paste.
 * Performance tweaks for URL recognition.

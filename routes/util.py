@@ -11,6 +11,18 @@ import urllib
 from routes import request_config
 
 
+class RoutesException(Exception):
+    """Tossed during Route exceptions"""
+
+
+class MatchException(RoutesException):
+    """Tossed during URL matching exceptions"""
+
+
+class GenerationException(RoutesException):
+    """Tossed during URL generation exceptions"""
+
+
 def _screenargs(kargs, mapper, environ):
     """
     Private function that takes a dict, and screens it against the current 
@@ -495,15 +507,3 @@ def controller_scan(directory=None):
     controllers = find_controllers(directory)
     controllers.sort(longest_first)
     return controllers
-
-
-class RoutesException(Exception):
-    """Tossed during Route exceptions"""
-
-
-class MatchException(RoutesException):
-    """Tossed during URL matching exceptions"""
-
-
-class GenerationException(RoutesException):
-    """Tossed during URL generation exceptions"""
