@@ -457,6 +457,8 @@ class Mapper(object):
                 kval = kargs.get(key)
                 if not kval:
                     continue
+                if isinstance(kval, str):
+                    kval = kval.decode(self.encoding)
                 if kval != route.defaults[key]:
                     fail = True
                     break
