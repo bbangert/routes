@@ -1174,6 +1174,17 @@ class TestRecognition(unittest.TestCase):
         def call_func():
             m.match('')
         self.assertRaises(RoutesException, call_func)
+
+    def test_home_noargs(self):
+        m = Mapper(controller_scan=None, directory=None, explicit=True, always_scan=False)
+        m.connect('')
+        m.create_regs([])
+        
+        eq_(None, m.match('/content'))
+        eq_({}, m.match('/'))
+        def call_func():
+            m.match('')
+        self.assertRaises(RoutesException, call_func)
         
 if __name__ == '__main__':
     unittest.main()
