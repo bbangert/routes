@@ -298,7 +298,7 @@ class Mapper(object):
                                 domain_match)
             if debug:
                 matchlog.append(dict(route=route, regexp=bool(match)))
-            if match:
+            if isinstance(match, dict) or match:
                 return (match, route, matchlog)
         return (None, None, matchlog)
     
@@ -319,7 +319,7 @@ class Mapper(object):
         result = self._match(url)
         if self.debug:
             return result[0], result[1], result[2]
-        if result[0]:
+        if isinstance(result[0], dict) or result[0]:
             return result[0]
         return None
     
@@ -337,7 +337,7 @@ class Mapper(object):
         result = self._match(url)
         if self.debug:
             return result[0], result[1], result[2]
-        if result[0]:
+        if isinstance(result[0], dict) or result[0]:
             return result[0], result[1]
         return None
     
