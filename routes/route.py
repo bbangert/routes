@@ -657,7 +657,7 @@ class Route(object):
                 val = kargs[key]
                 if isinstance(val, (tuple, list)):
                     for value in val:
-                        fragments.append((key, value))
+                        fragments.append((key, _str_encode(value, self.encoding)))
                 else:
                     fragments.append((key, _str_encode(val, self.encoding)))
             if fragments:

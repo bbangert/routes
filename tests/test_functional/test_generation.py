@@ -349,6 +349,23 @@ class TestGeneration(unittest.TestCase):
         
         assert '/blog?extra=3' == m.generate(controller='blog', action='index', extra=3)
         assert '/viewpost/2?extra=3' == m.generate(controller='post', action='view', id=2, extra=3)
+
+    def test_extras_as_unicode(self):
+        m = Mapper()
+        m.connect(':something')
+        thing = "whatever"
+        euro = u"\u20ac" # Euro symbol
+
+        self.assertEqual("/%s?extra=%%E2%%82%%AC" % thing, m.generate(something=thing, extra=euro))
+
+    def test_extras_as_list_of_unicodes(self):
+        m = Mapper()
+        m.connect(':something')
+        thing = "whatever"
+        euro = [u"\u20ac", u"\xa3"] # Euro and Pound sterling symbols
+
+        self.assertEqual("/%s?extra=%%E2%%82%%AC&extra=%%C2%%A3" % thing, m.generate(something=thing, extra=euro))
+
     
     def test_static(self):
         m = Mapper()
