@@ -13,7 +13,7 @@ setup(name="Routes",
       long_description="""
 A Routing package for Python that matches URL's to dicts and vice versa
 
-`Dev version available <https://www.knowledgetap.com/hg/routes/#egg=Routes-dev>`_
+`Dev version available <http://bitbucket.org/bbangert/routes/>`_
 """,
       classifiers=["Development Status :: 5 - Production/Stable",
                    "Intended Audience :: Developers",
