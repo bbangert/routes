@@ -1,6 +1,7 @@
 from routes import Mapper
 from routes.middleware import RoutesMiddleware
 from webtest import TestApp
+from nose.tools import eq_
 
 def simple_app(environ, start_response):
     route_dict = environ['wsgiorg.routing_args'][1]
@@ -53,8 +54,8 @@ def test_redirect_middleware():
     assert 'matchdict items are []' in res
     
     res = app.get('/faq/home')
-    assert '302 Found' == res.status
-    assert res.headers['Location'] == '/static/faq/home.html'
+    eq_('302 Found', res.status)
+    eq_(res.headers['Location'], '/static/faq/home.html')
     
     res = app.get('/myapp/some/other/url')
     print res
@@ -64,7 +65,7 @@ def test_redirect_middleware():
     
     res = app.get('/home/index')
     assert '301 Moved Permanently' in res.status
-    assert res.headers['Location'] == '/'
+    eq_(res.headers['Location'], '/')
 
 def test_method_conversion():
     map = Mapper()

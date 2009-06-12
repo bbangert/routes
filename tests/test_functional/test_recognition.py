@@ -4,7 +4,7 @@ import sys
 import time
 import unittest
 import urllib
-from nose.tools import eq_
+from nose.tools import eq_, assert_raises
 from routes import *
 from routes.util import RoutesException
 
@@ -38,7 +38,7 @@ class TestRecognition(unittest.TestCase):
         hoge_enc = hoge.encode('utf-8')
         m = Mapper()
         m.connect(':hoge')
-        self.assertEqual({'controller': 'content', 'action': 'index', 'hoge': hoge},
+        eq_({'controller': 'content', 'action': 'index', 'hoge': hoge},
                          m.match('/' + hoge_enc))
     
     def test_disabling_unicode(self):
@@ -47,7 +47,7 @@ class TestRecognition(unittest.TestCase):
         m = Mapper()
         m.encoding = None
         m.connect(':hoge')
-        self.assertEqual({'controller': 'content', 'action': 'index', 'hoge': hoge_enc},
+        eq_({'controller': 'content', 'action': 'index', 'hoge': hoge_enc},
                          m.match('/' + hoge_enc))
             
     def test_basic_dynamic(self):
@@ -206,9 +206,9 @@ class TestRecognition(unittest.TestCase):
         eq_(None, m.match('/archive'))
         eq_(None, m.match('/archive/2004/ab'))
         eq_({'controller':'blog','action':'view','id':None}, m.match('/blog/view'))
-        self.assertEqual({'controller':'blog','action':'view','month':None,'day':None,'year':'2004'}, 
+        eq_({'controller':'blog','action':'view','month':None,'day':None,'year':'2004'}, 
                          m.match('/archive/2004'))
-        self.assertEqual({'controller':'blog','action':'view', 'month':'4', 'day':None,'year':'2004'}, 
+        eq_({'controller':'blog','action':'view', 'month':'4', 'day':None,'year':'2004'}, 
                          m.match('/archive/2004/4'))
 
     def test_multiroute_with_nomin(self):
@@ -241,9 +241,9 @@ class TestRecognition(unittest.TestCase):
         eq_(None, m.match('/archive'))
         eq_(None, m.match('/archive/2004/ab'))
         eq_({'controller':'blog','action':'view','id':None}, m.match('/blog/view'))
-        self.assertEqual({'controller':'blog','action':'view','month':None,'day':None,'year':'2004'}, 
+        eq_({'controller':'blog','action':'view','month':None,'day':None,'year':'2004'}, 
                          m.match('/archive/2004'))
-        self.assertEqual({'controller':'blog','action':'view', 'month':'4', 'day':None,'year':'2004'}, 
+        eq_({'controller':'blog','action':'view', 'month':'4', 'day':None,'year':'2004'}, 
                          m.match('/archive/2004/4'))
     
     def test_dynamic_with_regexp_defaults_and_gaps(self):
@@ -325,9 +325,9 @@ class TestRecognition(unittest.TestCase):
             eq_(None, m.match('/archives/sample'))
             eq_(None, m.match('/view/super'))
             eq_(None, m.match('/view/4/super'))
-            self.assertEqual({'controller':'blog','action':'view','article':'introduction'}, 
+            eq_({'controller':'blog','action':'view','article':'introduction'}, 
                              m.match('/archives/view/introduction'))
-            self.assertEqual({'controller':'blog','action':'edit','article':'recipes'}, 
+            eq_({'controller':'blog','action':'edit','article':'recipes'}, 
                              m.match('/archives/edit/recipes'))
     
     def test_path(self):
@@ -568,11 +568,11 @@ class TestRecognition(unittest.TestCase):
         eq_(None, m.match('/boo'))
         eq_(None, m.match('/archives'))
         
-        self.assertEqual({'controller':'archives','action':'view','year':'2004','month':'12','day':'4'},
+        eq_({'controller':'archives','action':'view','year':'2004','month':'12','day':'4'},
                          m.match('/archives/2004-12-4.html'))
-        self.assertEqual({'controller':'archives','action':'view','year':'04','month':'10','day':'4'},
+        eq_({'controller':'archives','action':'view','year':'04','month':'10','day':'4'},
                          m.match('/archives/04-10-4.html'))
-        self.assertEqual({'controller':'archives','action':'view','year':'04','month':'1','day':'1'},
+        eq_({'controller':'archives','action':'view','year':'04','month':'1','day':'1'},
                          m.match('/archives/04-1-1.html'))
     
     def test_splits_packed_with_regexps(self):
@@ -586,11 +586,11 @@ class TestRecognition(unittest.TestCase):
         eq_(None, m.match('/archives/2004020.html'))
         eq_(None, m.match('/archives/200502.html'))
 
-        self.assertEqual({'controller':'archives','action':'view','year':'2004','month':'12','day':'04'},
+        eq_({'controller':'archives','action':'view','year':'2004','month':'12','day':'04'},
                       m.match('/archives/20041204.html'))
-        self.assertEqual({'controller':'archives','action':'view','year':'2005','month':'10','day':'04'},
+        eq_({'controller':'archives','action':'view','year':'2005','month':'10','day':'04'},
                       m.match('/archives/20051004.html'))
-        self.assertEqual({'controller':'archives','action':'view','year':'2006','month':'01','day':'01'},
+        eq_({'controller':'archives','action':'view','year':'2006','month':'01','day':'01'},
                       m.match('/archives/20060101.html'))
 
     def test_splits_with_slashes(self):
@@ -601,9 +601,9 @@ class TestRecognition(unittest.TestCase):
         eq_(None, m.match('/something'))
         eq_(None, m.match('/something/is-'))
         
-        self.assertEqual({'controller':'content','action':'view','day':'3','name':'group'},
+        eq_({'controller':'content','action':'view','day':'3','name':'group'},
                          m.match('/group/view-3'))
-        self.assertEqual({'controller':'content','action':'view','day':'5','name':'group'},
+        eq_({'controller':'content','action':'view','day':'5','name':'group'},
                          m.match('/group/view-5'))
     
     def test_splits_with_slashes_and_default(self):
@@ -614,9 +614,9 @@ class TestRecognition(unittest.TestCase):
         eq_(None, m.match('/something'))
         eq_(None, m.match('/something/is'))
         
-        self.assertEqual({'controller':'content','action':'view','id':'3','name':'group'},
+        eq_({'controller':'content','action':'view','id':'3','name':'group'},
                          m.match('/group/view-3'))
-        self.assertEqual({'controller':'content','action':'view','id':None,'name':'group'},
+        eq_({'controller':'content','action':'view','id':None,'name':'group'},
                          m.match('/group/view-'))
     
     def test_no_reg_make(self):
@@ -625,7 +625,7 @@ class TestRecognition(unittest.TestCase):
         m.controller_scan = False
         def call_func():
             m.match('/group/view-3')
-        self.assertRaises(RoutesException, call_func)        
+        assert_raises(RoutesException, call_func)        
     
     def test_routematch(self):
         m = Mapper()
@@ -649,8 +649,8 @@ class TestRecognition(unittest.TestCase):
         eq_({'action':'index', 'controller':'content','id':None}, resultdict)
         eq_(route, route_obj)
         resultdict, route_obj, debug = m.routematch('/nowhere')
-        assert resultdict is None
-        assert route_obj is None
+        eq_(None, resultdict)
+        eq_(None, route_obj)
         eq_(len(debug), 1)
     
     def test_match_debug(self):
@@ -665,8 +665,8 @@ class TestRecognition(unittest.TestCase):
         eq_({'action':'index', 'controller':'content','id':None}, resultdict)
         eq_(route, route_obj)
         resultdict, route_obj, debug = m.match('/nowhere')
-        assert resultdict is None
-        assert route_obj is None
+        eq_(None, resultdict)
+        eq_(route_obj, None)
         eq_(len(debug), 1)
     
     def test_conditions(self):
@@ -710,17 +710,17 @@ class TestRecognition(unittest.TestCase):
         
         env['PATH_INFO'] = '/content'
         con.environ = env
-        self.assertEqual({'action': 'index', 'controller': 'content', 'sub_domain': None, 'id': None},
+        eq_({'action': 'index', 'controller': 'content', 'sub_domain': None, 'id': None},
             con.mapper_dict)
         
         env['HTTP_HOST'] = 'fred.example.com'
         con.environ = env
-        self.assertEqual({'action': 'index', 'controller': 'content', 'sub_domain': 'fred', 'id': None},
+        eq_({'action': 'index', 'controller': 'content', 'sub_domain': 'fred', 'id': None},
             con.mapper_dict)
         
         env['HTTP_HOST'] = 'www.example.com'
         con.environ = env
-        self.assertEqual({'action': 'index', 'controller': 'content', 'sub_domain': 'www', 'id': None},
+        eq_({'action': 'index', 'controller': 'content', 'sub_domain': 'www', 'id': None},
             con.mapper_dict)
     
     def test_subdomains_with_conditions(self):
@@ -739,7 +739,7 @@ class TestRecognition(unittest.TestCase):
         
         env['PATH_INFO'] = '/content'
         con.environ = env
-        self.assertEqual({'action': 'index', 'controller': 'content', 'sub_domain': None, 'id': None},
+        eq_({'action': 'index', 'controller': 'content', 'sub_domain': None, 'id': None},
             con.mapper_dict)
         
         m.connect('', controller='users', action='home', conditions={'sub_domain':True})
@@ -802,17 +802,17 @@ class TestRecognition(unittest.TestCase):
         
         env['PATH_INFO'] = '/content'
         con.environ = env
-        self.assertEqual({'action': 'index', 'controller': 'content', 'sub_domain': None, 'id': None},
+        eq_({'action': 'index', 'controller': 'content', 'sub_domain': None, 'id': None},
             con.mapper_dict)
         
         env['HTTP_HOST'] = 'fred.example.com'
         con.environ = env
-        self.assertEqual({'action': 'index', 'controller': 'content', 'sub_domain': 'fred', 'id': None},
+        eq_({'action': 'index', 'controller': 'content', 'sub_domain': 'fred', 'id': None},
             con.mapper_dict)
         
         env['HTTP_HOST'] = 'www.example.com'
         con.environ = env
-        self.assertEqual({'action': 'index', 'controller': 'content', 'sub_domain': None, 'id': None},
+        eq_({'action': 'index', 'controller': 'content', 'sub_domain': None, 'id': None},
             con.mapper_dict)
     
     def test_resource(self):
@@ -1133,18 +1133,18 @@ class TestRecognition(unittest.TestCase):
         m.connect('/error/:action/:id', controller='error')
         m.create_regs(['content'])
 
-        self.assertEqual({'year': '2007', 'slug': 'test', 'locale': 'en', 'format': 'html',
+        eq_({'year': '2007', 'slug': 'test', 'locale': 'en', 'format': 'html',
                           'controller': 'content', 'action': 'index'},
                          m.match('/2007/test'))
-        self.assertEqual({'year': '2007', 'slug': 'test', 'format': 'html', 'locale': 'en',
+        eq_({'year': '2007', 'slug': 'test', 'format': 'html', 'locale': 'en',
                           'controller': 'content', 'action': 'index'},
                          m.match('/2007/test.html'))
-        self.assertEqual({'year': '2007', 'slug': 'test',
+        eq_({'year': '2007', 'slug': 'test',
                           'format': 'html', 'locale': 'en',
                           'controller': 'content', 'action': 'index'},
                          m.match('/2007/test.html,en'))
         eq_(None, m.match('/2007/test.'))
-        self.assertEqual({'controller': 'error', 'action': 'img',
+        eq_({'controller': 'error', 'action': 'img',
                           'id': 'icon-16.png'}, m.match('/error/img/icon-16.png'))
     
     def test_various_periods(self):
@@ -1152,14 +1152,14 @@ class TestRecognition(unittest.TestCase):
         m.connect('sites/:site/pages/:page')
         m.create_regs(['content'])
         
-        self.assertEqual({'action': u'index', 'controller': u'content', 
+        eq_({'action': u'index', 'controller': u'content', 
                           'site': u'python.com', 'page': u'index.html'}, 
                          m.match('/sites/python.com/pages/index.html'))
         m = Mapper()
         m.connect('sites/:site/pages/:page.:format', format='html')
         m.create_regs(['content'])
         
-        self.assertEqual({'action': u'index', 'controller': u'content', 
+        eq_({'action': u'index', 'controller': u'content', 
                           'site': u'python.com', 'page': u'index', 'format': u'html'}, 
                          m.match('/sites/python.com/pages/index.html'))
         
@@ -1173,7 +1173,7 @@ class TestRecognition(unittest.TestCase):
         eq_({'controller':'content','action':'view','id':'4'}, m.match('/'))
         def call_func():
             m.match('')
-        self.assertRaises(RoutesException, call_func)
+        assert_raises(RoutesException, call_func)
 
     def test_home_noargs(self):
         m = Mapper(controller_scan=None, directory=None, explicit=True, always_scan=False)
@@ -1184,7 +1184,7 @@ class TestRecognition(unittest.TestCase):
         eq_({}, m.match('/'))
         def call_func():
             m.match('')
-        self.assertRaises(RoutesException, call_func)
+        assert_raises(RoutesException, call_func)
         
 if __name__ == '__main__':
     unittest.main()

@@ -140,5 +140,5 @@ def test_other_special_chars():
     m.connect('/:year/:(slug).:(format),:(locale)', locale='en', format='html')
     m.create_regs(['content'])
     
-    assert '/2007/test.xml,ja' == m.generate(year=2007, slug='test', format='xml', locale='ja')
-    assert None == m.generate(year=2007, format='html')
+    eq_('/2007/test.xml,ja', m.generate(year=2007, slug='test', format='xml', locale='ja'))
+    eq_(None, m.generate(year=2007, format='html'))
