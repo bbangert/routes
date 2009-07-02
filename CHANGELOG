@@ -1,26 +1,31 @@
 Routes Changelog
-========================
+================
 
--- 1.11 (**tip**)
+Release 1.11 (**tip**)
+======================
 * Added optional LRU object for use with Routes when URL's change too often
   for the Routes urlcache dict to be a viable option.
 
--- 1.10.3 (February 8, 2009)
+Release 1.10.3 (February 8, 2009)
+=================================
 * Tweak to use WebOb Request rather than Paste.
 * Performance tweaks for URL recognition.
 * Bugfix for routes.middleware not re.escaping the path_info before moving it
   to the script name.
 
--- 1.10.2 (January 11, 2009)
+Release 1.10.2 (January 11, 2009)
+=================================
 * Bugfix for unicode encoding problems with non-minimized Route generation.
   Spotted by Wichert Akkerman.
 * Bugfix for when environ is {} in unit tests.
 
--- 1.10.1 (September 27, 2008)
+Release 1.10.1 (September 27, 2008)
+===================================
 * Removing LRU cache due to performance and threading issues. Cache does hit
   a max-size for the given routes.
 
--- 1.10 (September 24, 2008)
+Release 1.10 (September 24, 2008)
+=================================
 * Adding LRU cache instead of just dict for caching generated routes. This
   avoids slow memory leakage over long-running and non-existent route
   generation.
@@ -31,15 +36,18 @@ Routes Changelog
 * Added sub_domain condition option to accept False or None, to require that
   there be no sub-domain provided for the route to match.
 
--- 1.9.2 (July 8, 2008)
+Release 1.9.2 (July 8, 2008)
+============================
 * Fixed bug in url_for which caused it to return a literal when it shouldn't
   have.
 
--- 1.9.1 (June 28, 2008)
+Release 1.9.1 (June 28, 2008)
+=============================
 * Fixed bug in formatted route recognition with formatting being absorbed
   into the id.
 
--- 1.9 (June 12, 2008)
+Release 1.9 (June 12, 2008)
+===========================
 * Fix undefined arg bug in url_for.
 * Fixed bug with url_for not working properly outside of a request when
   sub-domains are active. Thanks Pavel Skvazh.
@@ -62,7 +70,8 @@ Routes Changelog
 * Fixed Mapper.create_regs not being thread safe, particularly when
   always_scan=True.
 
--- 1.8 (March 28, 2008)
+Release 1.8 (March 28, 2008)
+============================
 * Fixed bug of map.resource not allowing spaces in id.
 * Fixed url generation to properly handle unicode defaults in addition to
   unicode arguments.
@@ -72,14 +81,17 @@ Routes Changelog
   normal '/'. This means that formatted URL's will also now have the format
   come AFTER the action. Ie: /messsages/4.xml;rss -> /messages/4/rss.xml
 
--- 1.7.3 (May 28th, 2008)
+Release 1.7.3 (May 28th, 2008)
+==============================
 * Fixed triple escaping bug, since WSGI servers are responsible for basic
   unescaping.
 
--- 1.7.2 (Feb. 27th, 2008)
+Release 1.7.2 (Feb. 27th, 2008)
+===============================
 * Fixed bug with keyword args not being coerced to raw string properly.
 
--- 1.7.1 (Nov. 16th, 2007)
+Release 1.7.1 (Nov. 16th, 2007)
+===============================
 * Fixed bug with sub-domains from route defaults getting encoded to unicode
   resulting in a unicode route which then caused url_for to throw an
   exception.
@@ -93,7 +105,8 @@ Routes Changelog
 * Fixed the special '_method' attribute not being recognized during POST
   requests of Content-Type 'multipart/form-data'.
 
--- 1.7 (June 8th, 2007)
+Release 1.7 (June 8th, 2007)
+============================
 * Fixed url_unquoting to only apply for strings.
 * Added _encoding option to individual routes to toggle decoding/encoding on a
   per route basis.
@@ -112,7 +125,8 @@ Routes Changelog
   application/x-www-form-urlencoded for a HTML form. This properly avoids
   parsing wsgi.input when it doesn't need to be.
 
--- 1.6.3 (April 10th, 2007)
+Release 1.6.3 (April 10th, 2007)
+================================
 * Fixed matching so that an attempt to match an empty path raises a
   RouteException. Fixes #44.
 * Added ability to use characters in URL's such as '-' and '_' in 
@@ -158,16 +172,19 @@ Routes Changelog
 * Applied patch to generation and matching to handle Unicode characters
   properly. Reported with patch by David Smith.
 
--- 1.6.2 (Jan. 5, 2007)
+Release 1.6.2 (Jan. 5, 2007)
+============================
 * Fixed issue with method checking not properly handling different letter
   cases in REQUEST_METHOD. Reported by Sean Davis.
 * redirect_to now supports config.redirect returning a redirect, not just
   raising one.
 
--- 1.6.1 (Dec. 29, 2006)
+Release 1.6.1 (Dec. 29, 2006)
+=============================
 * Fixed zipsafe flag to be False.
 
--- 1.6 (Dec. 14th, 2006)
+Release 1.6 (Dec. 14th, 2006)
+=============================
 * Fixed append_slash to take effect in the route generation itself instead of
   relying on url_for function. Reported by ToddG.
 * Added additional url_for tests to ensure map.resource generates proper named
@@ -182,18 +199,21 @@ Routes Changelog
 * Added _absolute keyword option route connect to ignore SCRIPT_NAME settings.
   Suggested by Ian Bicking.
 
--- 1.5.2 (Oct. 16th, 2006)
+Release 1.5.2 (Oct. 16th, 2006)
+===============================
 * Fixed qualified keyword to keep host port names when used, unless a host
   is specifically passed in. Reported by Jon Rosebaugh.
 * Added qualified keyword option to url_for to have it generate a full
   URL. Resolves #29.
 * Fixed examples in url_for doc strings so they'll be accurate.
 
--- 1.5.1 (Oct. 4th, 2006)
+Release 1.5.1 (Oct. 4th, 2006)
+==============================
 * Fixed bug with escaping part names in the regular expression, reported by
   James Taylor.
 
--- 1.5 (Sept. 19th, 2006)
+Release 1.5 (Sept. 19th, 2006)
+==============================
 * Significant updates to map.resource and unit tests that comb it thoroughly
   to ensure its creating all the proper routes (it now is). Increased unit
   testing coverage to 95%.
@@ -213,7 +233,8 @@ Routes Changelog
 * Changed order in which sub-domain is added to match-dict so it can be used
   in a conditions function.
 
--- 1.4.1 (Sept. 6th, 2006)
+Release 1.4.1 (Sept. 6th, 2006)
+===============================
 * Added sub_domains option to mapper, along with sub_domains_ignore list for 
   subdomains that are considered equivilant to the main domain. When sub_domains
   is active, url_for will now take a sub_domain option that can alter the host
@@ -224,7 +245,8 @@ Routes Changelog
 * Patch applied from Ticket #28. Resolves issue with Mapper's controller_scan
   function requiring a valid directory argument. Submitted by Zoran Isailovski.
 
--- 1.4 (July 21, 2006)
+Release 1.4 (July 21, 2006)
+===========================
 * Fixed bug with map.resource related to member methods, found in Rails version.
 * Fixed bug with map.resource member methods not requiring a member id.
 * Fixed bug related to handling keyword argument controller.
@@ -239,11 +261,13 @@ Routes Changelog
 * Fixed redirect_to function for using absolute URL's. redirect_to now passes all args to
   url_for, then passes the resulting URL to the redirect function. Reported by climbus.
 
--- 1.3.2 (April 30th, 2006)
+Release 1.3.2 (April 30th, 2006)
+================================
 * Fixed _filter bug with inclusion in match dict during matching, reported by David Creemer.
 * Fixed improper url quoting by using urllib.encode, patch by Jason Culverhouse.
 
--- 1.3.1 (April 4th, 2006)
+Release 1.3.1 (April 4th, 2006)
+===============================
 * Mapper has an optional attribute ``append_slash``. When set to ``True``, any URL's
   generated will have a slash appended to the end. 
 * Fixed prefix option so that if the PATH_INFO is empty after prefix regexp, its set to
@@ -251,16 +275,18 @@ Routes Changelog
 * Fixed prefix bug that caused routes after the initial one to not see the proper url
   for matching. Caught by Jochen Kupperschmidt.
 
--- 1.3 (Feb. 25th, 2006)
+Release 1.3 (Feb. 25th, 2006)
+=============================
 * url_for keyword filters:
-  - Named routes can now have a _filter argument that should specify a function that takes
-    a dict as its sole argument. The dict will contain the full set of keywords passed to
-    url_for, which the function can then modify as it pleases. The new dict will then be
-    used as if it was the original set of keyword args given to url_for.
+  Named routes can now have a _filter argument that should specify a function that takes
+  a dict as its sole argument. The dict will contain the full set of keywords passed to
+  url_for, which the function can then modify as it pleases. The new dict will then be
+  used as if it was the original set of keyword args given to url_for.
 * Fixed Python 2.3 incompatibility due to using keyword arg for a sort statement
   when using the built-in controller scanner.
 
--- 1.2 (Feb. 17th, 2006)
+Release 1.2 (Feb. 17th, 2006)
+=============================
 * If a named route doesn't exist, and a url_for call is used, instead of using the
   keyword arguments to generate a URL, they will be used as query args for the raw
   URL supplied. (Backwards Incompatible)
@@ -268,58 +294,72 @@ Routes Changelog
   that matched, if one did match. And a list of routes that were tried, and information
   about why they didn't pass.
 * url_for enhancements:
-  - Can now be used with 'raw' URL's to generate proper url's for static content that
-    will then automatically include SCRIPT_NAME if necessary
-  - Static named routes can now be used to shortcut common path information as desired.
+  Can now be used with 'raw' URL's to generate proper url's for static content that
+  will then automatically include SCRIPT_NAME if necessary
+  Static named routes can now be used to shortcut common path information as desired.
 * Controller Scanner will now sort controller names so that the longest one is first. This
   ensures that the deepest nested controller is executed first before more shallow ones to
   increase predictability.
 * Controller Scanner now scans directories properly, the version in 1.1 left off the
   directory prefix when created the list of controllers.
-    (Thanks to Justin for drawing my attention to it)
+  (Thanks to Justin for drawing my attention to it)
 
--- 1.1 (Jan. 13th, 2006)
+Release 1.1 (Jan. 13th, 2006)
+=============================
 * Routes Mapper additions:
-  - Now takes several optional arguments that determine how it will 
-    generate the regexp's.
-  - Can now hold a function for use when determining what the available
-    controllers are. Comes with a default directory scanner
-  - Given a directory for the default scanner or a function, the Mapper
-    will now automatically run it to get the controller list when needed
+  Now takes several optional arguments that determine how it will 
+  generate the regexp's.
+  Can now hold a function for use when determining what the available
+  controllers are. Comes with a default directory scanner
+  Given a directory for the default scanner or a function, the Mapper
+  will now automatically run it to get the controller list when needed
 * Syntax available for splitting routes to allow more complex route paths, such
   as ':controller/:(action)-:(id).html'
 * Easier setup/integration with Routes per request. Setting the environ in a
   WSGI environ will run match, and setup everything needed for url_for/etc.
 
--- 1.0.2 (Dec. 30th, 2005)
+Release 1.0.2 (Dec. 30th, 2005)
+===============================
 * Routes where a default was present but None were filling in improper values.
 * Passing a 0 would evaluate to None during generation, resulting in missing
   URL parts
 
--- 1.0.1 (Dec. 18th, 2005)
+Release 1.0.1 (Dec. 18th, 2005)
+===============================
 * Request Local Callable - You can now designate your own callable function that
   should then be used to store the request_config data. This is most useful for
   environments where its possible multiple requests might be running in a single
   thread. The callable should return a request specific object for attributes to
   be attached. See routes.__init__.py for more information.
 
--- 1.0 (Nov. 21st, 2005)
+Release 1.0 (Nov. 21st, 2005)
+=============================
 * routes.__init__ will now load the common symbols most people will
   want to actually use.
-  Thus, you can either:
+  Thus, you can either::
+
        from routes import *
-  Or:
+
+  Or::
+
        from routes import request_confg, Mapper
-  The following names are available for importing from routes:
+
+  The following names are available for importing from routes::
+
       request_config, Mapper, url_for, redirect_to
+
 * Route Names - You can now name a route, which will save a copy of the defaults
   defined for later use by url_for or redirect_to. 
-  Thus, a route and url_for looking like this:
+  Thus, a route and url_for looking like this::
+
        m.connect('home', controller='blog', action='splash')
        url_for(controller='blog', action='splash')   # => /home
-  Can now be used with a name:
+
+  Can now be used with a name::
+
        m.connect('home_url','home', controller='blog', action='splash')
        url_for('home_url')  # => /home
+
   Additional keywords can still be added to url_for and will override defaults in
   the named route.
 * Trailing / - Route recognition earlier failed on trailing slashes, not really a bug,

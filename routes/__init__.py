@@ -5,8 +5,8 @@ class _RequestConfig(object):
     """
     RequestConfig thread-local singleton
     
-    The Routes RequestConfig object is a thread-local singleton that should be initialized by
-    the web framework that is utilizing Routes.
+    The Routes RequestConfig object is a thread-local singleton that should 
+    be initialized by the web framework that is utilizing Routes.
     """
     __shared_state = threadinglocal.local()
     
@@ -106,8 +106,9 @@ def request_config(original=False):
     
     **Using your own requst local**
     
-    If you have your own request local object that you'd like to use instead of the default
-    thread local provided by Routes, you can configure Routes to use it::
+    If you have your own request local object that you'd like to use instead 
+    of the default thread local provided by Routes, you can configure Routes 
+    to use it::
         
         from routes import request_config()
         config = request_config()
@@ -115,16 +116,17 @@ def request_config(original=False):
             config.request_local = YourLocalCallable
             config = request_config()
     
-    Once you have configured request_config, its advisable you retrieve it again to get the
-    object you wanted. The variable you assign to request_local is assumed to be a callable
-    that will get the local config object you wish.
+    Once you have configured request_config, its advisable you retrieve it 
+    again to get the object you wanted. The variable you assign to 
+    request_local is assumed to be a callable that will get the local config 
+    object you wish.
     
-    This example tests for the presence of the 'using_request_local' attribute which will be
-    present if you haven't assigned it yet. This way you can avoid repeat assignments of the
-    request specific callable.
+    This example tests for the presence of the 'using_request_local' attribute
+    which will be present if you haven't assigned it yet. This way you can 
+    avoid repeat assignments of the request specific callable.
     
-    Should you want the original object, perhaps to change the callable its using or stop
-    this behavior, call request_config(original=True).
+    Should you want the original object, perhaps to change the callable its 
+    using or stop this behavior, call request_config(original=True).
     """
     obj = _RequestConfig()
     try:

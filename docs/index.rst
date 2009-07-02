@@ -1,17 +1,292 @@
-Routes Reference
-================
+Routes
+++++++
 
-Contents:
+Routes is a Python re-implementation of the `Rails routes system <http://manuals.rubyonrails.com/read/book/9>`_
+for mapping URL's to Controllers/Actions and generating URL's. Routes makes it easy to create pretty and concise URL's that are RESTful with little effort.
 
-.. toctree::
-   :maxdepth: 2
+Speedy and dynamic URL generation means you get a URL with minimal cruft (no big dangling query args). Shortcut features like Named Routes cut down on repetitive typing.
 
-   manual
+Current features:
 
-Indices and tables
-==================
+* Named Routes
+* Sophisticated Route lookup and URL generation
+* Wildcard path's before and after static parts
+* Groupings syntax to allow flexible URL's to accommodate almost any need
+* Sub-domain support built-in
+* Conditional matching based on domain, cookies, HTTP method (RESTful), and more
+* Easily extensible utilizing custom condition functions and route generation functions
+* Extensive unit tests
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+Buzzword Compliance: *REST*, *DRY*
 
+News
+====
+
+**Feb. 26th, 2008**
+
+Routes 1.7.2:
+
+* Fixed bug with keyword args not being coerced to raw string properly.
+
+
+**Nov. 16th, 2007**
+
+Routes 1.7.1:
+
+* Fixed bug with sub-domains from route defaults getting encoded to unicode
+  resulting in a unicode route which then caused url_for to throw an
+  exception.
+* Removed duplicate assignment in map.resource. Patch by Mike Naberezny.
+* Applied test patch fix for path checking. Thanks Mike Naberezny.
+* Added additional checking of remaining URL, to properly swallow periods in
+  the appropriate context. Fixes #57.
+* Added mapper.hardcode_names option which restricts url generation to the 
+  named route during generation rather than using the routes default options
+  during generation.
+* Fixed the special '_method' attribute not being recognized during POST
+  requests of Content-Type 'multipart/form-data'.
+
+
+**June 8th, 2007**
+
+Routes 1.7:
+
+* Fixed url_unquoting to only apply for strings.
+* Added _encoding option to individual routes to toggle decoding/encoding on a
+  per route basis.
+* Fixed route matching so that '.' and other special chars are only part of the
+  match should they not be followed by that character. Fixed regexp creation so
+  that route parts with '.' in them aren't matched properly. Fixes #48.
+* Fixed Unicode decoding/encoding so that the URL decoding and encoding can be
+  set on the mapper with mapper.encoding. Fixes #40.
+* Don't assume environ['CONTENT_TYPE'] always exists: it may be ommitted
+  according to the WSGI PEP.
+* Fixed Unicode decode/encoding of path_info dynamic/wildcard parts so that
+  PATH_INFO will stay a raw string as it should. Fixes #51.
+* Fixed url_for (thus redirect_to) to throw an exception if a Unicode
+  string is returned as that's an invalid URL. Fixes #46.
+* Fixed Routes middleware to only parse POST's if the content type is
+  application/x-www-form-urlencoded for a HTML form. This properly avoids
+  parsing wsgi.input when it doesn't need to be.
+
+
+**April 10th, 2007**
+
+Routes 1.6.3:
+
+* Fixed matching so that an attempt to match an empty path raises a
+  RouteException. Fixes #44.
+* Added ability to use characters in URL's such as '-' and '_' in 
+  map.resource. Patch by Wyatt Baldwin. Fixes #45.
+* Updated Mapper.resource handling with name_prefix and path_prefix checking
+  to specify defaults. Also ensures that should either of them be set, they
+  override the prefixes should parent_resource be specified. Patch by Wyatt
+  Baldwin. Fixes #42.
+* Added utf-8 decoding of incoming path arguments, with fallback to ignoring
+  them in the very rare cases a malformed request URL is sent. Patch from
+  David Smith.
+* Fixed treatment of '#' character as something that can be left off and
+  used in route paths. Found by Mike Orr.
+* Added ability to specify parent resource to map.resource command. Patch from
+  Wyatt Baldwin.
+* Fixed formatted route issue with map.resource when additional collection 
+  methods are specified. Added unit tests to verify the collection methods
+  work properly.
+* Updated URL parsing to properly use HTTP_HOST for hostname + port info before
+  falling back to SERVER_PORT and SERVER_NAME. Fixes #43.
+* Added member_name and collection_name setting to Route object when made with
+  map.resource.
+* Updated routes.middleware to make the Routes matched accessible as
+  environ['routes.route'].
+* Updating mapper object to use thread local for request data (such as 
+  environ) and middleware now deletes environ references at the end of the
+  request.
+* Added explicit option to Routes and Mapper. Routes _explicit setting will
+  prevent the Route defaults from being implicitly set, while setting Mapper
+  to explicit will prevent Route implicit defaults and stop url_for from using
+  Route memory. Fixes #38.
+* Updated config object so that the route is attached if possible.
+* Adding standard logging usage with debug messages.
+* Added additional test for normal '.' match and fixed new special matching to
+  match it properly. Thanks David Smith.
+* Fixed hanging special char issue with 'special' URL chars at the end of a URL
+  that are missing the variable afterwards.
+* Changed Routes generation and recognition to handle other 'special' URL chars
+  , . and ; as if they were /. This lets them be optionally left out of the
+  resulting generated URL. Feature requested by David Smith.
+* Fixed lookahead assertion in regexp builder to properly handle two grouped
+  patterns in a row.
+* Applied patch to generation and matching to handle Unicode characters
+  properly. Reported with patch by David Smith.
+
+
+**Jan. 5, 2007**
+
+Routes 1.6.2:
+
+* Fixed issue with method checking not properly handling different letter
+  cases in REQUEST_METHOD. Reported by Sean Davis.
+* redirect_to now supports config.redirect returning a redirect, not just
+  raising one.
+
+
+**Dec. 29, 2006**
+
+Routes 1.6.1:
+
+* Fixed zipsafe flag to be False as it occasionally was installed zipped.
+
+
+**Dec. 14th, 2006**
+
+Routes 1.6:
+
+* Fixed append_slash to take effect in the route generation itself instead of
+  relying on url_for function. Reported by ToddG.
+* Added additional url_for tests to ensure map.resource generates proper named
+  routes.
+* WARNING: Changed map.resource initialization to accept individual member and
+  collection names to generate proper singular and plural route names. Those
+  using map.resource will need to update their routes and url_for statements
+  accordingly.
+* Added additional map.resource recognition tests.
+* Added WSGI middleware that does route resolving using new `WSGI.org Routing
+  Vars Spec <http://wsgi.org/wsgi/Specifications/routing_args>`_.
+* Added _absolute keyword option route connect to ignore SCRIPT_NAME settings.
+  Suggested by Ian Bicking.
+
+
+**Oct. 16th, 2006**
+
+Routes 1.5.2:
+
+* Fixed qualified keyword to keep host port names when used, unless a host
+  is specifically passed in. Reported by Jon Rosebaugh.
+* Added fully_qualified keyword option to url_for to have it generate a full
+  URL. Resolves #29.
+* Fixed examples in url_for doc strings so they'll be accurate.
+
+
+**Oct. 4th, 2006**
+
+Routes 1.5.1:
+
+* Fixed bug with escaping part names in the regular expression, reported by
+  James Taylor.
+
+
+**Sept. 19th, 2006**
+
+Routes 1.5 released:
+
+* Significant updates to map.resource and unit tests that comb it thoroughly
+  to ensure its creating all the proper routes (it now is). Increased unit
+  testing coverage to 95%.
+* Added unit tests to ensure controller_scan works properly with nested
+  controller files and appropriately scans the directory structure. This
+  brings the Routes util module up to full code coverage.
+* Fixed url_for so that when the protocol is changed, port information is
+  removed from the host.
+* Added more thorough testing to _RequestConfig object and the ability to
+  set your own object. This increases testing coverage of the __init__ module
+  to 100%.
+* Fixed bug with sub_domain not maintaining port information in url_for and
+  added unit tests. Reported by Jonathan Rosebaugh.
+* Added unit tests to ensure sub_domain option works with named routes, cleaned
+  up url_for memory argument filtering. Fixed bug with named routes and sub_domain
+  option not working together, reported by Jonathan Rosebaugh.
+* Changed order in which sub-domain is added to match-dict so it can be used
+  in a conditions function.
+
+
+**Sept. 6th, 2006**
+
+Routes 1.4.1 released:
+
+* Added sub_domains option to mapper, along with sub_domains_ignore list for 
+  subdomains that are considered equivalent to the main domain. When sub_domains
+  is active, url_for will now take a sub_domain option that can alter the host
+  the route will go to.
+* Added ability for filter functions to provide a _host, _protocol, _anchor arg
+  which is then used to create the URL with the appropriate host/protocol/anchor
+  destination.
+* Patch applied from Ticket #28. Resolves issue with Mapper's controller_scan
+  function requiring a valid directory argument. Submitted by Zoran Isailovski.
+
+**July 21, 2006**
+
+Routes 1.4 released:
+
+* Fixed bug with map.resource related to member methods, found in Rails version.
+* Fixed bug with map.resource member methods not requiring a member id.
+* Fixed bug related to handling keyword argument controller.
+* Added map.resource command which can automatically generate a batch of routes intended
+  to be used in a REST-ful manner by a web framework.
+* Added URL generation handling for a 'method' argument. If 'method' is specified, it
+  is not dropped and will be changed to '_method' for use by the framework.
+* Added conditions option to map.connect. Accepts a dict with optional keyword args
+  'method' or 'function'. Method is a list of HTTP methods that are valid for the route.
+  Function is a function that will be called with environ and matchdict where matchdict is
+  the dict created by the URL match.
+* Fixed redirect_to function for using absolute URL's. redirect_to now passes all args to
+  url_for, then passes the resulting URL to the redirect function. Reported by climbus.
+
+
+
+**April 30th, 2006**
+
+Routes 1.3.2 released with:
+
+* Fixed _filter bug with inclusion in match dict during matching, reported by David Creemer.
+* Fixed improper url quoting by using urllib.encode, patch by Jason Culverhouse.
+
+
+
+**April 4th, 2006**
+
+Routes 1.3.1 released with:
+
+* Mapper has an optional attribute ``append_slash``. When set to ``True``, any URL's
+  generated will have a slash appended to the end. 
+* Fixed prefix option so that if the PATH_INFO is empty after prefix regexp, its set to
+  '/' so the match proceeds ok.
+* Fixed prefix bug that caused routes after the initial one to not see the proper url
+  for matching. Caught by Jochen Kupperschmidt.
+
+
+
+**February 25th, 2006**
+
+Routes 1.3 released with:
+
+* Filter functionality when using named routes
+* Fixed Python 2.3 incompatibility issue with 1.2
+
+
+**February 17th, 2006**
+
+Routes 1.2 released with:
+
+* Mapper debugging capabilities
+* URL generation enhancements for application portability
+* Static named routes
+
+
+**January 13th, 2006**
+
+Routes 1.1 released with:
+
+* Easier integration
+* Powerful Groupings syntax for more flexibility
+
+Credits
+=======
+
+Many thanks to `Nicholas Seckar <http://wiki.rubyonrails.com/rails/show/NicholasSeckar>`_ for his insight and explanation of many aspects of the Rails Route system.
+
+Author
+======
+
+`Ben Bangert <http://www.groovie.org/>`_ (`e-mail <mailto:ben@groovie.org>`_)
+
+Development sponsored by `Parachute LLC. <http://www.parachute.com/>`_

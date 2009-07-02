@@ -1,0 +1,74 @@
+{% extends "layout.html" %}
+{% set title = 'Overview' %}
+{% block body %}
+  <p>Routes is a Python re-implementation of the Rails routes system for mapping URLs to Controllers/Actions and generating URLs. Routes makes it easy to
+create pretty and concise URLs that are RESTful with little effort.</p>
+  <p>Speedy and dynamic URL generation means that you get a URL with minimal cruft (no big dangling query args). Shortcut features like Named Routes cut down on
+repetitive typing.</p>
+  
+  <p>Current features:</p>
+
+  <ul>
+    <li><strong>Named Routes</strong></li>
+    <li><strong>Sophisticated Route lookup</strong> and URL generation</strong></li>
+    <li><strong>Wildcard paths</strong> before and after static parts</strong></li>
+    <li><strong>Groupings syntax</strong> to allow flexible URLs to accommodate almost any need</li>
+    <li><strong>Sub-domain support</strong> is built-in</li>
+    <li><strong>Conditional matching</strong> based on domain, cookies, HTTP method (RESTful) and more</li>
+    <li><strong>Easily extensible</strong> using custom condition functions and route generation functions</li>
+    <li><strong>Extensive unit tests</strong></li>
+  </ul>
+
+  <p>Buzzword Compliance: <em>REST</em>, <em>DRY</em>
+
+  
+  <h2>News</h2>
+    <p><strong>6/13/2008</strong>: Routes 1.9 released, another step on the Road to Routes 2.0. Some of the highlights that people will probably find the most interesting:</p>
+
+    <h4>Minmization is optional</h4>
+    <p>Pylons 0.9.7 will default to turning minimization off (projects are free to leave it on if desired). This means that constructing a route like this with minimization off:</p>
+
+    <p><tt>map.connect('/:controller/:action/')</tt></p>
+
+    <p>will actually require both the controller and the action to be present, and the trailing slash. This addresses the trailing slash issue I wanted to fix as well.</p>
+    <h4>Named Routes will always use the route named</h4>
+    <p>This is now on by default in Routes 1.9, which results in faster url_for calls as well as the predictability that comes with knowing exactly which route will be used.</p>
+
+    <h4>Optional non-Rails’ish syntax</h4>
+    <p>You can now specify route paths in the same syntax that Routes 2 will be using:</p>
+
+    <p><tt>map.connect('/{controller}/{action}/{id}')</tt></p>
+    
+    <p>Or if you wanted to include the requirement that the id should be 2 digits:</p>
+    <p><tt>map.connect('/{controller}/{action}/{id:\d\d}')</tt></p>
+    <p>Routes automatically builds the appropriate regular expression for you, keeping your routes a lot
+easier to skim over than a bunch of regular expressions.</p>
+    <p>Routes 2 will be bringing redirect routes, and generation-only routes, making Routes 1.9 a great way to transition to Routes 2 when its ready.</p>
+
+
+  <h2>Documentation</h2>
+  <table class="contentstable" align="center" style="margin-left: 30px"><tr>
+    <td width="50%">
+      <p class="biglink"><a class="biglink" href="{{ pathto("contents") }}">Contents</a><br/>
+         <span class="linkdescr">for a complete overview</span></p>
+      <p class="biglink"><a class="biglink" href="{{ pathto("search") }}">Search page</a><br/>
+         <span class="linkdescr">search the documentation</span></p>
+    </td><td width="50%">
+      <p class="biglink"><a class="biglink" href="{{ pathto("genindex") }}">General Index</a><br/>
+         <span class="linkdescr">all functions, classes, terms</span></p>
+      <p class="biglink"><a class="biglink" href="{{ pathto("modindex") }}">Module Index</a><br/>
+         <span class="linkdescr">quick access to all documented modules</span></p>
+    </td></tr>
+  </table>
+  
+  <p>Download <a href="http://routes.groovie.org/routes.pdf">Routes PDF documentation</a>.</p>
+
+  <h2>Source</h2>
+  <p>Route's Mercurial repository can be found at
+    <a href="http://bitbucket.org/bbangert/routes/"><tt>http://bitbucket.org/bbangert/routes/</tt></a>.</p>
+    
+    <p>To check out:</p>
+    
+      <pre>hg clone http://www.bitbucket.org/bbangert/routes</pre>
+
+{% endblock %}
