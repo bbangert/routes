@@ -5,3 +5,5 @@ Glossary
 
 .. glossary::
     
+        foo
+            bar

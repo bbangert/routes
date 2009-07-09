@@ -3,8 +3,6 @@
 {% block body %}
   <p>Routes is a Python re-implementation of the Rails routes system for mapping URLs to Controllers/Actions and generating URLs. Routes makes it easy to
 create pretty and concise URLs that are RESTful with little effort.</p>
-  <p>Speedy and dynamic URL generation means that you get a URL with minimal cruft (no big dangling query args). Shortcut features like Named Routes cut down on
-repetitive typing.</p>
   
   <p>Current features:</p>
 
@@ -12,18 +10,32 @@ repetitive typing.</p>
     <li><strong>Named Routes</strong></li>
     <li><strong>Sophisticated Route lookup</strong> and URL generation</strong></li>
     <li><strong>Wildcard paths</strong> before and after static parts</strong></li>
-    <li><strong>Groupings syntax</strong> to allow flexible URLs to accommodate almost any need</li>
     <li><strong>Sub-domain support</strong> is built-in</li>
     <li><strong>Conditional matching</strong> based on domain, cookies, HTTP method (RESTful) and more</li>
+    <li><strong>Redirect routes</strong>: Routes can handle redirects itself</strong></li>
     <li><strong>Easily extensible</strong> using custom condition functions and route generation functions</li>
     <li><strong>Extensive unit tests</strong></li>
   </ul>
 
   <p>Buzzword Compliance: <em>REST</em>, <em>DRY</em>
 
+  <h2>New features in Routes 1.10</h2>
+
+    <h4>URLGenerator object</h4>
+    <p>The URLGenerator provides a more extensible way to generate URLs
+    compared to <code>url_for()</code>.  It's the technology behind the
+    <code>url</code> object in Pylons.
+
+    <h4>Redirect routes</h4>
+    <p>You can now put redirects directly into the route map, avoiding the need
+    to create stub actions in your application code.</p>
+
+    <h4>Path variables in static routes</h4>
+    <p>Static routes can now interpolate variables just like regular
+    routes.</p>
+
   
-  <h2>News</h2>
-    <p><strong>6/13/2008</strong>: Routes 1.9 released, another step on the Road to Routes 2.0. Some of the highlights that people will probably find the most interesting:</p>
+  <h2>New features in Routes 1.9</h2>
 
     <h4>Minmization is optional</h4>
     <p>Pylons 0.9.7 will default to turning minimization off (projects are free to leave it on if desired). This means that constructing a route like this with minimization off:</p>

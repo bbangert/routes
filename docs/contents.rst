@@ -5,11 +5,13 @@ Routes Documentation
    :maxdepth: 2
    
    manual
+   porting
 
 .. toctree::
    :maxdepth: 1
 
    changes
+   glossary
    
 
 Indices and tables

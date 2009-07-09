@@ -42,9 +42,9 @@ copyright = '2009, Ben Bangert'
 # other places throughout the built documents.
 #
 # The short X.Y version.
-version = '1.10.4'
+version = '1.10.3'
 # The full version, including alpha/beta/rc tags.
-release = '1.10.4'
+release = '1.10.3'
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
