@@ -45,6 +45,10 @@ class Mapper(object):
             ``directory`` keyword arg is present, it will be passed
             into the function during its call. This option defaults to
             a function that will scan a directory for controllers.
+            
+            Alternatively, a list of controllers or None can be passed
+            in which are assumed to be the definitive list of
+            controller names valid when matching 'controller'.
         
         ``directory``
             Passed into controller_scan for the directory to scan. It
@@ -155,7 +159,8 @@ class Mapper(object):
         routename = None
         if len(args) > 1:
             routename = args[0]
-            args = args[1:]
+        else:
+            args = (None,) + args
         if '_explicit' not in kargs:
             kargs['_explicit'] = self.explicit
         if '_minimize' not in kargs:
@@ -244,8 +249,12 @@ class Mapper(object):
         if clist is None:
             if self.directory:
                 clist = self.controller_scan(self.directory)
-            else:
+            elif callable(self.controller_scan):
                 clist = self.controller_scan()
+            elif not self.controller_scan:
+                clist = []
+            else:
+                clist = self.controller_scan
             
         for key, val in self.maxkeys.iteritems():
             for route in val:
@@ -459,6 +468,8 @@ class Mapper(object):
                     continue
                 if isinstance(kval, str):
                     kval = kval.decode(self.encoding)
+                else:
+                    kval = unicode(kval)
                 if kval != route.defaults[key]:
                     fail = True
                     break

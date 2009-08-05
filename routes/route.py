@@ -15,7 +15,7 @@ class Route(object):
     See Route.__init__ docs for usage.
     
     """
-    def __init__(self, routepath, **kargs):
+    def __init__(self, name, routepath, **kargs):
         """Initialize a route, with a given routepath for
         matching/generation
         
@@ -24,12 +24,12 @@ class Route(object):
         Usage::
         
             >>> from routes.base import Route
-            >>> newroute = Route(':controller/:action/:id')
+            >>> newroute = Route(None, ':controller/:action/:id')
             >>> sorted(newroute.defaults.items())
             [('action', 'index'), ('id', None)]
-            >>> newroute = Route('date/:year/:month/:day',  
+            >>> newroute = Route(None, 'date/:year/:month/:day',  
             ...     controller="blog", action="view")
-            >>> newroute = Route('archives/:page', controller="blog", 
+            >>> newroute = Route(None, 'archives/:page', controller="blog", 
             ...     action="by_page", requirements = { 'page':'\d{1,2}' })
             >>> newroute.reqs
             {'page': '\\\d{1,2}'}
@@ -43,7 +43,7 @@ class Route(object):
         self.sub_domains = False
         self.prior = None
         self.redirect = False
-        self.name = None
+        self.name = name
         self.minimization = kargs.pop('_minimize', True)
         self.encoding = kargs.pop('_encoding', 'utf-8')
         self.reqs = kargs.get('requirements', {})

@@ -394,9 +394,9 @@ class URLGenerator(object):
                 newargs = _subdomain_check(kargs, self.mapper, self.environ)
             else:
                 newargs = kargs
-            anchor = newargs.pop('_anchor', None) or anchor
-            host = newargs.pop('_host', None) or host
-            protocol = newargs.pop('_protocol', None) or protocol
+            anchor = anchor or newargs.pop('_anchor', None)
+            host = host or newargs.pop('_host', None)
+            protocol = protocol or newargs.pop('_protocol', None)
             url = self.mapper.generate(*route_args, **newargs)
         if anchor is not None:
             url += '#' + _url_quote(anchor, encoding)

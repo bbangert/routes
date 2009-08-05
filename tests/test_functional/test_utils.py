@@ -476,6 +476,7 @@ class TestUtils(unittest.TestCase):
         m = Mapper()
         m.connect(':controller/:action/:id')
         m.create_regs(['content','archives','admin/comments'])
+        m.sub_domains = True
         self.con.mapper = m
         
         url = URLGenerator(m, self.con.environ)
@@ -496,6 +497,8 @@ class TestUtils(unittest.TestCase):
             eq_('https://nowhere.com/content', urlobj(host='nowhere.com', controller='content'))
             eq_('https://nowhere.com:8080/content', urlobj(host='nowhere.com:8080', controller='content'))
             eq_('http://nowhere.com/content', urlobj(host='nowhere.com', protocol='http', controller='content'))
+            eq_('http://home.com/content', urlobj(host='home.com', protocol='http', controller='content'))
+            
     
     def test_with_http_environ(self):
         base_environ = dict(SCRIPT_NAME='', SERVER_PORT='1080', PATH_INFO='/', 

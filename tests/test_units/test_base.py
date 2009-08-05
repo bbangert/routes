@@ -4,7 +4,7 @@ from routes.base import Route
 
 class TestBase(unittest.TestCase):
     def test_route(self):
-        route = Route(':controller/:action/:id')
+        route = Route(None, ':controller/:action/:id')
         assert not route.static
     
     def test_request_config(self):

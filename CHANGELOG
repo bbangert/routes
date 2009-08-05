@@ -3,6 +3,11 @@ Routes Changelog
 
 Release 1.11 (**tip**)
 ======================
+* Mapper controller_scan argument now handles None, and lists of controller
+  names in addition to a callable.
+* Route object now takes a name parameter, which is the name it responds to.
+  This name is automatically added when called by using Mapper's connect
+  class method.
 * Added optional LRU object for use with Routes when URL's change too often
   for the Routes urlcache dict to be a viable option.
 
