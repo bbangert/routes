@@ -203,7 +203,46 @@ class Mapper(object):
         
         """
         return SubMapper(self, **kargs)
-
+    
+    def extend(self, routes, path_prefix=''):
+        """Extends the mapper routes with a list of Route objects
+        
+        If a path_prefix is provided, all the routes will have their
+        path prepended with the path_prefix.
+        
+        Example::
+            
+            >>> map = Mapper(controller_scan=None)
+            >>> map.connect('home', '/', controller='home', action='splash')
+            >>> map.matchlist[0].name == 'home'
+            True
+            >>> routes = [Route('index', '/index.htm', controller='home',
+            ...                 action='index')]
+            >>> map.extend(routes)
+            >>> len(map.matchlist) == 2
+            True
+            >>> map.extend(routes, path_prefix='/subapp')
+            >>> len(map.matchlist) == 3
+            True
+            >>> map.matchlist[2].routepath == '/subapp/index.htm'
+            True
+        
+        .. note::
+            
+            This function does not merely extend the mapper with the
+            given list of routes, it actually creates new routes with
+            identical calling arguments.
+        
+        """
+        for route in routes:
+            if path_prefix and route.minimization:
+                routepath = '/'.join([path_prefix, route.routepath])
+            elif path_prefix:
+                routepath = path_prefix + route.routepath
+            else:
+                routepath = route.routepath
+            self.connect(route.name, routepath, **route._kargs)
+                
     def connect(self, *args, **kargs):
         """Create and connect a new Route to the Mapper.
         

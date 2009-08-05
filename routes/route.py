@@ -15,6 +15,12 @@ class Route(object):
     See Route.__init__ docs for usage.
     
     """
+    # reserved keys that don't count
+    reserved_keys = ['requirements']
+    
+    # special chars to indicate a natural split in the URL
+    done_chars = ('/', ',', ';', '.', '#')
+    
     def __init__(self, name, routepath, **kargs):
         """Initialize a route, with a given routepath for
         matching/generation
@@ -65,13 +71,7 @@ class Route(object):
         
         # Determine if explicit behavior should be used
         self.explicit = kargs.pop('_explicit', False)
-        
-        # reserved keys that don't count
-        reserved_keys = ['requirements']
-        
-        # special chars to indicate a natural split in the URL
-        self.done_chars = ('/', ',', ';', '.', '#')
-        
+                
         # Since static need to be generated exactly, treat them as
         # non-minimized
         if self.static:
@@ -80,10 +80,13 @@ class Route(object):
         
         # Strip preceding '/' if present, and not minimizing
         if routepath.startswith('/') and self.minimization:
-            routepath = routepath[1:]
+            self.routepath = routepath[1:]
+        self._kargs = kargs
+        self._setup_route()
         
+    def _setup_route(self):
         # Build our routelist, and the keys used in the route
-        self.routelist = routelist = self._pathkeys(routepath)
+        self.routelist = routelist = self._pathkeys(self.routepath)
         routekeys = frozenset([key['name'] for key in routelist \
                                if isinstance(key, dict)])
         
@@ -97,7 +100,7 @@ class Route(object):
         # Update our defaults and set new default keys if needed. defaults
         # needs to be saved
         (self.defaults, defaultkeys) = self._defaults(routekeys, 
-                                                      reserved_keys, kargs)
+                                                      self.reserved_keys, self._kargs)
         # Save the maximum keys we could utilize
         self.maxkeys = defaultkeys | routekeys
         
