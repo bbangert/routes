@@ -3,6 +3,9 @@ Routes Changelog
 
 Release 1.11 (**tip**)
 ======================
+* Added Mapper.submapper function that returns a SubMapper object to enable
+  easier declaration of routes that have multiple keyword argument options
+  in common.
 * Mapper controller_scan argument now handles None, and lists of controller
   names in addition to a callable.
 * Route object now takes a name parameter, which is the name it responds to.

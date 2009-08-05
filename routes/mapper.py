@@ -21,6 +21,31 @@ def strip_slashes(name):
     return name
 
 
+class SubMapper(object):
+    """Partial mapper for use with_options"""
+    def __init__(self, obj, **kwargs):
+        self.kwargs = kwargs
+        self.obj = obj
+    
+    def connect(self, *args, **kwargs):
+        newkargs = {}
+        newargs = args
+        for key in self.kwargs:
+            if key == 'path_prefix':
+                if len(args > 1):
+                    newargs = (args[0], self.kwargs[key] + args[1])
+                else:
+                    newargs = (self.kwargs[key] + args[0],)
+            elif key in kwargs:
+                newkargs[key] = self.kwargs[key] + kwargs[key]
+            else:
+                newkargs[key] = self.kwargs[key]
+        for key in kwargs:
+            if key not in self.kwargs:
+                newkargs[key] = kwargs[key]
+        return self.obj.connect(*newargs, **newkargs)
+
+
 class Mapper(object):
     """Mapper handles URL generation and URL recognition in a web
     application.
@@ -138,6 +163,39 @@ class Mapper(object):
     def _envdel(self):
         del self.req_data.environ
     environ = property(_envget, _envset, _envdel)
+    
+    def submapper(self, **kargs):
+        """Create a partial version of the Mapper with the designated
+        options set
+        
+        This results in a :class:`routes.mapper.SubMapper` object.
+        
+        Only keyword arguments can be saved for use with the submapper
+        and only a 'connect' method is present on the submapper.
+        
+        If keyword arguments provided to this method also exist in the
+        keyword arguments provided to the submapper, their values will
+        be merged with the saved options going first.
+        
+        In addition to :class:`routes.route.Route` arguments, submapper
+        can also take a ``path_prefix`` argument which will be
+        prepended to the path of all routes that are connected.
+        
+        Example::
+            
+            >>> map = Mapper(controller_scan=None)
+            >>> map.connect('home', '/', controller='home', action='splash')
+            >>> map.matchlist[0].name == 'home'
+            True
+            >>> m = map.submapper(controller='home')
+            >>> m.connect('index', '/index', action='index')
+            >>> map.matchlist[1].name == 'index'
+            True
+            >>> map.matchlist[1].defaults['controller'] == 'home'
+            True
+        
+        """
+        return SubMapper(self, **kargs)
 
     def connect(self, *args, **kargs):
         """Create and connect a new Route to the Mapper.
