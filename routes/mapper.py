@@ -224,7 +224,7 @@ class Mapper(object):
             >>> map.extend(routes, path_prefix='/subapp')
             >>> len(map.matchlist) == 3
             True
-            >>> map.matchlist[2].routepath == '/subapp/index.htm'
+            >>> map.matchlist[2].routepath == 'subapp/index.htm'
             True
         
         .. note::
