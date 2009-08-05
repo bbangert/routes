@@ -26,7 +26,7 @@ class SubMapper(object):
     def __init__(self, obj, **kwargs):
         self.kwargs = kwargs
         self.obj = obj
-    
+        
     def connect(self, *args, **kwargs):
         newkargs = {}
         newargs = args
@@ -44,6 +44,13 @@ class SubMapper(object):
             if key not in self.kwargs:
                 newkargs[key] = kwargs[key]
         return self.obj.connect(*newargs, **newkargs)
+
+    # Provided for those who prefer using the 'with' syntax in Python 2.5+
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, type, value, tb):
+        pass
 
 
 class Mapper(object):
