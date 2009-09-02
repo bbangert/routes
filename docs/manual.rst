@@ -1,7 +1,7 @@
 Routes Manual
 %%%%%%%%%%%%%
 
-*Updated 2009-03-30*
+*Updated 2009-08-30 for Routes 1.11*
 
 Introduction
 ============
@@ -29,12 +29,6 @@ framework without much fuss, and used for an entire site or a URL subtree.
 It can also forward subtrees to other dispatching systems, which is how
 TurboGears 2 is implemented on top of Pylons.
 
-..
-    Routes 2 is a rewrite which makes Routes simpler and more deterministic,
-    following the Python slogan "Explicit is better than implicit".
-
-Most of this manual is written from the user's perspective: how to use Routes in a framework that already supports it. The last section shows how to add Routes support to a new framework.
-
 Current features:
 
 * Sophisticated route lookup and URL generation
@@ -47,41 +41,21 @@ Current features:
   functions
 * Extensive unit tests
 
-
-
-
 Buzzword compliance:  REST, DRY.
 
-A rewrite of Routes called "Routes 2" is in progress but no release date has
-been set.  Many of Routes 2's features have been backported to Routes 1, making
-the future of Routes 2 less certain.
+If you're new to Routes or have not read the Routes 1.10 manual before, we
+recommend reading the `Glossary <glossary.html>`_ before continuing.
 
-Vocabulary
-==========
+This manual is written from the user's perspective: how to use Routes in a
+framework that already supports it. The `Porting <porting.html>`_ 
+manual describes how to add Routes support to a new framework.
 
-A **route** is a rule for mapping a URL pattern to a dict of **routing
-variables**.  For instance, if the pattern is "/{controller}/{action}" and the
-requested URL is "/help/about", Routes would return::
-
-    {"controller": "help", "action": "about"}``
-    
-What the application does with these variables is none of Routes' business, but
-Pylons would look for a ``HelpController`` class and call its ``about`` method.
-
-A **mapper** is an object that holds a collection of routes and can match and
-generate them.  **Matching** is the act of finding a corresponding route for a
-given URL and returning routing variables.  **Generation** is the opposite,
-creating a URL based on a route name and variable values.
-
-The URL pattern is called the **route path**, and variables defined in it are
-**path variables**.  Variables defined outside the path (which we'll see later)
-are called **extra variables** or **default variables**.
-
-The routing variables returned by the matcher are thus a combination of path
-variables and extra variables.  wsgi.org confusingly calls routing variables
-"routing args".  This manual avoids the term because it can be confused with
-extra variables, which are defined via keyword arguments.
-
+You may have heard about a development version called "Routes 2".  Routes 2 is
+now called "Routes-experimental".  It was originally intended to be a
+refactoring with a new API.  Instead its features are being incorporated into
+Routes 1 in a compatible manner.  There may be another Routes 2 in the future
+that drops deprecated features, but it's too early to say when/if that might
+happen.
 
 Setting up routes
 =================
@@ -93,14 +67,14 @@ you.  In Pylons, you define your routes in the ``make_map`` function in your
     1   from routes import Mapper
     2   map = Mapper()
     3   map.minimization = False
-    4   map.connect("/error/{action}/{id}, controller="error")
+    4   map.connect(None, "/error/{action}/{id}, controller="error")
     5   map.connect("home", "/", controller="main", action="index")
     6   # ADD CUSTOM ROUTES HERE
-    7   map.connect("/{controller}/{action}")
-    8   map.connect("/{controller}/{action}/{id}")
+    7   map.connect(None, "/{controller}/{action}")
+    8   map.connect(None, "/{controller}/{action}/{id}")
 
-The last two routes (lines 7 and 8) should be familiar from the example above.
-They match any two-component or three-component URL.  
+Lines 1 and 2 create a mapper.  Line 3 is backward compatibility code that
+disables an earlier misfeature.
 
 Line 4 matches any three-component route that starts with "/error", and sets
 the "controller" variable to a constant, so that a URL
@@ -108,25 +82,20 @@ the "controller" variable to a constant, so that a URL
 
     {"controller": "error", "action": "images", "id": "arrow.jpg"}
 
-Line 5 matches the single URL "/" and sets both the controller and action to
+Line 5 matches the single URL "/", and sets both the controller and action to
 constants.  It also has a route name "home", which can be used in generation.
-Note that the route path moves from the first argument to the second if the
-route has a name.  Routes with a name are called **named routes**; those
-without are called **nameless routes**.  It's recommended to name all routes
-that may be used for generation.
+(The other routes have ``None`` instead of a name, so they don't have names.
+It's recommended to name all routes that may be used in generation, but it's
+not necessary to name other routes.)
+
+Line 7 matches any two-component URL, and line 8 matches any 3-component URL.
+These are used as catchall routes if we're too lazy to define a separate route
+for every action.  If you *have* defined a route for every action, you can
+delete these two routes.
 
 Note that a URL "/error/images/arrow.jpg" could match both line 4 and line 8.
 The mapper resolves this by trying routes in the order defined, so this URL
 would match line 4.
-
-Line 3 is a backward compatibility option which you should set to false.
-Minimization allowed a route to match if some rightmost components are missing
-and default values are supplied in the route definition.  With minimization,
-line 8 could match "/mycontroller/myaction", "/mycontroller", or even "/" if
-the missing variables were specified in the route definition, so line 7 would
-not be necessary.  In practice, minimization led to application bugs when an
-unintended route matched, so it is no longer recommended.  Without
-minimization, you just have to add additional routes to match the shorter URLs.
 
 If no routes match the URL, the mapper returns a "match failed" condition,
 which is seen in Pylons as HTTP 404 "Not Found".
@@ -143,22 +112,11 @@ Extra variables may be any Python type, not just strings.  However, if the
 route is used in generation, ``str()`` will  be called on the value unless
 the generation call specifies an overriding value.
 
-.. tip:: Version differences
+Other argument syntaxes are allowed for compatibility with earlier versions of
+Routes.  These are described in the ``Backward Compatibility`` section.
 
-    The ``{varname}`` syntax for path variables was introduced in Routes 1.9
-    for forward compatibility with Routes 2.  Earlier versions used
-    ``:varname`` and ``:(varname)``.  The older syntax is still supported but
-    deprecated.
-
-    Previous versions would match a URL beginning with a slash ("/") even if
-    the route was defined without it.  This is no longer
-    supported, so always define your URL patterns with an initial slash.
-
-    Previous versions also had implicit default values for "controller", 
-    "action", and "id".  These are now disabled by default.
-
-    Non-minimization was also introduced in Routes 1.9.
-
+Route paths should always begin with a slash ("/").  Earlier versions of 
+Routes allowed slashless paths, but their behavior now is undefined.
 
 
 Requirements
@@ -214,12 +172,29 @@ entire URL.  You still
 need the ":.*" requirement to capture the following URL components into the
 variable.  ::
 
-    map.connect("cards", "/cards/{path_info:.*}",
+    map.connect(None, "/cards/{path_info:.*}",
         controller="main", action="cards")
     # Incoming URL "/cards/diamonds/4.png"
     => {"controller": "main", action: "cards", "path_info": "/diamonds/4.png"}
     # Second WSGI application sees: 
     # SCRIPT_NAME="/cards"   PATH_INFO="/diamonds/4.png"
+
+This route does not match "/cards" because it requires a following slash.
+Add another route to get around this::
+
+    map.connect("cards", "/cards", controller="main", action="cards",
+        path_info="/")
+
+.. tip::
+
+    You may think you can combine the two with the following route::
+
+        map.connect("cards", "/cards{path_info:.*}",
+            controller="main", action="cards")
+
+    There are two problems with this, however. One, it would also match
+    "/cardshark".  Two, Routes 1.10 has a bug: it forgets to take
+    the suffix off the SCRIPT_NAME.
 
 A future version of Routes may delegate directly to WSGI applications, but for
 now this must be done in the framework.  In Pylons, you can do this in a
@@ -233,7 +208,7 @@ controller action as follows::
 Or create a fake controller module with a ``__controller__`` variable set to
 the WSGI application::
 
-    import paste.fileapp
+    from paste.fileapp import DirectoryApp
     __controller__ = DirectoryApp("/cards-directory")
 
 Conditions
@@ -300,24 +275,71 @@ override this::
 
 This matches "/static/foo.jpg", "/static/bar/foo.jpg", etc.  
 
-Older versions of Routes had a different syntax for wildcard routes:
-``*varname`` or ``*(varname)``.  This syntax is still supported but deprecated.
-
 Beware that careless regexes may eat the entire rest of the URL and cause
 components to the right of it not to match::
 
     # OK because the following component is static and the regex has a "?".
     map.connect("/static/{filename:.*?}/download")
 
-    # Deprecated syntax.  OK because the following component is static.
-    map.connect("/static/*filename/download")
-
-    # Deprecated syntax.  WRONG because the wildcard will eat the rest of the
-    # URL, leaving nothing for the following variable, which will cause the
-    # match to fail.
-    map.connect("/static/*filename/:action")
-
 The lesson is to always test wildcard patterns.
+
+Submappers
+----------
+
+*New in Routes 1.11.*  A submapper lets you add several similar routes 
+without having to repeat identical keyword arguments.  There are two syntaxes,
+one using a Python ``with`` block, and the other avoiding it. ::
+
+    # Using 'with'
+    map.connect("home", "/", controller="home", action="splash")
+    with map.submapper(controller="home") as m:
+        m.connect("index", "/index", action="index")
+
+    # Not using 'with'
+    map.connect("home", "/", controller="home", action="splash")
+    m = map.submapper(controller="home")
+    m.connect("index", "/index", action="index")
+
+    # Both of these syntaxes create the following routes::
+    # "/"      => {"controller": "home", action="splash"}
+    # "/index" => {"controller": "home", action="index"}
+
+You can also specify a common path prefix for your routes::
+
+    with map.submapper(path_prefix="/admin", controller="admin") as m:
+        m.connect("admin_users", "/users", action="users")
+        m.connect("admin_databases", "/databases", action="databases")
+
+    # /admin/users     => {"controller": "admin", "action": "users"}
+    # /admin/databases => {"controller": "admin", "action": "databases"}
+
+All arguments to ``.submapper`` must be keyword arguments.
+
+The submapper is *not* a complete mapper.  It's just a temporary object
+with a ``.connect`` method that adds routes to the mapper it was spawned 
+from.
+
+
+Adding routes from a nested application
+---------------------------------------
+
+*New in Routes 1.11.*  Sometimes in nested applications, the child application
+gives the parent a list of routes to add to its mapper.  These can be added
+with the ``.extend`` method, optionally providing a path prefix::
+
+    routes = [
+        Route("index", "/index.html", controller="home", action="index"),
+        ]
+
+    map.extend(routes)
+    # /index.html => {"controller": "home", "action": "index"}
+
+    map.extend(routes, "/subapp")
+    # /subapp/index.html => {"controller": "home", "action": "index"}
+
+This does not exactly add the route objects to the mapper.  It creates
+identical new route objects and adds those to the mapper.
+    
 
 
 Generation
@@ -325,7 +347,8 @@ Generation
 
 To generate URLs, use the ``url`` or ``url_for`` object provided by your
 framework.  ``url`` is an instance of Routes ``URLGenerator``, while
-``url_for`` is the older ``routes.url_for()`` function.
+``url_for`` is the older ``routes.url_for()`` function.  ``url_for`` is being
+phased out, so new applications should use ``url``.
 
 To generate a named route, specify the route name as a positional argument::
 
@@ -426,16 +449,15 @@ can lead to the wrong route being chosen in some cases.
 
 Here's an example of route memory::
 
-    # Deprecated route memory example.
     m.connect("/archives/{year}/{month}/{day}", year=2004)
 
     # Current URL is "/archives/2005/10/4".
     # Routing variables are {"controller": "archive", "action": "view",
       "year": "2005", "month": "10", "day": "4"}
 
-    url_for(day=6)    =>  "/archives/2005/10/6"
-    url_for(month=4)  =>  "/archives/2005/4/4"
-    url_for()         =>  "/archives/2005/10/4"
+    url.current(day=6)    =>  "/archives/2005/10/6"
+    url.current(month=4)  =>  "/archives/2005/4/4"
+    url.current()         =>  "/archives/2005/10/4"
 
 Route memory can be disabled globally with ``map.explicit = True``.
 
@@ -459,8 +481,8 @@ reason to match URLs under it. ::
     url("attachment", category="dogs", id="Mastiff") =>
         "/images/attachments/dogs/Mastiff.jpg"
 
-In Routes 1.10 and later, static routes are exactly the same as regular routes
-except they're not added to the internal match table.  In older versions of
+Starting in Routes 1.10, static routes are exactly the same as regular routes
+except they're not added to the internal match table.  In previous versions of
 Routes they could not contain path variables and they had to point to external
 URLs.  These restrictions no longer apply.
 
@@ -713,20 +735,19 @@ parent_resource
 
         Example::
 
-            >>> from routes.util import url_for
             >>> m = Mapper()
             >>> m.resource('location', 'locations',
             ...            parent_resource=dict(member_name='region',
             ...                                 collection_name='regions'))
             >>> # path_prefix is "regions/:region_id"
             >>> # name prefix is "region_"
-            >>> url_for('region_locations', region_id=13)
+            >>> url('region_locations', region_id=13)
             '/regions/13/locations'
-            >>> url_for('region_new_location', region_id=13)
+            >>> url('region_new_location', region_id=13)
             '/regions/13/locations/new'
-            >>> url_for('region_location', region_id=13, id=60)
+            >>> url('region_location', region_id=13, id=60)
             '/regions/13/locations/60'
-            >>> url_for('region_edit_location', region_id=13, id=60)
+            >>> url('region_edit_location', region_id=13, id=60)
             '/regions/13/locations/60/edit'
 
             Overriding generated path_prefix:
@@ -737,7 +758,7 @@ parent_resource
             ...                                 collection_name='regions'),
             ...            path_prefix='areas/:area_id')
             >>> # name prefix is "region_"
-            >>> url_for('region_locations', area_id=51)
+            >>> url('region_locations', area_id=51)
             '/areas/51/locations'
 
             Overriding generated name_prefix:
@@ -748,7 +769,7 @@ parent_resource
             ...                                 collection_name='regions'),
             ...            name_prefix='')
             >>> # path_prefix is "regions/:region_id"
-            >>> url_for('locations', region_id=51)
+            >>> url('locations', region_id=51)
             '/regions/51/locations'
 
 
@@ -813,4 +834,132 @@ in *myapp/config/middleware.py*.
 
 To debug routes, turn on debug logging for the "routes.middleware" logger.
 
+Backward compatibility
+======================
 
+The following syntaxes are allowed for compatibility with previous versions
+of Routes.  They may be removed in the future.
+
+Omitting the name arg
+---------------------
+
+In the tutorial we said that nameless routes can be defined by passing ``None``
+as the first argument.  You can also omit the first argument entirely::
+
+    map.connect(None, "/{controller}/{action}")
+    map.connect("/{controller}/{action}")
+
+The syntax with ``None`` is preferred to be forward-compatible with future
+versions of Routes.  It avoids the path argument changing position between
+the first and second arguments, which is unpythonic.
+
+:varname
+--------
+
+Path variables were defined in the format ``:varname`` and ``:(varname)``
+prior to Routes 1.9.  The form with parentheses was called "grouping", used
+to delimit the variable name from a following letter or number.  Thus the old
+syntax "/:controller/:(id)abc" corresponds to the new syntax
+"/{controller}/{id}abc".
+
+The older wildcard syntax is ``*varname`` or ``*(varname)``::
+
+    # OK because the following component is static.
+    map.connect("/static/*filename/download")
+
+    # Deprecated syntax.  WRONG because the wildcard will eat the rest of the
+    # URL, leaving nothing for the following variable, which will cause the
+    # match to fail.
+    map.connect("/static/*filename/:action")
+
+
+Minimization
+------------
+
+Minimization was a misfeature which was intended to save typing, but which
+often resulted in the wrong route being chosen.  New applications should 
+disable it by putting ``map.minimization = False`` in their route definitions.
+Old applications that depend on it can set the attribute to true.
+
+Without minimization, the URL must contain values for all path variables in
+the route::
+
+    map.connect("basic", "/{controller}/{action}",
+        controller="mycontroller", action="myaction", weather="sunny")
+
+This route matches any two-component URL, for instance "/help/about".  The
+resulting routing variables would be::
+
+    {"controller": "help", "action": "about", "weather": "sunny"}
+
+The path variables are taken from the URL, and any extra variables are added as
+constants.  The extra variables for "controller" and "action" are *never used*
+in matching, but are available as default values for generation::
+
+    url("basic", controller="help") => "/help/about?weather=sunny"
+
+With minimization, the same route path would also match shorter URLs such as
+"/help", "/foo", and "/".  Missing values on the right of the URL would be 
+taken from the extra variables.  This was intended to lessen the number of
+routes you had to write.  In practice it led to obscure application bugs
+because sometimes an unexpected route would be matched.  Thus Routes 1.9
+introduced non-minimization and recommended "map.minimization = False" for
+all new applications.
+
+A corollary problem was generating the wrong route.  Routes 1.9 tightened up
+the rule for generating named routes.  If a route name is specified in 
+``url()`` or ``url_for()``, *only* that named route will be chosen.  In
+previous versions, it might choose another route based on the keyword args.
+
+Implicit defaults and route memory
+----------------------------------
+
+Implicit defaults worked with minimization to provide automatic default values
+for the "action" and "id" variables.  If a route was defined as
+``map.connect("/{contoller}/{action}/{id}") and the URL "/archives"`` was
+requested, Routes would implicitly add ``action="index", id=None`` to the
+routing variables.
+
+To enable implicit defaults, set ``map.minimization = True; map.explicit =
+False``.  You can also enable implicit defaults on a per-route basis by setting
+``map.explicit = True`` and defining each route with a keyword argument ``explicit=False``.
+
+Previous versions also had implicit default values for "controller", 
+"action", and "id".  These are now disabled by default, but can be enabled via
+``map.explicit = True``.  This also enables route memory
+
+url_for()
+---------
+
+``url_for`` was a route generation function which was replaced by the ``url``
+object.  Usage is the same except that ``url_for`` uses route memory in some
+cases and ``url`` never does.  Route memory is where variables from the current
+URL (the current request) are injected into the generated URL.  To use route
+memory with ``url``, call ``url.current()`` passing the variables you want to
+override.  Any other variables needed by the route will be taken from the
+current routing variables.  
+
+In other words, ``url_for`` combines ``url`` and ``url.current()`` into one
+function.  The location of ``url_for`` is also different.  ``url_for`` is
+properly imported from ``routes``::
+
+    from routes import url_for
+
+``url_for`` was traditionally imported into WebHelpers, and it's still used in
+some tests and in ``webhelpers.paginate``.  Many old Pylons applications
+contain ``h.url_for()`` based on its traditional importation to helpers.py.
+However, its use in new applications is discouraged both because of its
+ambiguous syntax and because its implementation depends on an ugly singleton.
+
+The ``url`` object is created by the RoutesMiddleware and inserted into the
+WSGI environment.  Pylons makes it available as ``pylons.url``, and in
+templates as ``url``.
+
+redirect_to()
+-------------
+
+This combined ``url_for`` with a redirect.  Instead, please use your
+framework's redirect mechanism with a ``url`` call.  For instance in Pylons::
+
+    from pylons.controllers.util import redirect
+    redirect(url("login"))
