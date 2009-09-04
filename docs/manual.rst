@@ -1,7 +1,7 @@
 Routes Manual
 %%%%%%%%%%%%%
 
-*Updated 2009-08-30 for Routes 1.11*
+*Updated 2009-09-04 for Routes 1.11*
 
 Introduction
 ============
@@ -43,7 +43,7 @@ Current features:
 
 Buzzword compliance:  REST, DRY.
 
-If you're new to Routes or have not read the Routes 1.10 manual before, we
+If you're new to Routes or have not read the Routes 1.11 manual before, we
 recommend reading the `Glossary <glossary.html>`_ before continuing.
 
 This manual is written from the user's perspective: how to use Routes in a
@@ -229,7 +229,7 @@ The ``conditions`` argument is a dict with up to three keys:
         ``True``, the request must contain a subdomain but it can be anything.
         If ``False`` or ``None``, do not match if there's a subdomain.
 
-        (New in Routes 1.10: ``False`` and ``None`` values.)
+        *New in Routes 1.10: ``False`` and ``None`` values.*
 
     function
 
@@ -286,7 +286,7 @@ The lesson is to always test wildcard patterns.
 Submappers
 ----------
 
-*New in Routes 1.11.*  A submapper lets you add several similar routes 
+A submapper lets you add several similar routes 
 without having to repeat identical keyword arguments.  There are two syntaxes,
 one using a Python ``with`` block, and the other avoiding it. ::
 
@@ -319,6 +319,7 @@ The submapper is *not* a complete mapper.  It's just a temporary object
 with a ``.connect`` method that adds routes to the mapper it was spawned 
 from.
 
+*New in Routes 1.11.*
 
 Adding routes from a nested application
 ---------------------------------------
@@ -340,6 +341,7 @@ with the ``.extend`` method, optionally providing a path prefix::
 This does not exactly add the route objects to the mapper.  It creates
 identical new route objects and adds those to the mapper.
     
+*New in Routes 1.11.*
 
 
 Generation
@@ -435,6 +437,8 @@ The following keyword args are special:
 
 The syntax in this section is the same for both ``url`` and ``url_for``.
 
+*New in Routes 1.10: ``url`` and the ``URLGenerator`` class behind it.*
+
 Generating routes based on the current URL
 ------------------------------------------
 
@@ -484,7 +488,7 @@ reason to match URLs under it. ::
 Starting in Routes 1.10, static routes are exactly the same as regular routes
 except they're not added to the internal match table.  In previous versions of
 Routes they could not contain path variables and they had to point to external
-URLs.  These restrictions no longer apply.
+URLs.
 
 Filter functions
 ----------------
@@ -799,7 +803,16 @@ string. ::
 
     map.redirect("/home/index", "/", _redirect_code="301 Moved Permanently")
 
-Redirect routes are new in Routes 1.10.
+*New in Routes 1.10.*
+
+Introspection
+=============
+
+The mapper attribute ``.matchlist`` contains the list of routes to be matched
+against incoming URLs.  You can iterate this list to see what routes are
+defined.  This can be useful when debugging route configurations.
+
+
 
 Other
 =====
@@ -810,29 +823,8 @@ proxy, which will mess up generated URLs.  Use the ProxyMiddleware in
 PasteDeploy to fix the WSGI environment to what it would have been without the
 proxy.
 
-Using Routes with Pylons and WebHelpers
-=======================================
-
-As mentioned above, Pylons applications should define their routes in the
-``make_map`` function in *myapp/config/routing.py*.
-
-Templates can use ``h.url(...)`` to generate URLs (starting with Pylons 0.9.7),
-or the older ``h.url_for(...)``.  Controllers will have to import these to use
-them::
-
-   from pylons import url   
-   from routes import url_for
-   from pylons.controllers.util import redirect_to
-
-Previously, ``url_for`` and ``redirect_to`` were imported via WebHelpers by
-this line in *myapp/lib/helpers.py*:  "from webhelpers.rails import \*".
-``webhelpers.rails`` is deprecated and will soon be removed.  If you want to
-use ``url_for`` or ``redirect_to``, import them as shown above.
-
-Routes is implemented in Pylons using the RoutesMiddleware, which is activated
-in *myapp/config/middleware.py*.
-
 To debug routes, turn on debug logging for the "routes.middleware" logger.
+(See Python's ``logging`` module to set up your logging configuration.)
 
 Backward compatibility
 ======================

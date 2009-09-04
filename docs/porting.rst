@@ -1,5 +1,5 @@
-Porting Routes to other frameworks
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Porting Routes to a web framework
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 An application can create a raw mapper object and call its ``.match`` and
 ``.generate`` methods.  However, WSGI applications will probably want to use
@@ -64,7 +64,7 @@ Setting up the Request Configuration
 If you intend to support ``url_for()`` and ``redirect_to()``, they depend on a
 singleton object which requires additional configuration.  You're better off
 not supporting them at all because they will be deprecated soon.  
-``URLGenerator`` is the forward-compatible successor to ``url_for()``, and
+``URLGenerator`` is the forward-compatible successor to ``url_for()``.
 ``redirect_to()`` is better done in the web framework`as in
 ``pylons.controllers.util.redirect_to()``.
 
