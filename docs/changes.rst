@@ -2,7 +2,4 @@
 
 .. _changes:
 
-Changes in Routes
-*****************
-
 .. include:: ../CHANGELOG

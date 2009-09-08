@@ -1,8 +1,11 @@
-Porting Routes to a web framework
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Porting Routes to a WSGI Web Framework
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+RoutesMiddleware
+----------------
 
 An application can create a raw mapper object and call its ``.match`` and
-``.generate`` methods.  However, WSGI applications will probably want to use
+``.generate`` methods.  However, WSGI applications probably want to use
 the ``RoutesMiddleware`` as Pylons does::
 
     # In myapp/config/middleware.py
@@ -25,7 +28,7 @@ redirect.  The application is not called in this case.
 
 To debug routes, turn on debug logging for the "routes.middleware" logger.
 
-See the Routes source for other features which may have been added.
+See the Routes source code for other features which may have been added.
 
 URL Resolution
 --------------
@@ -58,8 +61,8 @@ in the dict. How it does this is entirely up to the framework integrator. Your
 integration should also typically provide the web developer a mechanism to
 access the additional dict values.  
 
-Setting up the Request Configuration
-------------------------------------
+Request Configuration
+---------------------
 
 If you intend to support ``url_for()`` and ``redirect_to()``, they depend on a
 singleton object which requires additional configuration.  You're better off

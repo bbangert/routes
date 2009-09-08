@@ -1,0 +1,129 @@
+Routes TODO
+%%%%%%%%%%%
+
+*Updated 2009-09-07*
+
+Refactoring
+-----------
+
+Refactor internal code as done in Routes-experimental (formerly called Routes
+2).  
+
+Generating the current URL with a modified query string
+-------------------------------------------------------
+
+When ``url.current()`` generates the current URL, it omits the existing query
+string.  Any keyword args passed override path variables or set new query
+parameters.  Extracting the existing query string from the request is tedious,
+especially if you want to modify some parameters.
+
+A new method ``url.current_with_query()`` will generate the current URL with
+its query string.  Any keyword args add or override query parameters.  An
+argument with a value ``None`` deletes that parameter if it exists, so that it
+will not be in the generated URL.  There will be no way to change path
+variables in the URL.
+
+Positional arguments will be appended to the URL path using urljoin.
+
+Options for generating a fully-qualified URL will be retained.  The option
+``_fragment`` specifies a URL fragment ("#fragment").
+
+Failure routes
+--------------
+
+A method ``fail`` for causing 4xx and 5xx errors.  This is akin to 
+``.redirect`` for 3xx errors.  
+
+A convenience method ``gone`` may also be added for 410 errors.  This indicates
+that the URL has been deleted and should be removed from bookmarks and
+search engines.  These will be called "gone routes".
+
+Chaining to WSGI applications
+-----------------------------
+
+A connect argument ``wsgi_app`` for chaining to another WSGI application.
+This would allow a Pylons app to chain to other applications directly in the
+route map rather than having to create dummy controllers for them.  
+
+Users would have to put "{path_info:.*}" at the end of the path to indicate
+which part of the URL should be passed to the application.  This raises
+multiple issues:
+
+ * Users would prefer to specify a URL prefix rather than a URL with a 
+   path_info variable.  But this is incompatible with Routes matching.
+   One could create a special kind of route with a different method, such
+   as ``map.chain``, but that would raise as many issues as it solves,
+   such as the need to duplicate all the route options in the second method.
+
+ * What about the sub-application's home page?  I.e., PATH_INFO=/ .  This
+   can be handled by changing an empty path_info variable to "/", but what
+   if the route does not want a path_info variable in the path?
+
+
+New route creation syntax
+-------------------------
+
+Add a new mapper method ``add`` with a stricter syntax for creating routes.
+(The existing ``connect`` method will remain at least in all 1.x versions.)  ::
+
+    map.add(name, path, variables=None, match=True, requirements=None,
+        if_match=None, if_function=None, if_subdomain=None, if_method=None,
+        generate_filter=None)
+
+The first argument, ``name`` is required.  It should be a string name, or
+``None`` for unnamed routes.
+(This syntax is also allowed by ``connect`` for forward compatibility.)
+This eliminates the "moving argument" situation where the ``path`` argument
+changes position depending on whether a name is specified.  This will make it
+easier to read a list of route definitions aligned vertically, encourage named
+routes, and make unnamed routes obvious.
+
+The second argument, ``path``, is unchanged.
+
+The third argument, ``variables``, is for extra variables.  These will be
+passed as a dict rather than as keyword args.  This will make a clear
+distinction between variables and route options, and allow options to have more
+intuitive names without risk of collision, and without leading underscores.
+New applications can use either the ``{}`` or ``dict()`` syntax; old
+applications can simply put ``dict()`` around existing keyword args.  If no
+extra variables are required you can pass an empty dict, ``None``, or omit the
+argument.
+
+The fourth argument, ``match``, is true if the route is for both matching and
+generation, or false for generation only.  The default is true.  Whea
+converting from ``connect``, change ``_static=True`` to ``match=False``.
+
+The remaining options should be set only via keyword arguments because their
+positions might change.
+
+The ``requirements`` option is unchanged.
+
+``if_function`` corresponds to the ``function`` condition in ``connect``.  The
+value is unchanged.
+
+``if_subdomain`` corresponds to the ``subdomain`` condition in ``connect``.  
+The value is unchanged.
+
+``if_method`` corresponds to the ``method`` condition in ``connect``.  The
+value is unchanged.
+
+``generate_filter`` corresponds to the ``filter`` argument to ``connect``.
+The value is unchanged.
+
+One problem is that users might expect this syntax in the ``redirect`` method
+(and ``fail`` when it's added), but ``redirect`` can't be changed due to 
+backward compatibility.  Although some of these options may not make sense for
+redirect and failure routes anyway.  ``fail`` is not so much an issue because
+it doesn't exist yet, so it doesn't matter if it's added with the new syntax.
+
+
+Required variables
+------------------
+
+*Under consideration.*  A mapper constructor arg listing the variables all
+routes must have in their path or extra variables.  Defining a route without
+these variables would raise an error.  Intended for "controller" and "action"
+variables in frameworks like Pylons.  However, there are cases where
+normally-required variables would be omitted, such as chaining to another WSGI
+application (in which case "controller" would be necessary but not "action").
+Of course, the route can always define ``action=None``.

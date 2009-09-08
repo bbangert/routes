@@ -1,5 +1,5 @@
-<h3>Download</h3>
 {% if version.endswith('(hg)') %}
+<h3>Download Routes</h3>
 <p>This documentation is for version <b>{{ version }}</b>, which is
   not released yet.</p>
 <p>You can use it from the
@@ -7,7 +7,7 @@
   released versions in the <a href="http://pypi.python.org/pypi/Routes">Python
     Package Index</a>.</p>
 {% else %}
-<p>Current version: <b>{{ version }}</b></p>
+<h3>Download Routes {{ version }}</h3>
 <p>Get Routes from the <a href="http://pypi.python.org/pypi/Routes">Python Package
 Index</a>, or install it with:</p>
 <pre>easy_install -U Routes</pre>
