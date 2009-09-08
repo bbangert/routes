@@ -1,8 +1,9 @@
 Routes Changelog
-================
+++++++++++++++++
 
 Release 1.11 (**tip**)
 ======================
+* Extensive documentation rewrite.
 * Added Mapper.extend function that allows one to add lists of Routes objects
   to the mapper in one batch, optionally with a path_prefix.
 * Added Mapper.submapper function that returns a SubMapper object to enable
