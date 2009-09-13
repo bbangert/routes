@@ -6,6 +6,11 @@ Routes Manual
 Introduction
 ============
 
+.. image:: routes-logo.png
+    :width: 100px
+    :height: 171px
+    :align: left
+
 Routes tackles an interesting problem that comes up frequently in web
 development, *how do you map URLs to your application's actions*? That is, how
 do you say that *this* should be accessed as "/blog/2008/01/08", and "/login"
