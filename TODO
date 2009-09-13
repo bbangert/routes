@@ -3,11 +3,17 @@ Routes TODO
 
 *Updated 2009-09-07*
 
+Planned changes
+===============
+
 Refactoring
 -----------
 
-Refactor internal code as done in Routes-experimental (formerly called Routes
-2).  
+Backport the ``Route`` and ``Mapper`` refactorings from Routes-experimental
+(formerly called Routes 2).  Make the objects more introspection-friendly.
+Add a generation dict for named routes; this will help both efficiency and
+introspection.
+
 
 Generating the current URL with a modified query string
 -------------------------------------------------------
@@ -60,7 +66,7 @@ multiple issues:
    if the route does not want a path_info variable in the path?
 
 
-New route creation syntax
+New route creation method
 -------------------------
 
 Add a new mapper method ``add`` with a stricter syntax for creating routes.
@@ -116,11 +122,43 @@ backward compatibility.  Although some of these options may not make sense for
 redirect and failure routes anyway.  ``fail`` is not so much an issue because
 it doesn't exist yet, so it doesn't matter if it's added with the new syntax.
 
+Resource routes
+---------------
+
+Add a second kind of resource route with the traditional add-modify-delete
+paradigm using only GET and POST, where each GET URL displays a form and the
+same POST URL processes it.  This is non-RESTful but useful in interactive
+applications that don't really need the other methods, and avoids doubling up
+dissimilar behavior onto the same URL.  The method should also have ``add=True,
+edit=True, delete=True`` arguments to disable services which will not be
+implemented (e.g., resources that can't be deleted, or are added outside the
+web interface).  This would be under a different method, hopefully called
+something better than ``.resource2``.
+
+Slimmed-down package
+--------------------
+
+Make a slimmed-down version of Routes without deprecated features.  This can
+be kept as a separate branch or repository, and uploaded to PyPI under Routes
+with a different filename; e.g., Routes-NC.
+
+Under consideration
+===================
+
+Route group
+-----------
+
+When adding a group of routes such as a resource, keep the group identity for
+introspection.  Currently the routes are added individually and lose their
+groupness.  This could be done with a ``RouteGroup`` collection in the matchlist
+which delegates to its sub-routes.  This would not apply to named generation,
+which needs a single dict of route names.
+
 
 Required variables
 ------------------
 
-*Under consideration.*  A mapper constructor arg listing the variables all
+A mapper constructor arg listing the variables all
 routes must have in their path or extra variables.  Defining a route without
 these variables would raise an error.  Intended for "controller" and "action"
 variables in frameworks like Pylons.  However, there are cases where
