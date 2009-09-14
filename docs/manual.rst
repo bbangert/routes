@@ -461,7 +461,7 @@ Here's an example of route memory::
     m.connect("/archives/{year}/{month}/{day}", year=2004)
 
     # Current URL is "/archives/2005/10/4".
-    # Routing variables are {"controller": "archive", "action": "view",
+    # Routing variables are {"controller": "archives", "action": "view",
       "year": "2005", "month": "10", "day": "4"}
 
     url.current(day=6)    =>  "/archives/2005/10/6"
