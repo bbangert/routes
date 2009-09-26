@@ -606,10 +606,10 @@ corresponding singular word.  For instance, consider a collection of messages::
         controller="messages", action="delete",
         conditions=dict(method=["DELETE"]))
     map.connect("edit_message", "/messages/{id}/edit", 
-        controller="messages, action="edit",
+        controller="messages", action="edit",
         conditions=dict(method=["GET"]))
     map.connect("formatted_edit_message", "/messages/{id}.{format}/edit", 
-        controller="messages, action="edit", 
+        controller="messages", action="edit", 
         conditions=dict(method=["GET"]))
     map.connect("message", "/messages/{id}", 
         controller="messages", action="show",
