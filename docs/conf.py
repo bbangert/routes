@@ -36,7 +36,7 @@ master_doc = 'contents'
 
 # General substitutions.
 project = 'Routes'
-copyright = '2009, Ben Bangert'
+copyright = '2009, Ben Bangert, Mike Orr'
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.
