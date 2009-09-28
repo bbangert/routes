@@ -155,7 +155,7 @@ htmlhelp_basename = 'Routesdoc'
 # (source start file, target name, title, author, document class [howto/manual]).
 latex_documents = [
   ('contents', 'Routes.tex', u'Routes Documentation',
-   u'Ben Bangert', 'manual'),
+   u'Ben Bangert, Mike Orr', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
