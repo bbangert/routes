@@ -138,6 +138,7 @@ class Mapper(object):
         self.urlcache = LRUCache(1600)
         self._created_regs = False
         self._created_gens = False
+        self._master_regexp = None
         self.prefix = None
         self.req_data = threadinglocal.local()
         self.directory = directory
@@ -359,15 +360,29 @@ class Mapper(object):
                 clist = []
             else:
                 clist = self.controller_scan
-            
+        
         for key, val in self.maxkeys.iteritems():
             for route in val:
                 route.makeregexp(clist)
         
+        regexps = []
+        routematches = []
+        for route in self.matchlist:
+            if not route.static:
+                routematches.append(route)
+                regexps.append(route.makeregexp(clist, include_names=False))
+        self._routematches = routematches
         
         # Create our regexp to strip the prefix
         if self.prefix:
             self._regprefix = re.compile(self.prefix + '(.*)')
+        
+        # Save the master regexp
+        regexp = '|'.join(
+            ['(?P<%s>%s)' % ('a' * (num + 1), x) for num, x in enumerate(regexps)]
+        )
+        self._master_reg = regexp
+        self._master_regexp = re.compile(regexp)
         self._created_regs = True
     
     def _match(self, url):
@@ -402,6 +417,11 @@ class Mapper(object):
         sub_domains_ignore = self.sub_domains_ignore
         domain_match = self.domain_match
         debug = self.debug
+        
+        valid_url = re.match(self._master_regexp, url)
+        if not valid_url:
+            return (None, None, matchlog)
+        
         for route in self.matchlist:
             if route.static:
                 if debug:

@@ -651,7 +651,7 @@ class TestRecognition(unittest.TestCase):
         resultdict, route_obj, debug = m.routematch('/nowhere')
         eq_(None, resultdict)
         eq_(None, route_obj)
-        eq_(len(debug), 1)
+        eq_(len(debug), 0)
     
     def test_match_debug(self):
         m = Mapper()
@@ -667,7 +667,7 @@ class TestRecognition(unittest.TestCase):
         resultdict, route_obj, debug = m.match('/nowhere')
         eq_(None, resultdict)
         eq_(route_obj, None)
-        eq_(len(debug), 1)
+        eq_(len(debug), 0)
     
     def test_conditions(self):
         m = Mapper()
