@@ -412,12 +412,15 @@ class Mapper(object):
                     url = '/'
             else:
                 return (None, None, matchlog)
+                
         environ = self.environ
         sub_domains = self.sub_domains
         sub_domains_ignore = self.sub_domains_ignore
         domain_match = self.domain_match
         debug = self.debug
         
+        # Check to see if its a valid url against the main regexp
+        # Done for faster invalid URL elimination
         valid_url = re.match(self._master_regexp, url)
         if not valid_url:
             return (None, None, matchlog)
