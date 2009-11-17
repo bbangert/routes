@@ -32,7 +32,7 @@ class SubMapper(object):
         newargs = args
         for key in self.kwargs:
             if key == 'path_prefix':
-                if len(args > 1):
+                if len(args) > 1:
                     newargs = (args[0], self.kwargs[key] + args[1])
                 else:
                     newargs = (self.kwargs[key] + args[0],)
