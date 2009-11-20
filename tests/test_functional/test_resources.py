@@ -21,6 +21,8 @@ class TestResourceGeneration(unittest.TestCase):
     def test_resources(self):
         m = Mapper()
         m.resource('message', 'messages')
+        m.resource('massage', 'massages')
+        m.resource('passage', 'passages')
         m.create_regs(['messages'])
         options = dict(controller='messages')
         eq_('/messages', url_for('messages'))

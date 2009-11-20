@@ -282,7 +282,7 @@ class Route(object):
             reg = self.buildnextreg(self.routelist, clist, include_names)[0]
             if not reg:
                 reg = '/'
-            reg = reg + '(/)?' + '$'
+            reg = reg + '/?' + '$'
         
             if not reg.startswith('/'):
                 reg = '/' + reg
@@ -313,7 +313,7 @@ class Route(object):
                 if include_names:
                     regparts.append('(?P<%s>%s)' % (var, partmatch))
                 else:
-                    regparts.append('(%s)' % partmatch)
+                    regparts.append('(?:%s)' % partmatch)
             else:
                 regparts.append(re.escape(part))
         regexp = ''.join(regparts) + '$'
@@ -350,23 +350,23 @@ class Route(object):
                 if include_names:
                     partreg = '(?P<%s>%s)' % (var, self.reqs[var])
                 else:
-                    partreg = '(%s)' % self.reqs[var]
+                    partreg = '(?:%s)' % self.reqs[var]
             elif var == 'controller':
                 if include_names:
                     partreg = '(?P<%s>%s)' % (var, '|'.join(map(re.escape, clist)))
                 else:
-                    partreg = '(%s)' % '|'.join(map(re.escape, clist))
+                    partreg = '(?:%s)' % '|'.join(map(re.escape, clist))
             elif self.prior in ['/', '#']:
                 if include_names:
                     partreg = '(?P<' + var + '>[^' + self.prior + ']+?)'
                 else:
-                    partreg = '([^' + self.prior + ']+?)'
+                    partreg = '(?:[^' + self.prior + ']+?)'
             else:
                 if not rest:
                     if include_names:
                         partreg = '(?P<%s>[^%s]+?)' % (var, '/')
                     else:
-                        partreg = '([^%s]+?)' % '/'
+                        partreg = '(?:[^%s]+?)' % '/'
                 else:
                     end = ''.join(self.done_chars)
                     rem = rest
@@ -380,7 +380,7 @@ class Route(object):
                     if include_names:
                         partreg = '(?P<%s>[^%s]+?)' % (var, ''.join(rem))
                     else:
-                        partreg = '([^%s]+?)' % ''.join(rem)
+                        partreg = '(?:[^%s]+?)' % ''.join(rem)
             
             if self.reqs.has_key(var):
                 noreqs = False
@@ -441,7 +441,7 @@ class Route(object):
                 if include_names:
                     reg = '(?P<%s>.*)' % var + rest
                 else:
-                    reg = '(.*)' + rest
+                    reg = '(?:.*)' + rest
                 if not self.defaults.has_key(var):
                     allblank = False
                     noreqs = False
@@ -450,17 +450,17 @@ class Route(object):
                     if include_names:
                         reg = '(?P<%s>.*)' % var + rest
                     else:
-                        reg = '(.*)' + rest
+                        reg = '(?:.*)' + rest
                 elif self.defaults.has_key(var):
                     if include_names:
                         reg = '(?P<%s>.*)' % var + rest
                     else:
-                        reg = '(.*)' + rest
+                        reg = '(?:.*)' + rest
                 else:
                     if include_names:
                         reg = '(?P<%s>.*)' % var + rest
                     else:
-                        reg = '(.*)' + rest
+                        reg = '(?:.*)' + rest
                     allblank = False
                     noreqs = False
         elif part and part[-1] in self.done_chars:

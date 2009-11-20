@@ -378,9 +378,7 @@ class Mapper(object):
             self._regprefix = re.compile(self.prefix + '(.*)')
         
         # Save the master regexp
-        regexp = '|'.join(
-            ['(?P<%s>%s)' % ('a' * (num + 1), x) for num, x in enumerate(regexps)]
-        )
+        regexp = '|'.join(['(?:%s)' % x for x in regexps])
         self._master_reg = regexp
         self._master_regexp = re.compile(regexp)
         self._created_regs = True
