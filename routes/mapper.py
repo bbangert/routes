@@ -36,9 +36,6 @@ class SubMapperParent(object):
         
         This results in a :class:`routes.mapper.SubMapper` object.
         
-        Only keyword arguments can be saved for use with the submapper
-        and only a 'connect' method is present on the submapper.
-        
         If keyword arguments provided to this method also exist in the
         keyword arguments provided to the submapper, their values will
         be merged with the saved options going first.
@@ -60,6 +57,22 @@ class SubMapperParent(object):
             >>> map.matchlist[1].defaults['controller'] == 'home'
             True
         
+        Optional ``collection_name`` and ``resource_name`` arguments
+        are used in the generation of route names by the ``action``
+        and ``link`` methods.  These in turn are used by the ``index``,
+        ``new``, ``create``, ``show``, ``edit``, ``update`` and
+        ``delete`` methods which may be invoked by listing them in the
+        ``actions`` argument.
+        
+        Example::
+        
+            >>> map = Mapper(controller_scan=None)
+            >>> m = map.submapper(collection_name='entries', resource_name='entry', actions=['list', 'new'])
+            >>> url_for('entries') == '/entries'
+            True
+            >>> url_for('new_entry') == '/entries/new'
+            True
+
         """
         return SubMapper(self, **kargs)
 
@@ -74,7 +87,29 @@ class SubMapperParent(object):
                 member_actions = MEMBER_ACTIONS,
                 member_options=None,
                 **kwargs):
-        """TODO
+        """Create a submapper that represents a collection.
+
+        This results in a :class:`routes.mapper.SubMapper` object, with a
+        ``member`` property of the same type that represents the collection's
+        member resources.
+        
+        Its interface is the same as the ``submapper`` together with
+        ``member_prefix``, ``member_actions`` and ``member_options``
+        which are passed to the ``member` submatter as ``path_prefix``,
+        ``actions`` and keyword arguments respectively.
+        
+        Example::
+        
+            >>> map = Mapper(controller_scan=None)
+            >>> c = map.collection('entries', 'entry')
+            >>> c.member.link('ping', method='POST')
+            >>> url_for('entries') == '/entries'
+            True
+            >>> url_for('edit_entry', id=1) == '/entries/1/edit'
+            True
+            >>> url_for('ping_entry', id=1) == '/entries/1/ping'
+            True
+
         """
         if not controller:
             controller =resource_name or collection_name
@@ -135,34 +170,23 @@ class SubMapper(SubMapperParent):
                 newkargs[key] = kwargs[key]
         return self.obj.connect(*newargs, **newkargs)
 
-    # Generate a subresource linked by "rel", e.g.
-    # 
-    #     with mapper.submapper(controller='thing', path_prefix='/things') as c:
-    #        c.link('new')
-    #        with c.submapper(path_prefix='/{id}')) as m:
-    #            m.link('edit')
-    #
-    # generates
-    #
-    #     mapper.connect(
-    #           'new_thing', '/things/edit',
-    #           controller='thing', action='new',
-    #           conditions={'method': 'GET'})
-    #     mapper.connect(
-    #           'edit_thing', '/things/{id}/edit',
-    #           controller='thing', action='edit',
-    #           conditions={'method': 'GET'})
-    #
-    # Overridable defaults:
-    #     name: {rel}_{self.resource_name}
-    #     action: rel
-    #     rel: name  
-    #     method: 'GET'
-    #
-    # At least one of rel and name (the route name) must be supplied.  It would
-    # be unusual not to supply rel.
-    #
     def link(self, rel=None, name=None, action=None, method='GET', **kwargs):
+        """Generates a named route for a subresource.
+
+        Example::
+        
+            >>> map = Mapper(controller_scan=None)
+            >>> c = map.collection('entries', 'entry')
+            >>> c.link('recent', name='recent_entries')
+            >>> c.member.link('ping', method='POST')
+            >>> url_for('entries') == '/entries'
+            True
+            >>> url_for('recent_entries') == '/entries/recent'
+            True
+            >>> url_for('ping_entry', id=1) == '/entries/1/ping'
+            True
+
+        """
         return self.connect(
             name or (rel + '_' + self.resource_name),
             '/' + (rel or name),
@@ -170,38 +194,28 @@ class SubMapper(SubMapperParent):
             **_kwargs_with_conditions(kwargs, method))
 
     def new(self, **kwargs):
+        """Generates the "new" link for a collection submapper."""
         return self.link(rel='new', **kwargs)
 
     def edit(self, **kwargs):
+        """Generates the "edit" link for a collection member submapper."""
         return self.link(rel='edit', **kwargs)
 
-    # Generate an action (typically with the POST method) on a resource that
-    # supports other methods (typically GET).
-    # 
-    #     with mapper.submapper(controller='thing', path_prefix='/things') as m:
-    #        with m.submapper(path_prefix='/{id}')) as o:
-    #            o.action('show', name='thing')
-    #            o.action('update', method='PUT')
-    #
-    # generates
-    #
-    #     mapper.connect(
-    #           'thing', '/things/{id}',
-    #           controller='thing', action='show',
-    #           conditions={'method': 'GET'})
-    #     mapper.connect(
-    #           'save_thing', '/things/{id}',
-    #           controller='thing', action='update',
-    #           conditions={'method': 'PUT'})
-    #
-    # Overridable defaults:
-    #   name: {action}_{self.resource_name}
-    #   action: name
-    #   method: GET
-    #
-    # At least one of name (the route name) and action must be supplied.
-    #
     def action(self, name=None, action=None, method='GET', **kwargs):
+        """Generates a named route at the base path of a submapper.
+
+        Example::
+        
+            >>> map = Mapper(controller_scan=None)
+            >>> c = map.submapper(controller='entry')
+            >>> c.action(action='index', name='entries')
+            >>> c.action(action='create', method='POST')
+            >>> url_for(controller='entry', action='index', method='GET') == '/entries'
+            True
+            >>> url_for(controller='entry', action='create', method='POST') == '/entries'
+            True
+
+        """
         return self.connect(
             name or (action + '_' + self.resource_name),
             '',
@@ -209,22 +223,27 @@ class SubMapper(SubMapperParent):
             **_kwargs_with_conditions(kwargs, method))
             
     def index(self, name=None, **kwargs):
+        """Generates the "index" action for a collection submapper."""
         return self.action(
             name=name or self.collection_name,
             action='index', method='GET', **kwargs)
 
     def show(self, name = None, **kwargs):
+        """Generates the "show" action for a collection member submapper."""
         return self.action(
             name=name or self.resource_name,
             action='show', method='GET', **kwargs)
 
     def create(self, **kwargs):
+        """Generates the "create" action for a collection submapper."""
         return self.action(action='create', method='POST', **kwargs)
         
     def update(self, **kwargs):
+        """Generates the "update" action for a collection member submapper."""
         return self.action(action='update', method='PUT', **kwargs)
 
     def delete(self, **kwargs):
+        """Generates the "delete" action for a collection member submapper."""
         return self.action(action='delete', method='DELETE', **kwargs)
 
     def add_actions(self, actions):
