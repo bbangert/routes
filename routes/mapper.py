@@ -376,19 +376,7 @@ class Mapper(SubMapperParent):
             config.mapper = self
     
     def __str__(self):
-        """Pretty string representation.  For example, in the paster shell:
-        >>> print mapper
-        
-        Route name           Methods Path
-                             POST    /entries
-        entries              GET     /entries
-        new_entry            GET     /entries/new
-                             PUT     /entries/{id}
-                             DELETE  /entries/{id}
-        edit_entry           GET     /entries/{id}/edit
-        entry                GET     /entries/{id}
-
-        """
+        """Generates a tabular string representation."""
         def format_methods(r):
             if r.conditions:
                 method = r.conditions.get('method', '')
