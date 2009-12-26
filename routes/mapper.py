@@ -12,6 +12,10 @@ from routes.util import controller_scan, MatchException, RoutesException
 from routes.route import Route
 
 
+COLLECTION_ACTIONS = ['index', 'create', 'new']
+MEMBER_ACTIONS = ['show', 'update', 'delete', 'edit']
+
+
 def strip_slashes(name):
     """Remove slashes from the beginning and end of a part/URL."""
     if name.startswith('/'):
@@ -21,11 +25,94 @@ def strip_slashes(name):
     return name
 
 
-class SubMapper(object):
+class SubMapperParent(object):
+    """Base class for Mapper and SubMapper, both of which may be the parent
+    of SubMapper objects
+    """
+    
+    def submapper(self, **kargs):
+        """Create a partial version of the Mapper with the designated
+        options set
+        
+        This results in a :class:`routes.mapper.SubMapper` object.
+        
+        Only keyword arguments can be saved for use with the submapper
+        and only a 'connect' method is present on the submapper.
+        
+        If keyword arguments provided to this method also exist in the
+        keyword arguments provided to the submapper, their values will
+        be merged with the saved options going first.
+        
+        In addition to :class:`routes.route.Route` arguments, submapper
+        can also take a ``path_prefix`` argument which will be
+        prepended to the path of all routes that are connected.
+        
+        Example::
+            
+            >>> map = Mapper(controller_scan=None)
+            >>> map.connect('home', '/', controller='home', action='splash')
+            >>> map.matchlist[0].name == 'home'
+            True
+            >>> m = map.submapper(controller='home')
+            >>> m.connect('index', '/index', action='index')
+            >>> map.matchlist[1].name == 'index'
+            True
+            >>> map.matchlist[1].defaults['controller'] == 'home'
+            True
+        
+        """
+        return SubMapper(self, **kargs)
+
+    def collection(
+                self, 
+                collection_name,
+                resource_name,
+                path_prefix=None,
+                member_prefix='/{id}',
+                controller=None,
+                collection_actions=COLLECTION_ACTIONS,
+                member_actions = MEMBER_ACTIONS,
+                member_options=None,
+                **kwargs):
+        """TODO
+        """
+        if not controller:
+            controller =resource_name or collection_name
+        
+        if not path_prefix:
+            path_prefix = '/' + collection_name
+    
+        collection = SubMapper(
+                            self,
+                            collection_name=collection_name,
+                            resource_name=resource_name,
+                            path_prefix = path_prefix,
+                            controller=controller,
+                            actions=collection_actions,
+                            **kwargs)
+        
+        collection.member = SubMapper(
+                                collection,
+                                path_prefix = member_prefix,
+                                actions=member_actions,
+                                **(member_options or {}))
+
+        return collection
+
+
+class SubMapper(SubMapperParent):
     """Partial mapper for use with_options"""
-    def __init__(self, obj, **kwargs):
+    def __init__(self, obj, resource_name=None, collection_name=None, actions=None, **kwargs):
         self.kwargs = kwargs
         self.obj = obj
+        self.collection_name = collection_name
+        self.member = None
+        self.resource_name = resource_name \
+                            or getattr(obj, 'resource_name', None) \
+                            or kwargs.get('controller', None) \
+                            or getattr(obj, 'controller', None)
+
+        self.add_actions(actions or [])
         
     def connect(self, *args, **kwargs):
         newkargs = {}
@@ -37,13 +124,121 @@ class SubMapper(object):
                 else:
                     newargs = (self.kwargs[key] + args[0],)
             elif key in kwargs:
-                newkargs[key] = self.kwargs[key] + kwargs[key]
+                if isinstance(value, dict):
+                    newkargs[key] = dict(value, **kwargs[key]) # merge dicts
+                else:
+                    newkargs[key] = value + kwargs[key]
             else:
                 newkargs[key] = self.kwargs[key]
         for key in kwargs:
             if key not in self.kwargs:
                 newkargs[key] = kwargs[key]
         return self.obj.connect(*newargs, **newkargs)
+
+    # Generate a subresource linked by "rel", e.g.
+    # 
+    #     with mapper.submapper(controller='thing', path_prefix='/things') as c:
+    #        c.link('new')
+    #        with c.submapper(path_prefix='/{id}')) as m:
+    #            m.link('edit')
+    #
+    # generates
+    #
+    #     mapper.connect(
+    #           'new_thing', '/things/edit',
+    #           controller='thing', action='new',
+    #           conditions={'method': 'GET'})
+    #     mapper.connect(
+    #           'edit_thing', '/things/{id}/edit',
+    #           controller='thing', action='edit',
+    #           conditions={'method': 'GET'})
+    #
+    # Overridable defaults:
+    #     name: {rel}_{self.resource_name}
+    #     action: rel
+    #     rel: name  
+    #     method: 'GET'
+    #
+    # At least one of rel and name (the route name) must be supplied.  It would
+    # be unusual not to supply rel.
+    #
+    def link(self, rel=None, name=None, action=None, method='GET', **kwargs):
+        return self.connect(
+            name or (rel + '_' + self.resource_name),
+            '/' + (rel or name),
+            action=action or rel or name,
+            **_kwargs_with_conditions(kwargs, method))
+
+    def new(self, **kwargs):
+        return self.link(rel='new', **kwargs)
+
+    def edit(self, **kwargs):
+        return self.link(rel='edit', **kwargs)
+
+    # Generate an action (typically with the POST method) on a resource that
+    # supports other methods (typically GET).
+    # 
+    #     with mapper.submapper(controller='thing', path_prefix='/things') as m:
+    #        with m.submapper(path_prefix='/{id}')) as o:
+    #            o.action('show', name='thing')
+    #            o.action('update', method='PUT')
+    #
+    # generates
+    #
+    #     mapper.connect(
+    #           'thing', '/things/{id}',
+    #           controller='thing', action='show',
+    #           conditions={'method': 'GET'})
+    #     mapper.connect(
+    #           'save_thing', '/things/{id}',
+    #           controller='thing', action='update',
+    #           conditions={'method': 'PUT'})
+    #
+    # Overridable defaults:
+    #   name: {action}_{self.resource_name}
+    #   action: name
+    #   method: GET
+    #
+    # At least one of name (the route name) and action must be supplied.
+    #
+    def action(self, name=None, action=None, method='GET', **kwargs):
+        return self.connect(
+            name or (action + '_' + self.resource_name),
+            '',
+            action=action or name,
+            **_kwargs_with_conditions(kwargs, method))
+            
+    def index(self, name=None, **kwargs):
+        return self.action(
+            name=name or self.collection_name,
+            action='index', method='GET', **kwargs)
+
+    def show(self, name = None, **kwargs):
+        return self.action(
+            name=name or self.resource_name,
+            action='show', method='GET', **kwargs)
+
+    def create(self, **kwargs):
+        return self.action(action='create', method='POST', **kwargs)
+        
+    def update(self, **kwargs):
+        return self.action(action='update', method='PUT', **kwargs)
+
+    def delete(self, **kwargs):
+        return self.action(action='delete', method='DELETE', **kwargs)
+
+    def add_actions(self, actions):
+        [getattr(self, action)() for action in actions]
+
+
+# Create kwargs with a 'conditions' member generated for the given method
+def _kwargs_with_conditions(kwargs, method):
+    if method and 'conditions' not in kwargs:
+        newkwargs = kwargs.copy()
+        newkwargs['conditions'] = {'method': method}                
+        return newkwargs             
+    else:
+        return kwargs
 
     # Provided for those who prefer using the 'with' syntax in Python 2.5+
     def __enter__(self):
@@ -53,7 +248,7 @@ class SubMapper(object):
         pass
 
 
-class Mapper(object):
+class Mapper(SubMapperParent):
     """Mapper handles URL generation and URL recognition in a web
     application.
     
@@ -161,6 +356,43 @@ class Mapper(object):
             config = request_config()
             config.mapper = self
     
+    def __str__(self):
+        """Pretty string representation.  For example, in the paster shell:
+        >>> print mapper
+        
+        Route name           Methods Path
+                             POST    /entries
+        entries              GET     /entries
+        new_entry            GET     /entries/new
+                             PUT     /entries/{id}
+                             DELETE  /entries/{id}
+        edit_entry           GET     /entries/{id}/edit
+        entry                GET     /entries/{id}
+
+        """
+        def format_methods(r):
+            if r.conditions:
+                method = r.conditions.get('method', '')
+                return method if type(method) is str else ', '.join(method)
+            else:
+                return ''
+
+        table = [('Route name', 'Methods', 'Path')] + [
+            (
+                r.name or '',
+                format_methods(r),
+                r.routepath or ''
+            )
+            for r in self.matchlist]
+            
+        widths = [
+            max(len(row[col]) for row in table)
+            for col in range(len(table[0]))]
+        
+        return '\n'.join(
+            ' '.join(row[col].ljust(widths[col]) for col in range(len(widths)))
+            for row in table)
+
     def _envget(self):
         try:
             return self.req_data.environ
@@ -171,39 +403,6 @@ class Mapper(object):
     def _envdel(self):
         del self.req_data.environ
     environ = property(_envget, _envset, _envdel)
-    
-    def submapper(self, **kargs):
-        """Create a partial version of the Mapper with the designated
-        options set
-        
-        This results in a :class:`routes.mapper.SubMapper` object.
-        
-        Only keyword arguments can be saved for use with the submapper
-        and only a 'connect' method is present on the submapper.
-        
-        If keyword arguments provided to this method also exist in the
-        keyword arguments provided to the submapper, their values will
-        be merged with the saved options going first.
-        
-        In addition to :class:`routes.route.Route` arguments, submapper
-        can also take a ``path_prefix`` argument which will be
-        prepended to the path of all routes that are connected.
-        
-        Example::
-            
-            >>> map = Mapper(controller_scan=None)
-            >>> map.connect('home', '/', controller='home', action='splash')
-            >>> map.matchlist[0].name == 'home'
-            True
-            >>> m = map.submapper(controller='home')
-            >>> m.connect('index', '/index', action='index')
-            >>> map.matchlist[1].name == 'index'
-            True
-            >>> map.matchlist[1].defaults['controller'] == 'home'
-            True
-        
-        """
-        return SubMapper(self, **kargs)
     
     def extend(self, routes, path_prefix=''):
         """Extends the mapper routes with a list of Route objects
