@@ -66,8 +66,9 @@ class SubMapperParent(object):
         
         Example::
         
+            >>> from routes.util import url_for
             >>> map = Mapper(controller_scan=None)
-            >>> m = map.submapper(collection_name='entries', resource_name='entry', actions=['list', 'new'])
+            >>> m = map.submapper(path_prefix='/entries', collection_name='entries', resource_name='entry', actions=['index', 'new'])
             >>> url_for('entries') == '/entries'
             True
             >>> url_for('new_entry') == '/entries/new'
@@ -100,6 +101,7 @@ class SubMapperParent(object):
         
         Example::
         
+            >>> from routes.util import url_for
             >>> map = Mapper(controller_scan=None)
             >>> c = map.collection('entries', 'entry')
             >>> c.member.link('ping', method='POST')
@@ -111,24 +113,24 @@ class SubMapperParent(object):
             True
 
         """
-        if not controller:
-            controller =resource_name or collection_name
+        if controller is None:
+            controller = resource_name or collection_name
         
-        if not path_prefix:
+        if path_prefix is None:
             path_prefix = '/' + collection_name
-    
+
         collection = SubMapper(
                             self,
                             collection_name=collection_name,
                             resource_name=resource_name,
-                            path_prefix = path_prefix,
+                            path_prefix=path_prefix,
                             controller=controller,
                             actions=collection_actions,
                             **kwargs)
         
         collection.member = SubMapper(
                                 collection,
-                                path_prefix = member_prefix,
+                                path_prefix=member_prefix,
                                 actions=member_actions,
                                 **(member_options or {}))
 
@@ -175,6 +177,7 @@ class SubMapper(SubMapperParent):
 
         Example::
         
+            >>> from routes.util import url_for
             >>> map = Mapper(controller_scan=None)
             >>> c = map.collection('entries', 'entry')
             >>> c.link('recent', name='recent_entries')
@@ -206,8 +209,9 @@ class SubMapper(SubMapperParent):
 
         Example::
         
+            >>> from routes import url_for
             >>> map = Mapper(controller_scan=None)
-            >>> c = map.submapper(controller='entry')
+            >>> c = map.submapper(path_prefix='/entries', controller='entry')
             >>> c.action(action='index', name='entries')
             >>> c.action(action='create', method='POST')
             >>> url_for(controller='entry', action='index', method='GET') == '/entries'
