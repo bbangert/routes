@@ -133,6 +133,16 @@ class TestSubmapper(unittest.TestCase):
         eq_('/entries/1/edit', url_for('edit_entry', id=1, method='GET'))
         assert_raises(Exception, url_for, 'edit_entry', id=1, method='POST')
 
+    def test_collection_options(self):
+        m = Mapper()
+        condition=dict(sub_domain=True)
+        requirement=dict(id='\d+')
+        c = m.collection('entries', 'entry', conditions=condition,
+                         requirements=requirement)
+        for r in m.matchlist:
+            eq_(condition, r.conditions)
+            eq_(requirement, r.requirement)
+
 
 if __name__ == '__main__':
     unittest.main()
