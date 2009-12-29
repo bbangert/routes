@@ -135,13 +135,12 @@ class TestSubmapper(unittest.TestCase):
 
     def test_collection_options(self):
         m = Mapper()
-        condition=dict(sub_domain=True)
         requirement=dict(id='\d+')
-        c = m.collection('entries', 'entry', conditions=condition,
+        c = m.collection('entries', 'entry', conditions=dict(sub_domain=True),
                          requirements=requirement)
         for r in m.matchlist:
-            eq_(condition, r.conditions)
-            eq_(requirement, r.requirement)
+            eq_(True, r.conditions['sub_domain'])
+            eq_(requirement, r.reqs)
 
 
 if __name__ == '__main__':
