@@ -142,7 +142,7 @@ class SubMapper(SubMapperParent):
     def connect(self, *args, **kwargs):
         newkargs = {}
         newargs = args
-        for key in self.kwargs:
+        for key, value in self.kwargs.items():
             if key == 'path_prefix':
                 if len(args) > 1:
                     newargs = (args[0], self.kwargs[key] + args[1])
