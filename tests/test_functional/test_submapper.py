@@ -7,9 +7,7 @@ from routes import *
 class TestSubmapper(unittest.TestCase):
     def test_submapper(self):
         m = Mapper()
-        c = m.submapper(
-                    path_prefix='/entries',
-                    requirements=dict(id='\d+'))
+        c = m.submapper(path_prefix='/entries', requirements=dict(id='\d+'))
         c.connect('entry', '/{id}')
         
         eq_('/entries/1', url_for('entry', id=1))
@@ -17,10 +15,8 @@ class TestSubmapper(unittest.TestCase):
 
     def test_submapper_nesting(self):
         m = Mapper()
-        c = m.submapper(
-                    path_prefix='/entries',
-                    controller='entry',
-                    requirements=dict(id='\d+'))
+        c = m.submapper(path_prefix='/entries', controller='entry',
+                        requirements=dict(id='\d+'))
         e = c.submapper(path_prefix='/{id}')
         
         eq_('entry', c.resource_name)
@@ -35,9 +31,7 @@ class TestSubmapper(unittest.TestCase):
 
     def test_submapper_action(self):
         m = Mapper(explicit=True)
-        c = m.submapper(
-                    path_prefix='/entries',
-                    controller='entry')
+        c = m.submapper(path_prefix='/entries', controller='entry')
 
         c.action(name='entries', action='list')
         c.action(action='create', method='POST')
@@ -50,9 +44,7 @@ class TestSubmapper(unittest.TestCase):
 
     def test_submapper_link(self):
         m = Mapper(explicit=True)
-        c = m.submapper(
-                    path_prefix='/entries',
-                    controller='entry')
+        c = m.submapper(path_prefix='/entries', controller='entry')
         
         c.link(rel='new')
         c.link(rel='ping', method='POST')
@@ -66,10 +58,8 @@ class TestSubmapper(unittest.TestCase):
 
     def test_submapper_standard_actions(self):
         m = Mapper()
-        c = m.submapper(
-                    path_prefix='/entries',
-                    collection_name='entries',
-                    controller='entry')
+        c = m.submapper(path_prefix='/entries', collection_name='entries',
+                        controller='entry')
         e = c.submapper(path_prefix='/{id}')
         
         c.index()
@@ -89,9 +79,7 @@ class TestSubmapper(unittest.TestCase):
 
     def test_submapper_standard_links(self):
         m = Mapper()
-        c = m.submapper(
-                    path_prefix='/entries',
-                    controller='entry')
+        c = m.submapper(path_prefix='/entries', controller='entry')
         e = c.submapper(path_prefix='/{id}')
         
         c.new()
@@ -105,14 +93,11 @@ class TestSubmapper(unittest.TestCase):
 
     def test_submapper_action_and_link_generation(self):
         m = Mapper()
-        c = m.submapper(
-                    path_prefix='/entries',
-                    controller='entry',
-                    collection_name='entries',
-                    actions=['index', 'new', 'create'])
-        e = c.submapper(
-                    path_prefix='/{id}',
-                    actions=['show', 'edit', 'update', 'delete'])
+        c = m.submapper(path_prefix='/entries', controller='entry',
+                        collection_name='entries',
+                        actions=['index', 'new', 'create'])
+        e = c.submapper(path_prefix='/{id}',
+                       actions=['show', 'edit', 'update', 'delete'])
 
         eq_('/entries', url_for('entries', method='GET'))
         eq_('/entries', url_for('create_entry', method='POST'))

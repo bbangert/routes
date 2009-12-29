@@ -77,17 +77,11 @@ class SubMapperParent(object):
         """
         return SubMapper(self, **kargs)
 
-    def collection(
-                self, 
-                collection_name,
-                resource_name,
-                path_prefix=None,
-                member_prefix='/{id}',
-                controller=None,
-                collection_actions=COLLECTION_ACTIONS,
-                member_actions = MEMBER_ACTIONS,
-                member_options=None,
-                **kwargs):
+    def collection(self, collection_name, resource_name, path_prefix=None,
+                   member_prefix='/{id}', controller=None,
+                   collection_actions=COLLECTION_ACTIONS,
+                   member_actions = MEMBER_ACTIONS, member_options=None,
+                   **kwargs):
         """Create a submapper that represents a collection.
 
         This results in a :class:`routes.mapper.SubMapper` object, with a
@@ -119,20 +113,14 @@ class SubMapperParent(object):
         if path_prefix is None:
             path_prefix = '/' + collection_name
 
-        collection = SubMapper(
-                            self,
-                            collection_name=collection_name,
-                            resource_name=resource_name,
-                            path_prefix=path_prefix,
-                            controller=controller,
-                            actions=collection_actions,
-                            **kwargs)
+        collection = SubMapper(self, collection_name=collection_name,
+                               resource_name=resource_name,
+                               path_prefix=path_prefix, controller=controller,
+                               actions=collection_actions, **kwargs)
         
-        collection.member = SubMapper(
-                                collection,
-                                path_prefix=member_prefix,
-                                actions=member_actions,
-                                **(member_options or {}))
+        collection.member = SubMapper(collection, path_prefix=member_prefix,
+                                      actions=member_actions, 
+                                      **(member_options or {}))
 
         return collection
 
@@ -190,11 +178,10 @@ class SubMapper(SubMapperParent):
             True
 
         """
-        return self.connect(
-            name or (rel + '_' + self.resource_name),
-            '/' + (rel or name),
-            action=action or rel or name,
-            **_kwargs_with_conditions(kwargs, method))
+        return self.connect(name or (rel + '_' + self.resource_name),
+                            '/' + (rel or name),
+                            action=action or rel or name,
+                            **_kwargs_with_conditions(kwargs, method))
 
     def new(self, **kwargs):
         """Generates the "new" link for a collection submapper."""
@@ -220,23 +207,20 @@ class SubMapper(SubMapperParent):
             True
 
         """
-        return self.connect(
-            name or (action + '_' + self.resource_name),
-            '',
-            action=action or name,
-            **_kwargs_with_conditions(kwargs, method))
+        return self.connect(name or (action + '_' + self.resource_name),
+                            '',
+                            action=action or name,
+                            **_kwargs_with_conditions(kwargs, method))
             
     def index(self, name=None, **kwargs):
         """Generates the "index" action for a collection submapper."""
-        return self.action(
-            name=name or self.collection_name,
-            action='index', method='GET', **kwargs)
+        return self.action(name=name or self.collection_name,
+                           action='index', method='GET', **kwargs)
 
     def show(self, name = None, **kwargs):
         """Generates the "show" action for a collection member submapper."""
-        return self.action(
-            name=name or self.resource_name,
-            action='show', method='GET', **kwargs)
+        return self.action(name=name or self.resource_name,
+                           action='show', method='GET', **kwargs)
 
     def create(self, **kwargs):
         """Generates the "create" action for a collection submapper."""
@@ -388,20 +372,16 @@ class Mapper(SubMapperParent):
             else:
                 return ''
 
-        table = [('Route name', 'Methods', 'Path')] + [
-            (
-                r.name or '',
-                format_methods(r),
-                r.routepath or ''
-            )
-            for r in self.matchlist]
+        table = [('Route name', 'Methods', 'Path')] + \
+                [(r.name or '', format_methods(r), r.routepath or '')
+                 for r in self.matchlist]
             
-        widths = [
-            max(len(row[col]) for row in table)
-            for col in range(len(table[0]))]
+        widths = [max(len(row[col]) for row in table)
+                  for col in range(len(table[0]))]
         
         return '\n'.join(
-            ' '.join(row[col].ljust(widths[col]) for col in range(len(widths)))
+            ' '.join(row[col].ljust(widths[col])
+                     for col in range(len(widths)))
             for row in table)
 
     def _envget(self):
