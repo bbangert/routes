@@ -57,8 +57,8 @@ class SubMapperParent(object):
             >>> map.matchlist[1].defaults['controller'] == 'home'
             True
         
-        Optional ``collection_name`` and ``resource_name`` arguments
-        are used in the generation of route names by the ``action``
+        Optional ``collection_name``, ``resource_name`` and ``formatted``
+        arguments are used in the generation of route names by the ``action``
         and ``link`` methods.  These in turn are used by the ``index``,
         ``new``, ``create``, ``show``, ``edit``, ``update`` and
         ``delete`` methods which may be invoked by listing them in the
@@ -68,10 +68,10 @@ class SubMapperParent(object):
         
             >>> from routes.util import url_for
             >>> map = Mapper(controller_scan=None)
-            >>> m = map.submapper(path_prefix='/entries', collection_name='entries', resource_name='entry', actions=['index', 'new'])
+            >>> m = map.submapper(path_prefix='/entries', collection_name='entries', resource_name='entry', formatted=True, actions=['index', 'new'])
             >>> url_for('entries') == '/entries'
             True
-            >>> url_for('new_entry') == '/entries/new'
+            >>> url_for('formatted_new_entry', format='xml') == '/entries/new.xml'
             True
 
         """
@@ -127,7 +127,8 @@ class SubMapperParent(object):
 
 class SubMapper(SubMapperParent):
     """Partial mapper for use with_options"""
-    def __init__(self, obj, resource_name=None, collection_name=None, actions=None, **kwargs):
+    def __init__(self, obj, resource_name=None, collection_name=None,
+                 actions=None, formatted=None, **kwargs):
         self.kwargs = kwargs
         self.obj = obj
         self.collection_name = collection_name
@@ -136,6 +137,8 @@ class SubMapper(SubMapperParent):
                             or getattr(obj, 'resource_name', None) \
                             or kwargs.get('controller', None) \
                             or getattr(obj, 'controller', None)
+        self.formatted = formatted or \
+                         (formatted is None and getattr(obj, 'formatted', None))
 
         self.add_actions(actions or [])
         
@@ -160,7 +163,8 @@ class SubMapper(SubMapperParent):
                 newkargs[key] = kwargs[key]
         return self.obj.connect(*newargs, **newkargs)
 
-    def link(self, rel=None, name=None, action=None, method='GET', **kwargs):
+    def link(self, rel=None, name=None, action=None, method='GET',
+             formatted=None, **kwargs):
         """Generates a named route for a subresource.
 
         Example::
@@ -169,15 +173,23 @@ class SubMapper(SubMapperParent):
             >>> map = Mapper(controller_scan=None)
             >>> c = map.collection('entries', 'entry')
             >>> c.link('recent', name='recent_entries')
-            >>> c.member.link('ping', method='POST')
+            >>> c.member.link('ping', method='POST', formatted=True)
             >>> url_for('entries') == '/entries'
             True
             >>> url_for('recent_entries') == '/entries/recent'
             True
             >>> url_for('ping_entry', id=1) == '/entries/1/ping'
             True
+            >>> url_for('formatted_ping_entry', id=1, format='xml') == '/entries/1/ping.xml'
+            True
 
         """
+        if formatted or (formatted is None and self.formatted):
+            self.connect('formatted_' +
+                            (name or (rel + '_' + self.resource_name)),
+                        ('/' + (rel or name)) + '.{format}',
+                        action=action or rel or name,
+                        **_kwargs_with_conditions(kwargs, method))
         return self.connect(name or (rel + '_' + self.resource_name),
                             '/' + (rel or name),
                             action=action or rel or name,
@@ -191,7 +203,8 @@ class SubMapper(SubMapperParent):
         """Generates the "edit" link for a collection member submapper."""
         return self.link(rel='edit', **kwargs)
 
-    def action(self, name=None, action=None, method='GET', **kwargs):
+    def action(self, name=None, action=None, method='GET', formatted=None,
+               **kwargs):
         """Generates a named route at the base path of a submapper.
 
         Example::
@@ -199,14 +212,22 @@ class SubMapper(SubMapperParent):
             >>> from routes import url_for
             >>> map = Mapper(controller_scan=None)
             >>> c = map.submapper(path_prefix='/entries', controller='entry')
-            >>> c.action(action='index', name='entries')
+            >>> c.action(action='index', name='entries', formatted=True)
             >>> c.action(action='create', method='POST')
             >>> url_for(controller='entry', action='index', method='GET') == '/entries'
+            True
+            >>> url_for(controller='entry', action='index', method='GET', format='xml') == '/entries.xml'
             True
             >>> url_for(controller='entry', action='create', method='POST') == '/entries'
             True
 
         """
+        if formatted or (formatted is None and self.formatted):
+            self.connect('formatted_' + 
+                            (name or (action + '_' + self.resource_name)),
+                         '.{format}',
+                         action=action or name,
+                         **_kwargs_with_conditions(kwargs, method))
         return self.connect(name or (action + '_' + self.resource_name),
                             '',
                             action=action or name,
