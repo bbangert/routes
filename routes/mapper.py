@@ -258,6 +258,12 @@ class SubMapper(SubMapperParent):
     def add_actions(self, actions):
         [getattr(self, action)() for action in actions]
 
+    # Provided for those who prefer using the 'with' syntax in Python 2.5+
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, type, value, tb):
+        pass
 
 # Create kwargs with a 'conditions' member generated for the given method
 def _kwargs_with_conditions(kwargs, method):
@@ -268,12 +274,6 @@ def _kwargs_with_conditions(kwargs, method):
     else:
         return kwargs
 
-    # Provided for those who prefer using the 'with' syntax in Python 2.5+
-    def __enter__(self):
-        return self
-    
-    def __exit__(self, type, value, tb):
-        pass
 
 
 class Mapper(SubMapperParent):
