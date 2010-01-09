@@ -50,7 +50,7 @@ class Route(object):
         self.prior = None
         self.redirect = False
         self.name = name
-        self.minimization = kargs.pop('_minimize', True)
+        self.minimization = kargs.pop('_minimize', False)
         self.encoding = kargs.pop('_encoding', 'utf-8')
         self.reqs = kargs.get('requirements', {})
         self.decode_errors = 'replace'

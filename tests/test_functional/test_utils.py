@@ -8,6 +8,7 @@ from routes import *
 class TestUtils(unittest.TestCase):
     def setUp(self):
         m = Mapper()
+        m.minimization = True
         m.connect('archive/:year/:month/:day', controller='blog', action='view', month=None, day=None,
                   requirements={'month':'\d{1,2}','day':'\d{1,2}'})
         m.connect('viewpost/:id', controller='post', action='view')
@@ -444,6 +445,7 @@ class TestUtils(unittest.TestCase):
         self.con.environ = dict(SCRIPT_NAME='', HTTP_HOST='example.com')
 
         m = Mapper()
+        m.minimization = True
         m.connect(':controller/:(action)-:(id).html')
         m.connect('archives', 'archives/:year/:month/:day/:slug', controller='archives', action='view',
                   _filter=article_filter)
@@ -474,6 +476,7 @@ class TestUtils(unittest.TestCase):
         self.con.environ = base_environ.copy()
 
         m = Mapper()
+        m.minimization = True
         m.connect(':controller/:action/:id')
         m.create_regs(['content','archives','admin/comments'])
         m.sub_domains = True
@@ -508,6 +511,7 @@ class TestUtils(unittest.TestCase):
         self.con.mapper_dict = {}
 
         m = Mapper()
+        m.minimization = True
         m.connect(':controller/:action/:id')
         m.create_regs(['content','archives','admin/comments'])
         self.con.mapper = m
@@ -526,6 +530,7 @@ class TestUtils(unittest.TestCase):
         self.con.environ = base_environ.copy()
 
         m = Mapper()
+        m.minimization = True
         m.sub_domains = True
         m.connect(':controller/:action/:id')
         m.create_regs(['content','archives','admin/comments'])
@@ -548,6 +553,7 @@ class TestUtils(unittest.TestCase):
         self.con.environ = base_environ.copy()
 
         m = Mapper()
+        m.minimization = True
         m.sub_domains = True
         m.sub_domains_ignore = ['www']
         m.connect(':controller/:action/:id')
@@ -593,6 +599,7 @@ class TestUtils(unittest.TestCase):
         self.con.environ = base_environ.copy()
 
         m = Mapper()
+        m.minimization = True
         m.sub_domains = True
         m.connect(':controller/:action/:id')
         m.connect('category_home', 'category/:section', controller='blog', action='view', section='home')
@@ -631,6 +638,7 @@ class TestUtils(unittest.TestCase):
         self.con.environ = base_environ.copy()
 
         m = Mapper()
+        m.minimization = True
         m.sub_domains = True
         m.connect(':controller/:action/:id')
         m.connect('category_home', 'category/:section', controller='blog', action='view', section='home')
@@ -666,6 +674,7 @@ class TestUtils(unittest.TestCase):
         controller_dir = os.path.join(os.path.dirname(here_dir), 
             os.path.join('test_files', 'controller_files'))
         m = Mapper(directory=controller_dir)
+        m.minimization = True
         m.always_scan = True
         m.connect(':controller/:action/:id')
         
@@ -676,6 +685,7 @@ class TestUtils(unittest.TestCase):
 class TestUtilsWithExplicit(unittest.TestCase):
     def setUp(self):
         m = Mapper(explicit=True)
+        m.minimization = True
         m.connect('archive/:year/:month/:day', controller='blog', action='view', month=None, day=None,
                   requirements={'month':'\d{1,2}','day':'\d{1,2}'})
         m.connect('viewpost/:id', controller='post', action='view', id=None)
@@ -750,6 +760,7 @@ class TestUtilsWithExplicit(unittest.TestCase):
     
     def test_with_route_names(self):
         m = self.con.mapper
+        m.minimization = True
         self.con.mapper_dict = {}
         m.connect('home', '', controller='blog', action='splash')
         m.connect('category_home', 'category/:section', controller='blog', action='view', section='home')

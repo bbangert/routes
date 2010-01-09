@@ -10,9 +10,9 @@ class TestMapperStr(unittest.TestCase):
 
         expected = """\
 Route name Methods Path
-                   {controller}/{action}
-entries            entries
-entry              entries/{id}"""
+                   /{controller}/{action}
+entries            /entries
+entry              /entries/{id}"""
         
         for expected_line, actual_line in zip(expected.splitlines(), str(m).splitlines()):
             assert expected_line == actual_line.rstrip()

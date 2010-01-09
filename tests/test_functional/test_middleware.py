@@ -12,6 +12,7 @@ def simple_app(environ, start_response):
 
 def test_basic():
     map = Mapper()
+    map.minimization = True
     map.connect(':controller/:action/:id')
     map.create_regs(['content'])
     app = TestApp(RoutesMiddleware(simple_app, map))
@@ -23,6 +24,7 @@ def test_basic():
     
 def test_path_info():
     map = Mapper()
+    map.minimization = True
     map.connect('myapp/*path_info', controller='myapp')
     map.connect('project/*path_info', controller='myapp')
     map.create_regs(['content', 'myapp'])
@@ -44,6 +46,7 @@ def test_path_info():
 
 def test_redirect_middleware():
     map = Mapper()
+    map.minimization = True
     map.connect('myapp/*path_info', controller='myapp')
     map.redirect("faq/{section}", "/static/faq/{section}.html")
     map.redirect("home/index", "/", _redirect_code='301 Moved Permanently')
@@ -69,6 +72,7 @@ def test_redirect_middleware():
 
 def test_method_conversion():
     map = Mapper()
+    map.minimization = True
     map.connect('content/:type', conditions=dict(method='DELETE'))
     map.connect(':controller/:action/:id')
     map.create_regs(['content'])

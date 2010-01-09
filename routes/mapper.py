@@ -378,7 +378,7 @@ class Mapper(SubMapperParent):
         self.encoding = 'utf-8'
         self.decode_errors = 'ignore'
         self.hardcode_names = True
-        self.minimization = True
+        self.minimization = False
         self.create_regs_lock = threading.Lock()
         if register:
             config = request_config()

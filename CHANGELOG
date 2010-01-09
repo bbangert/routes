@@ -9,6 +9,8 @@ Release 1.12 (**tip**)
 * Give Mapper a tabular string representation.
 * Make SubMapper objects nestable and add route-generation helpers.
 * Add SubMapper-based collections
+* Make the deprecated Mapper.minimization False (disabled) by default
+
   
 Release 1.11 (September 28, 2009)
 =================================

@@ -71,36 +71,34 @@ you.  In Pylons, you define your routes in the ``make_map`` function in your
 
     1   from routes import Mapper
     2   map = Mapper()
-    3   map.minimization = False
-    4   map.connect(None, "/error/{action}/{id}, controller="error")
-    5   map.connect("home", "/", controller="main", action="index")
-    6   # ADD CUSTOM ROUTES HERE
-    7   map.connect(None, "/{controller}/{action}")
-    8   map.connect(None, "/{controller}/{action}/{id}")
+    3   map.connect(None, "/error/{action}/{id}, controller="error")
+    4   map.connect("home", "/", controller="main", action="index")
+    5   # ADD CUSTOM ROUTES HERE
+    6   map.connect(None, "/{controller}/{action}")
+    7   map.connect(None, "/{controller}/{action}/{id}")
 
-Lines 1 and 2 create a mapper.  Line 3 is backward compatibility code that
-disables an earlier misfeature.
+Lines 1 and 2 create a mapper.
 
-Line 4 matches any three-component route that starts with "/error", and sets
+Line 3 matches any three-component route that starts with "/error", and sets
 the "controller" variable to a constant, so that a URL
 "/error/images/arrow.jpg" would produce::
 
     {"controller": "error", "action": "images", "id": "arrow.jpg"}
 
-Line 5 matches the single URL "/", and sets both the controller and action to
+Line 4 matches the single URL "/", and sets both the controller and action to
 constants.  It also has a route name "home", which can be used in generation.
 (The other routes have ``None`` instead of a name, so they don't have names.
 It's recommended to name all routes that may be used in generation, but it's
 not necessary to name other routes.)
 
-Line 7 matches any two-component URL, and line 8 matches any 3-component URL.
+Line 6 matches any two-component URL, and line 7 matches any 3-component URL.
 These are used as catchall routes if we're too lazy to define a separate route
 for every action.  If you *have* defined a route for every action, you can
 delete these two routes.
 
-Note that a URL "/error/images/arrow.jpg" could match both line 4 and line 8.
+Note that a URL "/error/images/arrow.jpg" could match both line 3 and line 7.
 The mapper resolves this by trying routes in the order defined, so this URL
-would match line 4.
+would match line 3.
 
 If no routes match the URL, the mapper returns a "match failed" condition,
 which is seen in Pylons as HTTP 404 "Not Found".
@@ -874,9 +872,9 @@ Minimization
 ------------
 
 Minimization was a misfeature which was intended to save typing, but which
-often resulted in the wrong route being chosen.  New applications should 
-disable it by putting ``map.minimization = False`` in their route definitions.
-Old applications that depend on it can set the attribute to true.
+often resulted in the wrong route being chosen.  Old applications that still
+depend on it should enable it by putting ``map.minimization = True`` in their
+route definitions.
 
 Without minimization, the URL must contain values for all path variables in
 the route::
@@ -913,7 +911,7 @@ Implicit defaults and route memory
 
 Implicit defaults worked with minimization to provide automatic default values
 for the "action" and "id" variables.  If a route was defined as
-``map.connect("/{contoller}/{action}/{id}") and the URL "/archives"`` was
+``map.connect("/{controller}/{action}/{id}") and the URL "/archives"`` was
 requested, Routes would implicitly add ``action="index", id=None`` to the
 routing variables.
 
