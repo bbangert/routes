@@ -11,7 +11,7 @@ def simple_app(environ, start_response):
     return ['The matchdict items are %s and environ is %s' % (items, environ)]
 
 def test_basic():
-    map = Mapper()
+    map = Mapper(explicit=False)
     map.minimization = True
     map.connect(':controller/:action/:id')
     map.create_regs(['content'])
@@ -23,7 +23,7 @@ def test_basic():
     assert "matchdict items are [('action', 'index'), ('controller', u'content'), ('id', None)]" in res
     
 def test_path_info():
-    map = Mapper()
+    map = Mapper(explicit=False)
     map.minimization = True
     map.connect('myapp/*path_info', controller='myapp')
     map.connect('project/*path_info', controller='myapp')
@@ -45,7 +45,7 @@ def test_path_info():
     assert "'PATH_INFO': '/pylonshq/browser/pylons/templates/default_project/+package+/pylonshq/browser/pylons/templates/default_project/+package+/controllers'" in res    
 
 def test_redirect_middleware():
-    map = Mapper()
+    map = Mapper(explicit=False)
     map.minimization = True
     map.connect('myapp/*path_info', controller='myapp')
     map.redirect("faq/{section}", "/static/faq/{section}.html")
@@ -71,7 +71,7 @@ def test_redirect_middleware():
     eq_(res.headers['Location'], '/')
 
 def test_method_conversion():
-    map = Mapper()
+    map = Mapper(explicit=False)
     map.minimization = True
     map.connect('content/:type', conditions=dict(method='DELETE'))
     map.connect(':controller/:action/:id')

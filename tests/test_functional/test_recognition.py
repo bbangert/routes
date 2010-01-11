@@ -11,7 +11,7 @@ from routes.util import RoutesException
 class TestRecognition(unittest.TestCase):
     
     def test_regexp_char_escaping(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.connect(':controller/:(action).:(id)')
         m.create_regs(['content'])
@@ -24,7 +24,7 @@ class TestRecognition(unittest.TestCase):
         eq_(None, m.match('/findzall/view'))
         
     def test_all_static(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.connect('hello/world/how/are/you', controller='content', action='index')
         m.create_regs([])
@@ -38,7 +38,7 @@ class TestRecognition(unittest.TestCase):
     def test_unicode(self):
         hoge = u'\u30c6\u30b9\u30c8' # the word test in Japanese
         hoge_enc = hoge.encode('utf-8')
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.connect(':hoge')
         eq_({'controller': 'content', 'action': 'index', 'hoge': hoge},
@@ -47,7 +47,7 @@ class TestRecognition(unittest.TestCase):
     def test_disabling_unicode(self):
         hoge = u'\u30c6\u30b9\u30c8' # the word test in Japanese
         hoge_enc = urllib.quote(hoge.encode('utf-8'))
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.encoding = None
         m.connect(':hoge')
@@ -56,7 +56,7 @@ class TestRecognition(unittest.TestCase):
             
     def test_basic_dynamic(self):
         for path in ['hi/:name', 'hi/:(name)']:
-            m = Mapper()
+            m = Mapper(explicit=False)
             m.minimization = True
             m.connect(path, controller='content')
             m.create_regs([])
@@ -70,7 +70,7 @@ class TestRecognition(unittest.TestCase):
     
     def test_basic_dynamic_backwards(self):
         for path in [':name/hi', ':(name)/hi']:
-            m = Mapper()
+            m = Mapper(explicit=False)
             m.minimization = True
             m.connect(path)
             m.create_regs([])
@@ -84,7 +84,7 @@ class TestRecognition(unittest.TestCase):
             eq_({'name':'index', 'action':'index', 'controller':'content'}, m.match('/index/hi'))
     
     def test_dynamic_with_underscores(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.connect('article/:small_page', small_page=False)
         m.connect(':(controller)/:(action)/:(id)')
@@ -95,7 +95,7 @@ class TestRecognition(unittest.TestCase):
         
     def test_dynamic_with_default(self):
         for path in ['hi/:action', 'hi/:(action)']:
-            m = Mapper()
+            m = Mapper(explicit=False)
             m.minimization = True
             m.connect(path, controller='content')
             m.create_regs([])
@@ -109,7 +109,7 @@ class TestRecognition(unittest.TestCase):
     
     def test_dynamic_with_default_backwards(self):
         for path in [':action/hi', ':(action)/hi']:
-            m = Mapper()
+            m = Mapper(explicit=False)
             m.minimization = True
             m.connect(path, controller='content')
             m.create_regs([])
@@ -124,7 +124,7 @@ class TestRecognition(unittest.TestCase):
     
     def test_dynamic_with_string_condition(self):
         for path in [':name/hi', ':(name)/hi']:
-            m = Mapper()
+            m = Mapper(explicit=False)
             m.minimization = True
             m.connect(path, controller='content', requirements={'name':'index'})
             m.create_regs([])
@@ -138,7 +138,7 @@ class TestRecognition(unittest.TestCase):
     
     def test_dynamic_with_string_condition_backwards(self):
         for path in ['hi/:name', 'hi/:(name)']:
-            m = Mapper()
+            m = Mapper(explicit=False)
             m.minimization = True
             m.connect(path, controller='content', requirements={'name':'index'})
             m.create_regs([])
@@ -152,7 +152,7 @@ class TestRecognition(unittest.TestCase):
     
     def test_dynamic_with_regexp_condition(self):
         for path in ['hi/:name', 'hi/:(name)']:
-            m = Mapper()
+            m = Mapper(explicit=False)
             m.minimization = True
             m.connect(path, controller='content', requirements={'name':'[a-z]+'})
             m.create_regs([])
@@ -170,7 +170,7 @@ class TestRecognition(unittest.TestCase):
     
     def test_dynamic_with_regexp_and_default(self):
         for path in ['hi/:action', 'hi/:(action)']:
-            m = Mapper()
+            m = Mapper(explicit=False)
             m.minimization = True
             m.connect(path, controller='content', requirements={'action':'[a-z]+'})
             m.create_regs([])
@@ -187,7 +187,7 @@ class TestRecognition(unittest.TestCase):
     
     def test_dynamic_with_default_and_string_condition_backwards(self):
         for path in [':action/hi', ':(action)/hi']:
-            m = Mapper()
+            m = Mapper(explicit=False)
             m.minimization = True
             m.connect(path)
             m.create_regs([])
@@ -209,7 +209,7 @@ class TestRecognition(unittest.TestCase):
 
     
     def test_multiroute(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.connect('archive/:year/:month/:day', controller='blog', action='view', month=None, day=None,
                                     requirements={'month':'\d{1,2}','day':'\d{1,2}'})
@@ -245,7 +245,7 @@ class TestRecognition(unittest.TestCase):
                          m.match('/archive/2004/10/23'))
 
     def test_multiroute_with_splits(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.connect('archive/:(year)/:(month)/:(day)', controller='blog', action='view', month=None, day=None,
                                     requirements={'month':'\d{1,2}','day':'\d{1,2}'})
@@ -323,7 +323,7 @@ class TestRecognition(unittest.TestCase):
             eq_({'controller':'admin/user','action':'view','id':'4'}, m.match('/view/4/admin/user/super'))
     
     def test_dynamic_with_trailing_non_keyword_strings(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.connect('somewhere/:over/rainbow', controller='blog')
         m.connect('somewhere/:over', controller='post')
@@ -481,7 +481,7 @@ class TestRecognition(unittest.TestCase):
         eq_({'controller':'admin/user', 'action':'hi'}, m.match('/hi/admin/user'))
     
     def test_standard_route(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.connect(':controller/:action/:id')
         m.create_regs(['content','admin/user'])
@@ -545,7 +545,7 @@ class TestRecognition(unittest.TestCase):
         eq_({'controller':'content','action':'index'}, m.match('/'))
 
     def test_dynamic_with_prefix(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.prefix = '/blog'
         m.connect(':controller/:action/:id')
@@ -564,7 +564,7 @@ class TestRecognition(unittest.TestCase):
         eq_({'controller':'archive','action':'view', 'id':'4'}, m.match('/blog/archive/view/4'))
     
     def test_dynamic_with_multiple_and_prefix(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.prefix = '/blog'
         m.connect(':controller/:action/:id')
@@ -648,7 +648,7 @@ class TestRecognition(unittest.TestCase):
                          m.match('/group/view-5'))
     
     def test_splits_with_slashes_and_default(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.connect(':name/:(action)-:(id)', controller='content')
         m.create_regs([])
@@ -670,7 +670,7 @@ class TestRecognition(unittest.TestCase):
         assert_raises(RoutesException, call_func)        
     
     def test_routematch(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.connect(':controller/:action/:id')
         m.create_regs(['content'])
@@ -682,7 +682,7 @@ class TestRecognition(unittest.TestCase):
         eq_(None, m.routematch('/nowhere'))
     
     def test_routematch_debug(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.connect(':controller/:action/:id')
         m.debug = True
@@ -698,7 +698,7 @@ class TestRecognition(unittest.TestCase):
         eq_(len(debug), 0)
     
     def test_match_debug(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.connect('nowhere', 'http://nowhere.com/', _static=True)
         m.connect(':controller/:action/:id')
@@ -715,7 +715,7 @@ class TestRecognition(unittest.TestCase):
         eq_(len(debug), 0)
     
     def test_conditions(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.connect('home/upload', controller='content', action='upload', conditions=dict(method=['POST']))
         m.connect(':controller/:action/:id')
@@ -741,7 +741,7 @@ class TestRecognition(unittest.TestCase):
         eq_({'action':'upload','controller':'content'}, con.mapper_dict)
         
     def test_subdomains(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.sub_domains = True
         m.connect(':controller/:action/:id')
@@ -771,7 +771,7 @@ class TestRecognition(unittest.TestCase):
             con.mapper_dict)
     
     def test_subdomains_with_conditions(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.sub_domains = True
         m.connect(':controller/:action/:id')
@@ -835,7 +835,7 @@ class TestRecognition(unittest.TestCase):
         eq_({'action': 'view', 'controller':'admin', 'sub_domain': 'fred'}, con.mapper_dict)
     
     def test_subdomains_with_ignore(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.sub_domains = True
         m.sub_domains_ignore = ['www']
@@ -866,7 +866,7 @@ class TestRecognition(unittest.TestCase):
             con.mapper_dict)
     
     def test_other_special_chars(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.connect('/:year/:(slug).:(format),:(locale)', format='html', locale='en')
         m.connect('/error/:action/:id', controller='error')
@@ -887,7 +887,7 @@ class TestRecognition(unittest.TestCase):
                           'id': 'icon-16.png'}, m.match('/error/img/icon-16.png'))
     
     def test_various_periods(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.connect('sites/:site/pages/:page')
         m.create_regs(['content'])
@@ -895,7 +895,7 @@ class TestRecognition(unittest.TestCase):
         eq_({'action': u'index', 'controller': u'content', 
                           'site': u'python.com', 'page': u'index.html'}, 
                          m.match('/sites/python.com/pages/index.html'))
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.connect('sites/:site/pages/:page.:format', format='html')
         m.create_regs(['content'])
@@ -905,7 +905,7 @@ class TestRecognition(unittest.TestCase):
                          m.match('/sites/python.com/pages/index.html'))
         
     def test_empty_fails(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.connect(':controller/:action/:id')
         m.connect('', controller='content', action='view', id=4)
@@ -918,7 +918,7 @@ class TestRecognition(unittest.TestCase):
         assert_raises(RoutesException, call_func)
 
     def test_home_noargs(self):
-        m = Mapper(controller_scan=None, directory=None, explicit=True, always_scan=False)
+        m = Mapper(controller_scan=None, directory=None, always_scan=False)
         m.minimization = True
         m.connect('')
         m.create_regs([])

@@ -8,7 +8,7 @@ from routes.mapper import Mapper
 
 
 def test_basic():
-    m = Mapper()
+    m = Mapper(explicit=False)
     m.minimization = False
     m.connect('/:controller/:action/:id')
     m.create_regs(['content'])
@@ -28,7 +28,7 @@ def test_basic():
     eq_('/content/view/3', m.generate(controller='content', action='view', id=3))
 
 def test_full():
-    m = Mapper()
+    m = Mapper(explicit=False)
     m.minimization = False
     m.connect('/:controller/:action/', id=None)
     m.connect('/:controller/:action/:id')
@@ -56,7 +56,6 @@ def test_full():
 def test_action_required():
     m = Mapper()
     m.minimization = False
-    m.explicit = True
     m.connect('/:controller/index', action='index')
     m.create_regs(['content'])
     
@@ -67,7 +66,6 @@ def test_action_required():
 def test_query_params():
     m = Mapper()
     m.minimization = False
-    m.explicit = True
     m.connect('/:controller/index', action='index')
     m.create_regs(['content'])
     
@@ -77,7 +75,7 @@ def test_query_params():
     
 
 def test_syntax():
-    m = Mapper()
+    m = Mapper(explicit=False)
     m.minimization = False
     m.connect('/{controller}/{action}/{id}')
     m.create_regs(['content'])
@@ -95,7 +93,7 @@ def test_syntax():
     eq_('/content/view/3', m.generate(controller='content', action='view', id=3))
 
 def test_regexp_syntax():
-    m = Mapper()
+    m = Mapper(explicit=False)
     m.minimization = False
     m.connect('/{controller}/{action}/{id:\d\d}')
     m.create_regs(['content'])

@@ -3,7 +3,7 @@ import routes
 
 class TestEnvironment(unittest.TestCase):
     def setUp(self):
-        m = routes.Mapper()
+        m = routes.Mapper(explicit=False)
         m.minimization = True
         m.connect('archive/:year/:month/:day', controller='blog', action='view', month=None, day=None,
                   requirements={'month':'\d{1,2}','day':'\d{1,2}'})

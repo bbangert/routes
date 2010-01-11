@@ -30,7 +30,7 @@ class TestSubmapper(unittest.TestCase):
         assert_raises(Exception, url_for, 'entry', id='foo')
 
     def test_submapper_action(self):
-        m = Mapper(explicit=True)
+        m = Mapper()
         c = m.submapper(path_prefix='/entries', controller='entry')
 
         c.action(name='entries', action='list')
@@ -43,7 +43,7 @@ class TestSubmapper(unittest.TestCase):
         assert_raises(Exception, url_for, 'entries', method='DELETE')
 
     def test_submapper_link(self):
-        m = Mapper(explicit=True)
+        m = Mapper()
         c = m.submapper(path_prefix='/entries', controller='entry')
         
         c.link(rel='new')

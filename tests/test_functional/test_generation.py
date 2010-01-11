@@ -25,7 +25,7 @@ class TestGeneration(unittest.TestCase):
     
     def test_dynamic_with_default(self):
         for path in ['hi/:action', 'hi/:(action)']:
-            m = Mapper()
+            m = Mapper(explicit=False)
             m.minimization = True
             m.connect(path)
         
@@ -35,7 +35,7 @@ class TestGeneration(unittest.TestCase):
             eq_('/hi', m.generate())
     
     def test_dynamic_with_false_equivs(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.connect('article/:page', page=False)
         m.connect(':controller/:action/:id')
@@ -62,7 +62,7 @@ class TestGeneration(unittest.TestCase):
         eq_('/view/None/chicago', m.generate(home=None, area='chicago'))
     
     def test_dynamic_with_underscore_parts(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.connect('article/:small_page', small_page=False)
         m.connect(':(controller)/:(action)/:(id)')
@@ -74,7 +74,7 @@ class TestGeneration(unittest.TestCase):
         eq_('/article/hobbes', m.generate(small_page='hobbes'))
         
     def test_dynamic_with_false_equivs_and_splits(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.connect('article/:(page)', page=False)
         m.connect(':(controller)/:(action)/:(id)')
@@ -113,7 +113,7 @@ class TestGeneration(unittest.TestCase):
     
     def test_dynamic_with_default_and_regexp_condition(self):
         for path in ['hi/:action', 'hi/:(action)']:
-            m = Mapper()
+            m = Mapper(explicit=False)
             m.minimization = True
             m.connect(path, requirements = {'action':'[a-z]+'})
         
@@ -166,7 +166,7 @@ class TestGeneration(unittest.TestCase):
     
     def test_standard_route(self):
         for path in [':controller/:action/:id', ':(controller)/:(action)/:(id)']:
-            m = Mapper()
+            m = Mapper(explicit=False)
             m.minimization = True
             m.connect(path)
         
@@ -179,7 +179,7 @@ class TestGeneration(unittest.TestCase):
             eq_('/admin/user/show/10', m.generate(controller='admin/user', action='show', id='10'))
     
     def test_multiroute(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.connect('archive/:year/:month/:day', controller='blog', action='view', month=None, day=None,
                             requirements={'month':'\d{1,2}','day':'\d{1,2}'})
@@ -193,7 +193,7 @@ class TestGeneration(unittest.TestCase):
         eq_('/viewpost/3', m.generate(controller='post', action='view', id=3))
     
     def test_multiroute_with_splits(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.connect('archive/:(year)/:(month)/:(day)', controller='blog', action='view', month=None, day=None,
                             requirements={'month':'\d{1,2}','day':'\d{1,2}'})
@@ -207,7 +207,7 @@ class TestGeneration(unittest.TestCase):
         eq_('/viewpost/3', m.generate(controller='post', action='view', id=3))
     
     def test_big_multiroute(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.connect('', controller='articles', action='index')
         m.connect('admin', controller='admin/general', action='index')
@@ -250,7 +250,7 @@ class TestGeneration(unittest.TestCase):
         eq_(None, m.generate(controller='articles', action='find_by_date', year=2004))
     
     def test_big_multiroute_with_splits(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.connect('', controller='articles', action='index')
         m.connect('admin', controller='admin/general', action='index')
@@ -293,7 +293,7 @@ class TestGeneration(unittest.TestCase):
         eq_(None, m.generate(controller='articles', action='find_by_date', year=2004))
 
     def test_big_multiroute_with_nomin(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = False
         m.connect('', controller='articles', action='index')
         m.connect('admin', controller='admin/general', action='index')
@@ -359,7 +359,7 @@ class TestGeneration(unittest.TestCase):
             eq_('/pages/joe', m.generate(controller='page', action='view', title='joe'))
     
     def test_extras(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.connect('viewpost/:id', controller='post', action='view')
         m.connect(':controller/:action/:id')
@@ -369,7 +369,7 @@ class TestGeneration(unittest.TestCase):
         eq_('/viewpost/2?extra=3', m.generate(controller='post', action='view', id=2, extra=3))
     
     def test_extras_with_splits(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.connect('viewpost/:(id)', controller='post', action='view')
         m.connect(':(controller)/:(action)/:(id)')
@@ -422,7 +422,7 @@ class TestGeneration(unittest.TestCase):
             eq_('/content', m.generate(controller='content'))
     
     def test_route_with_fixnum_default(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.connect('page/:id', controller='content', action='show_page', id=1)
         m.connect(':controller/:action/:id')
@@ -438,7 +438,7 @@ class TestGeneration(unittest.TestCase):
         eq_('/content/show', m.generate(controller='content', action='show'))
     
     def test_route_with_fixnum_default_with_splits(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.connect('page/:(id)', controller='content', action='show_page', id =1)
         m.connect(':(controller)/:(action)/:(id)')
@@ -455,7 +455,7 @@ class TestGeneration(unittest.TestCase):
     
     def test_uppercase_recognition(self):
         for path in [':controller/:action/:id', ':(controller)/:(action)/:(id)']:
-            m = Mapper()
+            m = Mapper(explicit=False)
             m.minimization = True
             m.connect(path)
 
@@ -466,7 +466,7 @@ class TestGeneration(unittest.TestCase):
             eq_('/Admin/NewsFeed', m.generate(controller='Admin/NewsFeed', action='index'))
     
     def test_backwards(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.connect('page/:id/:action', controller='pages', action='show')
         m.connect(':controller/:action/:id')
@@ -475,7 +475,7 @@ class TestGeneration(unittest.TestCase):
         eq_('/pages/boo', m.generate(controller='pages', action='boo'))
 
     def test_backwards_with_splits(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.connect('page/:(id)/:(action)', controller='pages', action='show')
         m.connect(':(controller)/:(action)/:(id)')
@@ -511,7 +511,7 @@ class TestGeneration(unittest.TestCase):
         eq_('/', m.generate(controller='content'))
     
     def test_url_with_prefix(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.prefix = '/blog'
         m.connect(':controller/:action/:id')
@@ -522,7 +522,7 @@ class TestGeneration(unittest.TestCase):
         eq_('/blog/admin/comments', m.generate(controller='admin/comments'))
 
     def test_url_with_prefix_deeper(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.prefix = '/blog/phil'
         m.connect(':controller/:action/:id')
@@ -533,7 +533,7 @@ class TestGeneration(unittest.TestCase):
         eq_('/blog/phil/admin/comments', m.generate(controller='admin/comments'))
 
     def test_url_with_environ_empty(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.environ = dict(SCRIPT_NAME='')
         m.connect(':controller/:action/:id')
@@ -544,7 +544,7 @@ class TestGeneration(unittest.TestCase):
         eq_('/admin/comments', m.generate(controller='admin/comments'))
 
     def test_url_with_environ(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.environ = dict(SCRIPT_NAME='/blog')
         m.connect(':controller/:action/:id')
@@ -564,7 +564,7 @@ class TestGeneration(unittest.TestCase):
         
 
     def test_url_with_environ_and_absolute(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.environ = dict(SCRIPT_NAME='/blog')
         m.connect('image', 'image/:name', _absolute=True)
@@ -578,7 +578,7 @@ class TestGeneration(unittest.TestCase):
         eq_('/image/topnav.jpg', url_for('image', name='topnav.jpg'))
     
     def test_route_with_odd_leftovers(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.minimization = True
         m.connect(':controller/:(action)-:(id)')
         m.create_regs(['content','blog','admin/comments'])
@@ -587,7 +587,7 @@ class TestGeneration(unittest.TestCase):
         eq_('/content/index-', m.generate(controller='content'))
     
     def test_route_with_end_extension(self):
-        m = Mapper()
+        m = Mapper(explicit=False)
         m.connect(':controller/:(action)-:(id).html')
         m.create_regs(['content','blog','admin/comments'])
         

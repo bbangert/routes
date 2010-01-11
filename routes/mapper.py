@@ -289,7 +289,7 @@ class Mapper(SubMapperParent):
     
     """
     def __init__(self, controller_scan=controller_scan, directory=None, 
-                 always_scan=False, register=True, explicit=False):
+                 always_scan=False, register=True, explicit=True):
         """Create a new Mapper instance
         
         All keyword arguments are optional.
@@ -436,7 +436,7 @@ class Mapper(SubMapperParent):
             >>> map.extend(routes, path_prefix='/subapp')
             >>> len(map.matchlist) == 3
             True
-            >>> map.matchlist[2].routepath == 'subapp/index.htm'
+            >>> map.matchlist[2].routepath == '/subapp/index.htm'
             True
         
         .. note::

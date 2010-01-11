@@ -466,7 +466,9 @@ Here's an example of route memory::
     url.current(month=4)  =>  "/archives/2005/4/4"
     url.current()         =>  "/archives/2005/10/4"
 
-Route memory can be disabled globally with ``map.explicit = True``.
+Route memory is now disabled by default; it can be enabled globally with
+``map.explicit = True`` or by providing the argument ``map.explicit=True``
+when first creating the mapper.
 
 Generation-only routes (aka. static routes)
 -------------------------------------------
@@ -873,8 +875,8 @@ Minimization
 
 Minimization was a misfeature which was intended to save typing, but which
 often resulted in the wrong route being chosen.  Old applications that still
-depend on it should enable it by putting ``map.minimization = True`` in their
-route definitions.
+depend on it must now enable it by putting ``map.minimization = True`` in
+their route definitions.
 
 Without minimization, the URL must contain values for all path variables in
 the route::
