@@ -10,7 +10,6 @@ Release 1.12 (**tip**)
 * Make SubMapper objects nestable and add route-generation helpers.
 * Add SubMapper-based collections
 * Make the deprecated Mapper.minimization False (disabled) by default
-* Make Mapper.explicit True by default
 
 Release 1.11 (September 28, 2009)
 =================================

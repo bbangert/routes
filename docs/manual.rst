@@ -466,9 +466,7 @@ Here's an example of route memory::
     url.current(month=4)  =>  "/archives/2005/4/4"
     url.current()         =>  "/archives/2005/10/4"
 
-Route memory is now disabled by default; it can be enabled globally with
-``map.explicit = True`` or by providing the argument ``map.explicit=True``
-when first creating the mapper.
+Route memory can be disabled globally with ``map.explicit = True``.
 
 Generation-only routes (aka. static routes)
 -------------------------------------------

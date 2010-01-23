@@ -56,6 +56,7 @@ def test_full():
 def test_action_required():
     m = Mapper()
     m.minimization = False
+    m.explicit = True
     m.connect('/:controller/index', action='index')
     m.create_regs(['content'])
     
@@ -66,6 +67,7 @@ def test_action_required():
 def test_query_params():
     m = Mapper()
     m.minimization = False
+    m.explicit = True
     m.connect('/:controller/index', action='index')
     m.create_regs(['content'])
     

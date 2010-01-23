@@ -684,7 +684,7 @@ class TestUtils(unittest.TestCase):
 
 class TestUtilsWithExplicit(unittest.TestCase):
     def setUp(self):
-        m = Mapper()
+        m = Mapper(explicit=True)
         m.minimization = True
         m.connect('archive/:year/:month/:day', controller='blog', action='view', month=None, day=None,
                   requirements={'month':'\d{1,2}','day':'\d{1,2}'})

@@ -289,7 +289,7 @@ class Mapper(SubMapperParent):
     
     """
     def __init__(self, controller_scan=controller_scan, directory=None, 
-                 always_scan=False, register=True, explicit=True):
+                 always_scan=False, register=True, explicit=False):
         """Create a new Mapper instance
         
         All keyword arguments are optional.

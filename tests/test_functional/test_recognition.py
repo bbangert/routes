@@ -920,6 +920,7 @@ class TestRecognition(unittest.TestCase):
     def test_home_noargs(self):
         m = Mapper(controller_scan=None, directory=None, always_scan=False)
         m.minimization = True
+        m.explicit = True
         m.connect('')
         m.create_regs([])
         
