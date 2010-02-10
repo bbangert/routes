@@ -87,9 +87,12 @@ class Route(object):
     def _setup_route(self):
         # Build our routelist, and the keys used in the route
         self.routelist = routelist = self._pathkeys(self.routepath)
-        routekeys = frozenset([key['name'] for key in routelist \
+        routekeys = frozenset([key['name'] for key in routelist
                                if isinstance(key, dict)])
-        
+        self.dotkeys = frozenset([key['name'] for key in routelist
+                                  if isinstance(key, dict) and 
+                                     key['type'] == '.'])
+
         if not self.minimization:
             self.make_full_route()
         
@@ -175,7 +178,11 @@ class Route(object):
                     if len(opts) > 1:
                         current = opts[0]
                         self.reqs[current] = opts[1]
-                    var_type = ':'
+                    if current[0] == '.':
+                        var_type = '.'
+                        current = current[1:]
+                    else:
+                        var_type = ':'
                 routelist.append(dict(type=var_type, name=current))
                 if char in self.done_chars:
                     routelist.append(char)
@@ -308,12 +315,18 @@ class Route(object):
                     partmatch = '|'.join(map(re.escape, clist))
                 elif part['type'] == ':':
                     partmatch = self.reqs.get(var) or '[^/]+?'
+                elif part['type'] == '.':
+                    partmatch = self.reqs.get(var) or '[^/.]+?'
                 else:
                     partmatch = self.reqs.get(var) or '.+?'
                 if include_names:
-                    regparts.append('(?P<%s>%s)' % (var, partmatch))
+                    regpart = '(?P<%s>%s)' % (var, partmatch)
                 else:
-                    regparts.append('(?:%s)' % partmatch)
+                    regpart = '(?:%s)' % partmatch
+                if part['type'] == '.':
+                    regparts.append('(?:\.%s)??' % regpart)
+                else:
+                    regparts.append(regpart)
             else:
                 regparts.append(re.escape(part))
         regexp = ''.join(regparts) + '$'
@@ -341,8 +354,9 @@ class Route(object):
             self.prior = part
             (rest, noreqs, allblank) = self.buildnextreg(path[1:], clist, include_names)
         
-        if isinstance(part, dict) and part['type'] == ':':
+        if isinstance(part, dict) and part['type'] in (':', '.'):
             var = part['name']
+            typ = part['type']
             partreg = ''
             
             # First we plug in the proper part matcher
@@ -363,10 +377,16 @@ class Route(object):
                     partreg = '(?:[^' + self.prior + ']+?)'
             else:
                 if not rest:
-                    if include_names:
-                        partreg = '(?P<%s>[^%s]+?)' % (var, '/')
+                    if typ == '.':
+                        exclude_chars = '/.'
                     else:
-                        partreg = '(?:[^%s]+?)' % '/'
+                        exclude_chars = '/'
+                    if include_names:
+                        partreg = '(?P<%s>[^%s]+?)' % (var, exclude_chars)
+                    else:
+                        partreg = '(?:[^%s]+?)' % exclude_chars
+                    if typ == '.':
+                        partreg = '(?:\.%s)??' % partreg
                 else:
                     end = ''.join(self.done_chars)
                     rem = rest
@@ -568,16 +588,24 @@ class Route(object):
             elif self.make_unicode(kargs[k]) != \
                 self.make_unicode(self.defaults[k]):
                 return False
-        
+                
         # Ensure that all the args in the route path are present and not None
         for arg in self.minkeys:
             if arg not in kargs or kargs[arg] is None:
-                return False
-        
+                if arg in self.dotkeys:
+                    kargs[arg] = ''
+                else:
+                    return False
+
         # Encode all the argument that the regpath can use
         for k in kargs:
             if k in self.maxkeys:
-                kargs[k] = url_quote(kargs[k], self.encoding)
+                if k in self.dotkeys:
+                    if kargs[k]:
+                        kargs[k] = url_quote('.' + kargs[k], self.encoding)
+                else:
+                    kargs[k] = url_quote(kargs[k], self.encoding)
+
         return self.regpath % kargs
     
     def generate_minimized(self, kargs):
@@ -586,7 +614,7 @@ class Route(object):
         urllist = []
         gaps = False
         for part in routelist:
-            if isinstance(part, dict) and part['type'] == ':':
+            if isinstance(part, dict) and part['type'] in (':', '.'):
                 arg = part['name']
                 
                 # For efficiency, check these just once
@@ -616,12 +644,17 @@ class Route(object):
                 
                 elif has_default and self.defaults[arg] is not None:
                     val = self.defaults[arg]
-                
+                # Optional format parameter?
+                elif part['type'] == '.':
+                    continue
                 # No arg at all? This won't work
                 else:
                     return False
-                
+                    
                 urllist.append(url_quote(val, self.encoding))
+                if part['type'] == '.':
+                    urllist.append('.')
+
                 if has_arg:
                     del kargs[arg]
                 gaps = True

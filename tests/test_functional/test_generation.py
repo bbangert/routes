@@ -626,6 +626,15 @@ class TestGeneration(unittest.TestCase):
         eq_('/2007/test.xml,ja', m.generate(year=2007, slug='test', format='xml', locale='ja'))
         eq_(None, m.generate(year=2007, format='html'))
 
+    def test_dot_format_args(self):
+        for minimization in [False, True]:
+            m = Mapper(explicit=True)
+            m.minimization=minimization
+            m.connect('/songs/{title}{.format}')
+            
+            eq_('/songs/my-way', m.generate(title='my-way'))
+            eq_('/songs/my-way.mp3', m.generate(title='my-way', format='mp3'))
+
 if __name__ == '__main__':
     unittest.main()
 else:

@@ -750,7 +750,7 @@ class Mapper(SubMapperParent):
             cacheset = True
             newlist = []
             for route in keylist:
-                if len(route.minkeys-keys) == 0:
+                if len(route.minkeys - route.dotkeys - keys) == 0:
                     newlist.append(route)
             keylist = newlist
             
@@ -793,7 +793,7 @@ class Mapper(SubMapperParent):
             keylist.sort(keysort)
             if cacheset:
                 sortcache[cachekey] = keylist
-        
+                
         # Iterate through the keylist of sorted routes (or a single route if
         # it was passed in explicitly for hardcoded named routes)
         for route in keylist:
