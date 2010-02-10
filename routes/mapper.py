@@ -57,21 +57,24 @@ class SubMapperParent(object):
             >>> map.matchlist[1].defaults['controller'] == 'home'
             True
         
-        Optional ``collection_name``, ``resource_name`` and ``formatted``
-        arguments are used in the generation of route names by the ``action``
-        and ``link`` methods.  These in turn are used by the ``index``,
+        Optional ``collection_name`` and ``resource_name`` arguments are
+        used in the generation of route names by the ``action`` and
+        ``link`` methods.  These in turn are used by the ``index``,
         ``new``, ``create``, ``show``, ``edit``, ``update`` and
-        ``delete`` methods which may be invoked by listing them in the
-        ``actions`` argument.
+        ``delete`` methods which may be invoked indirectly by listing
+        them in the ``actions`` argument.  If the ``formatted`` argument
+        is set to ``True`` (the default), generated paths are given the
+        suffix '{.format}' which matches or generates an optional format
+        extension.
         
         Example::
         
             >>> from routes.util import url_for
             >>> map = Mapper(controller_scan=None)
-            >>> m = map.submapper(path_prefix='/entries', collection_name='entries', resource_name='entry', formatted=True, actions=['index', 'new'])
+            >>> m = map.submapper(path_prefix='/entries', collection_name='entries', resource_name='entry', actions=['index', 'new'])
             >>> url_for('entries') == '/entries'
             True
-            >>> url_for('formatted_new_entry', format='xml') == '/entries/new.xml'
+            >>> url_for('new_entry', format='xml') == '/entries/new.xml'
             True
 
         """
@@ -137,8 +140,12 @@ class SubMapper(SubMapperParent):
                             or getattr(obj, 'resource_name', None) \
                             or kwargs.get('controller', None) \
                             or getattr(obj, 'controller', None)
-        self.formatted = formatted or \
-                         (formatted is None and getattr(obj, 'formatted', None))
+        if formatted is not None:
+            self.formatted = formatted
+        else:
+            self.formatted = getattr(obj, 'formatted', None)
+            if self.formatted is None:
+                self.formatted = True
 
         self.add_actions(actions or [])
         
@@ -180,18 +187,17 @@ class SubMapper(SubMapperParent):
             True
             >>> url_for('ping_entry', id=1) == '/entries/1/ping'
             True
-            >>> url_for('formatted_ping_entry', id=1, format='xml') == '/entries/1/ping.xml'
+            >>> url_for('ping_entry', id=1, format='xml') == '/entries/1/ping.xml'
             True
 
         """
         if formatted or (formatted is None and self.formatted):
-            self.connect('formatted_' +
-                            (name or (rel + '_' + self.resource_name)),
-                        ('/' + (rel or name)) + '.{format}',
-                        action=action or rel or name,
-                        **_kwargs_with_conditions(kwargs, method))
+            suffix = '{.format}'
+        else:
+            suffix = ''
+
         return self.connect(name or (rel + '_' + self.resource_name),
-                            '/' + (rel or name),
+                            '/' + (rel or name) + suffix,
                             action=action or rel or name,
                             **_kwargs_with_conditions(kwargs, method))
 
@@ -223,13 +229,11 @@ class SubMapper(SubMapperParent):
 
         """
         if formatted or (formatted is None and self.formatted):
-            self.connect('formatted_' + 
-                            (name or (action + '_' + self.resource_name)),
-                         '.{format}',
-                         action=action or name,
-                         **_kwargs_with_conditions(kwargs, method))
+            suffix = '{.format}'
+        else:
+            suffix = ''
         return self.connect(name or (action + '_' + self.resource_name),
-                            '',
+                            suffix,
                             action=action or name,
                             **_kwargs_with_conditions(kwargs, method))
             
