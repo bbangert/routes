@@ -934,9 +934,13 @@ class TestRecognition(unittest.TestCase):
             m = Mapper(explicit=True)
             m.minimization=minimization
             m.connect('/songs/{title}{.format}')
+            m.connect('/stories/{slug:[^./]+?}{.format:pdf}')
             
             eq_({'title': 'my-way', 'format': None}, m.match('/songs/my-way'))
             eq_({'title': 'my-way', 'format': 'mp3'}, m.match('/songs/my-way.mp3'))
+            eq_({'slug': 'frist-post', 'format': None}, m.match('/stories/frist-post'))
+            eq_({'slug': 'frist-post', 'format': 'pdf'}, m.match('/stories/frist-post.pdf'))
+            eq_(None, m.match('/stories/frist-post.doc'))
 
 
 if __name__ == '__main__':

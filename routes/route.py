@@ -174,15 +174,15 @@ class Route(object):
             elif collecting:
                 collecting = False
                 if var_type == '{':
-                    opts = current.split(':')
-                    if len(opts) > 1:
-                        current = opts[0]
-                        self.reqs[current] = opts[1]
                     if current[0] == '.':
                         var_type = '.'
                         current = current[1:]
                     else:
                         var_type = ':'
+                    opts = current.split(':')
+                    if len(opts) > 1:
+                        current = opts[0]
+                        self.reqs[current] = opts[1]
                 routelist.append(dict(type=var_type, name=current))
                 if char in self.done_chars:
                     routelist.append(char)
@@ -365,6 +365,8 @@ class Route(object):
                     partreg = '(?P<%s>%s)' % (var, self.reqs[var])
                 else:
                     partreg = '(?:%s)' % self.reqs[var]
+                if typ == '.':
+                    partreg = '(?:\.%s)??' % partreg
             elif var == 'controller':
                 if include_names:
                     partreg = '(?P<%s>%s)' % (var, '|'.join(map(re.escape, clist)))

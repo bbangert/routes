@@ -631,9 +631,13 @@ class TestGeneration(unittest.TestCase):
             m = Mapper(explicit=True)
             m.minimization=minimization
             m.connect('/songs/{title}{.format}')
+            m.connect('/stories/{slug}{.format:pdf}')
             
             eq_('/songs/my-way', m.generate(title='my-way'))
             eq_('/songs/my-way.mp3', m.generate(title='my-way', format='mp3'))
+            eq_('/stories/frist-post', m.generate(slug='frist-post'))
+            eq_('/stories/frist-post.pdf', m.generate(slug='frist-post', format='pdf'))
+            eq_(None, m.generate(slug='frist-post', format='doc'))
 
 if __name__ == '__main__':
     unittest.main()
