@@ -11,6 +11,7 @@ Release 1.12 (**tip**)
 * Add SubMapper-based collections
 * Make the deprecated Mapper.minimization False (disabled) by default
 * Make Mapper.explicit True by default
+* Add support for {.format} path extensions
 
 Release 1.11 (September 28, 2009)
 =================================
