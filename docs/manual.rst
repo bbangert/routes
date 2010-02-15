@@ -289,22 +289,22 @@ The lesson is to always test wildcard patterns.
 Format extensions
 -----------------
 
-A path component of {.format} will match an optional format extension (e.g.
+A path component of ``{.format}`` will match an optional format extension (e.g.
 ".html" or ".json"), setting the format variable to the part after the "."
-(e.g. "html" or "json") if there is one, or to None otherwise.  For example::
+(e.g. "html" or "json") if there is one, or to ``None`` otherwise.  For example::
 
     map.connect('/entries/{id}{.format}')
     
-Will match "/entries/1" and "/entries/1.mp3".  You can use requirements to
+will match "/entries/1" and "/entries/1.mp3".  You can use requirements to
 limit which extensions will match, for example::
 
     map.connect('/entries/{id:\d+}{.format:json}')
 
-Will match "/entries/1" and "/entries/1.json" but not "/entries/1.mp3".
+will match "/entries/1" and "/entries/1.json" but not "/entries/1.mp3".
 
 As with wildcard routes, it's important to understand and test this.  Without
-the "\d+" requirement on the id variable above, "/entries/1.mp3" would match
-successfully, with the id variable set to "1.mp3".
+the ``\d+`` requirement on the ``id`` variable above, "/entries/1.mp3" would match
+successfully, with the ``id`` variable capturing "1.mp3".
 
 *New in Routes 1.12.*
 
@@ -356,15 +356,15 @@ configuration.  This::
         m.connect("home", "/", action="splash")
         m.connect("index", "/index", action="index")
         
-can be written
+can be written::
 
     with map.submapper(controller="home", path_prefix="/") as m:
         m.action("home", action="splash")
         m.link("index")
 
-The ``action`` helper generates a route for a single HTTP method
-('GET' is assumed) at the submapper's path ('/' in the example above).  The
-``link`` helper generates a route at a relative path.
+The ``action`` helper generates a route for one or more HTTP methods ('GET' is
+assumed) at the submapper's path ('/' in the example above).  The ``link``
+helper generates a route at a relative path.
 
 There are specific helpers corresponding to the standard ``index``, ``new``,
 ``create``, ``show``, ``edit``, ``update`` and ``delete`` actions.
@@ -382,18 +382,19 @@ or indirectly::
         entries.submapper(path_prefix="/{id}", actions=["show"])
 
 Collection/member submappers nested in this way are common enough that there is
-another helper for this::
+helper for this too::
 
     map.collection(collection_name="entries", member_name="entry",
                    controller="entries",
                    collection_actions=["index"], member_actions["show"])
 
 This returns a submapper instance to which further routes may be added; it has
-a ``member`` property (also a submapper) to which which member-specific routes
+a ``member`` property (a nested submapper) to which which member-specific routes
 can be added.  When ``collection_actions`` or ``member_actions`` are omitted,
-the full set of actions is generated.  ``map.collection()`` may be seen
-therefore as a more flexible ``map.resource`` (see "RESTful services", also
-the example under "Printing").
+the full set of actions is generated (see the example under "Printing" below).
+
+See "RESTful services" below for ``map.resource``, a precursor to
+``map.collection`` that does not use submappers.
 
 *New in Routes 1.12.*
 
