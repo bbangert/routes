@@ -286,6 +286,28 @@ components to the right of it not to match::
 
 The lesson is to always test wildcard patterns.
 
+Format extensions
+-----------------
+
+A path component of ``{.format}`` will match an optional format extension (e.g.
+".html" or ".json"), setting the format variable to the part after the "."
+(e.g. "html" or "json") if there is one, or to ``None`` otherwise.  For example::
+
+    map.connect('/entries/{id}{.format}')
+    
+will match "/entries/1" and "/entries/1.mp3".  You can use requirements to
+limit which extensions will match, for example::
+
+    map.connect('/entries/{id:\d+}{.format:json}')
+
+will match "/entries/1" and "/entries/1.json" but not "/entries/1.mp3".
+
+As with wildcard routes, it's important to understand and test this.  Without
+the ``\d+`` requirement on the ``id`` variable above, "/entries/1.mp3" would match
+successfully, with the ``id`` variable capturing "1.mp3".
+
+*New in Routes 1.12.*
+
 Submappers
 ----------
 
@@ -294,13 +316,13 @@ without having to repeat identical keyword arguments.  There are two syntaxes,
 one using a Python ``with`` block, and the other avoiding it. ::
 
     # Using 'with'
-    map.connect("home", "/", controller="home", action="splash")
     with map.submapper(controller="home") as m:
+        m.connect("home", "/", action="splash")
         m.connect("index", "/index", action="index")
 
     # Not using 'with'
-    map.connect("home", "/", controller="home", action="splash")
     m = map.submapper(controller="home")
+    m.connect("home", "/", action="splash")
     m.connect("index", "/index", action="index")
 
     # Both of these syntaxes create the following routes::
@@ -323,6 +345,58 @@ with a ``.connect`` method that adds routes to the mapper it was spawned
 from.
 
 *New in Routes 1.11.*
+
+Submapper helpers
+-----------------
+
+Submappers contain a number of helpers that further simplify routing
+configuration.  This::
+
+    with map.submapper(controller="home") as m:
+        m.connect("home", "/", action="splash")
+        m.connect("index", "/index", action="index")
+        
+can be written::
+
+    with map.submapper(controller="home", path_prefix="/") as m:
+        m.action("home", action="splash")
+        m.link("index")
+
+The ``action`` helper generates a route for one or more HTTP methods ('GET' is
+assumed) at the submapper's path ('/' in the example above).  The ``link``
+helper generates a route at a relative path.
+
+There are specific helpers corresponding to the standard ``index``, ``new``,
+``create``, ``show``, ``edit``, ``update`` and ``delete`` actions.
+You can use these directly::
+
+    with map.submapper(controller="entries", path_prefix="/entries") as entries:
+        entries.index()
+        with entries.submapper(path_prefix="/{id}") as entry:
+            entry.show()
+
+or indirectly::
+
+    with map.submapper(controller="entries", path_prefix="/entries",
+                       actions=["index"]) as entries:
+        entries.submapper(path_prefix="/{id}", actions=["show"])
+
+Collection/member submappers nested in this way are common enough that there is
+helper for this too::
+
+    map.collection(collection_name="entries", member_name="entry",
+                   controller="entries",
+                   collection_actions=["index"], member_actions["show"])
+
+This returns a submapper instance to which further routes may be added; it has
+a ``member`` property (a nested submapper) to which which member-specific routes
+can be added.  When ``collection_actions`` or ``member_actions`` are omitted,
+the full set of actions is generated (see the example under "Printing" below).
+
+See "RESTful services" below for ``map.resource``, a precursor to
+``map.collection`` that does not use submappers.
+
+*New in Routes 1.12.*
 
 Adding routes from a nested application
 ---------------------------------------
@@ -807,6 +881,26 @@ string. ::
     map.redirect("/home/index", "/", _redirect_code="301 Moved Permanently")
 
 *New in Routes 1.10.*
+
+Printing
+========
+
+Mappers now have a formatted string representation.  In your python shell,
+simply print your application's mapper::
+
+    >>> map.collection("entries", "entry")
+    >>> print map
+    Route name   Methods Path
+    entries      GET     /entries{.format}
+    create_entry POST    /entries{.format}
+    new_entry    GET     /entries/new{.format}
+    entry        GET     /entries/{id}{.format}
+    update_entry PUT     /entries/{id}{.format}
+    delete_entry DELETE  /entries/{id}{.format}
+    edit_entry   GET     /entries/{id}/edit{.format}
+
+*New in Routes 1.12.*
+
 
 Introspection
 =============
