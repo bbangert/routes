@@ -2,10 +2,7 @@
 import re
 import logging
 
-try:
-    from webob import Request
-except:
-    pass
+from webob import Request
 
 from routes.base import request_config
 from routes.util import URLGenerator, url_for
@@ -45,9 +42,6 @@ class RoutesMiddleware(object):
     def __call__(self, environ, start_response):
         """Resolves the URL in PATH_INFO, and uses wsgi.routing_args
         to pass on URL resolver results."""
-        config = request_config()
-        config.mapper = self.mapper
-        
         old_method = None
         if self.use_method_override:
             req = None
@@ -79,10 +73,11 @@ class RoutesMiddleware(object):
         
         # Run the actual route matching
         # -- Assignment of environ to config triggers route matching
-        config.environ = environ
-        
-        match = config.mapper_dict
-        route = config.route
+        results = self.mapper.routematch(environ=environ)
+        if results:
+            match, route = results[0], results[1]
+        else:
+            match = route = None
                 
         if old_method:
             environ['REQUEST_METHOD'] = old_method
@@ -131,7 +126,6 @@ class RoutesMiddleware(object):
         
         # Wrapped in try as in rare cases the attribute will be gone already
         try:
-            del config.environ
             del self.mapper.environ
         except AttributeError:
             pass

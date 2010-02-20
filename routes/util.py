@@ -77,14 +77,7 @@ def _subdomain_check(kargs, mapper, environ):
         if isinstance(subdomain, unicode):
             subdomain = str(subdomain)
         
-        # We use a try/except here, cause the only time there should be no
-        # environ is when we're unit testing, in which case we shouldn't be
-        # changing kargs and such. The exception catching also won't hurt as
-        # badly here vs doing a hasattr on every url check
-        try:
-            fullhost = environ.get('HTTP_HOST') or environ.get('SERVER_NAME')
-        except AttributeError:
-            return kargs
+        fullhost = environ.get('HTTP_HOST') or environ.get('SERVER_NAME')
         
         # In case environ defaulted to {}
         if not fullhost:
