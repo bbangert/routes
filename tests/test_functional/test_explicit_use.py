@@ -48,8 +48,11 @@ class TestUtils(unittest.TestCase):
         eq_('http://home.localhost.com/hi/smith', url(fred='smith', sub_domain=u'home', qualified=True))
         
         environ = {'HTTP_HOST': 'here.localhost.com', 'PATH_INFO': '/hi/smith'}
-        url = URLGenerator(m, environ)
+        url = URLGenerator(m, environ.copy())
         assert_raises(GenerationException, lambda: url.current(qualified=True))
+        
+        url = URLGenerator(m, {})
+        eq_('/hi/smith', url(fred='smith', sub_domain=u'home'))
 
     def test_anchor(self):
         m = Mapper()

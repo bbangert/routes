@@ -28,6 +28,14 @@ class TestUtils(unittest.TestCase):
         eq_('/blog', url_for('/blog'))
         eq_('/blog?q=fred&q=here%20now', url_for('/blog', q=['fred', u'here now']))
         eq_('/blog#here', url_for('/blog', anchor='here'))
+
+    def test_url_for_with_nongen_no_encoding(self):
+        con = self.con
+        con.mapper_dict = {}
+        con.mapper.encoding = None
+        
+        eq_('/blog', url_for('/blog'))
+        eq_('/blog#here', url_for('/blog', anchor='here'))
         
     def test_url_for_with_unicode(self):
         con = self.con

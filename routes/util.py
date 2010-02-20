@@ -53,8 +53,6 @@ def _screenargs(kargs, mapper, environ):
     route_args = environ.get('wsgiorg.routing_args')
     if route_args:
         memory_kargs = route_args[1].copy()
-    else:
-        memory_kargs = {}
      
     # Remove keys from memory and kargs if kargs has them as None
     for key in [key for key in kargs.keys() if kargs[key] is None]:
@@ -134,8 +132,6 @@ def _str_encode(string, encoding):
             s = string
         else:
             s = unicode(string).encode(encoding)
-    else:
-        s = str(string)
     return s
 
 
