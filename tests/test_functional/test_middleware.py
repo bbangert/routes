@@ -21,7 +21,35 @@ def test_basic():
     
     res = app.get('/content')
     assert "matchdict items are [('action', 'index'), ('controller', u'content'), ('id', None)]" in res
+
+def test_no_query():
+    map = Mapper(explicit=False)
+    map.minimization = True
+    map.connect('myapp/*path_info', controller='myapp')
+    map.connect('project/*path_info', controller='myapp')
+    map.create_regs(['content', 'myapp'])
     
+    app = RoutesMiddleware(simple_app, map)
+    env = {'PATH_INFO': '/', 'REQUEST_METHOD': 'GET'}
+    def start_response_wrapper(status, headers, exc=None):
+        pass
+    response = ''.join(app(env, start_response_wrapper))
+    assert 'matchdict items are []' in response    
+
+def test_content_split():
+    map = Mapper(explicit=False)
+    map.minimization = True
+    map.connect('myapp/*path_info', controller='myapp')
+    map.connect('project/*path_info', controller='myapp')
+    map.create_regs(['content', 'myapp'])
+    
+    app = RoutesMiddleware(simple_app, map)
+    env = {'PATH_INFO': '/', 'REQUEST_METHOD': 'POST', 'CONTENT_TYPE': 'text/plain;text/html'}
+    def start_response_wrapper(status, headers, exc=None):
+        pass
+    response = ''.join(app(env, start_response_wrapper))
+    assert 'matchdict items are []' in response    
+
 def test_path_info():
     map = Mapper(explicit=False)
     map.minimization = True

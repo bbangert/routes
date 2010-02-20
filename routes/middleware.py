@@ -119,8 +119,6 @@ class RoutesMiddleware(object):
                 environ['PATH_INFO'] = '/' + environ['PATH_INFO']
             environ['SCRIPT_NAME'] += re.sub(r'^(.*?)/' + re.escape(newpath) + '$', 
                                              r'\1', oldpath)
-            if environ['SCRIPT_NAME'].endswith('/'):
-                environ['SCRIPT_NAME'] = environ['SCRIPT_NAME'][:-1]
         
         response = self.app(environ, start_response)
         
