@@ -192,8 +192,6 @@ def url_for(*args, **kargs):
     for key in ['anchor', 'host', 'protocol']:
         if kargs.get(key):
             del kargs[key]
-        if kargs.has_key(key+'_'):
-            kargs[key] = kargs.pop(key+'_')
     config = request_config()
     route = None
     static = False
@@ -336,8 +334,6 @@ class URLGenerator(object):
         for key in ['anchor', 'host', 'protocol']:
             if kargs.get(key):
                 del kargs[key]
-            if kargs.has_key(key+'_'):
-                kargs[key] = kargs.pop(key+'_')
         
         route = None
         use_current = '_use_current' in kargs and kargs.pop('_use_current')
@@ -345,7 +341,7 @@ class URLGenerator(object):
         static = False
         encoding = self.mapper.encoding
         url = ''
-        
+                
         more_args = len(args) > 0
         if more_args:
             route = self.mapper._routenames.get(args[0])
@@ -353,7 +349,6 @@ class URLGenerator(object):
         if not route and more_args:
             static = True
             url = args[0]
-
             if url.startswith('/') and self.environ.get('SCRIPT_NAME'):
                 url = self.environ.get('SCRIPT_NAME') + url
 
@@ -383,7 +378,6 @@ class URLGenerator(object):
                 # If this route has a filter, apply it
                 if route.filter:
                     newargs = route.filter(newargs)
-                
                 if not route.static or (route.static and not route.external):
                     # Handle sub-domains
                     newargs = _subdomain_check(newargs, self.mapper,

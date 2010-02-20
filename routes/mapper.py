@@ -594,7 +594,7 @@ class Mapper(SubMapperParent):
         self._master_regexp = re.compile(regexp)
         self._created_regs = True
     
-    def _match(self, url):
+    def _match(self, url, environ):
         """Internal Route matcher
         
         Matches a URL against a route, and returns a tuple of the match
@@ -622,7 +622,7 @@ class Mapper(SubMapperParent):
             else:
                 return (None, None, matchlog)
                 
-        environ = self.environ
+        environ = environ or self.environ
         sub_domains = self.sub_domains
         sub_domains_ignore = self.sub_domains_ignore
         domain_match = self.domain_match
@@ -647,7 +647,7 @@ class Mapper(SubMapperParent):
                 return (match, route, matchlog)
         return (None, None, matchlog)
     
-    def match(self, url):
+    def match(self, url=None, environ=None):
         """Match a URL against against one of the routes contained.
         
         Will return None if no valid match is found.
@@ -657,18 +657,20 @@ class Mapper(SubMapperParent):
             resultdict = m.match('/joe/sixpack')
         
         """
-        if not url:
-            raise RoutesException('No URL provided, the minimum URL necessary'
-                                 ' to match is "/".')
+        if not url and not environ:
+            raise RoutesException('URL or environ must be provided')
         
-        result = self._match(url)
+        if not url:
+            url = environ['PATH_INFO']
+                
+        result = self._match(url, environ)
         if self.debug:
             return result[0], result[1], result[2]
         if isinstance(result[0], dict) or result[0]:
             return result[0]
         return None
     
-    def routematch(self, url):
+    def routematch(self, url=None, environ=None):
         """Match a URL against against one of the routes contained.
         
         Will return None if no valid match is found, otherwise a
@@ -679,7 +681,12 @@ class Mapper(SubMapperParent):
             resultdict, route_obj = m.match('/joe/sixpack')
         
         """
-        result = self._match(url)
+        if not url and not environ:
+            raise RoutesException('URL or environ must be provided')
+        
+        if not url:
+            url = environ['PATH_INFO']
+        result = self._match(url, environ)
         if self.debug:
             return result[0], result[1], result[2]
         if isinstance(result[0], dict) or result[0]:

@@ -22,6 +22,15 @@ class TestGeneration(unittest.TestCase):
             eq_('/hi/show', m.generate(fred='show'))
             eq_('/hi/list%20people', m.generate(fred='list people'))
             eq_(None, m.generate())
+
+    def test_basic_dynamic_explicit_use(self):
+        m = Mapper()
+        m.connect('hi/{fred}')
+        url = URLGenerator(m, {})
+        
+        eq_('/hi/index', url(fred='index'))
+        eq_('/hi/show', url(fred='show'))
+        eq_('/hi/list%20people', url(fred='list people'))
     
     def test_dynamic_with_default(self):
         for path in ['hi/:action', 'hi/:(action)']:

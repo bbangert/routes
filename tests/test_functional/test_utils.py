@@ -21,6 +21,14 @@ class TestUtils(unittest.TestCase):
             del con.environ
         self.con = con
     
+    def test_url_for_with_nongen(self):
+        con = self.con
+        con.mapper_dict = {}
+        
+        eq_('/blog', url_for('/blog'))
+        eq_('/blog?q=fred&q=here%20now', url_for('/blog', q=['fred', u'here now']))
+        eq_('/blog#here', url_for('/blog', anchor='here'))
+        
     def test_url_for_with_unicode(self):
         con = self.con
         con.mapper_dict = {}
