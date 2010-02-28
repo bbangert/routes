@@ -30,7 +30,7 @@ def test_no_query():
     map.create_regs(['content', 'myapp'])
     
     app = RoutesMiddleware(simple_app, map)
-    env = {'PATH_INFO': '/', 'REQUEST_METHOD': 'GET'}
+    env = {'PATH_INFO': '/', 'REQUEST_METHOD': 'GET', 'HTTP_HOST': 'localhost'}
     def start_response_wrapper(status, headers, exc=None):
         pass
     response = ''.join(app(env, start_response_wrapper))
@@ -44,11 +44,34 @@ def test_content_split():
     map.create_regs(['content', 'myapp'])
     
     app = RoutesMiddleware(simple_app, map)
+    env = {'PATH_INFO': '/', 'REQUEST_METHOD': 'POST', 'CONTENT_TYPE': 'text/plain;text/html',
+           'HTTP_HOST': 'localhost'}
+    def start_response_wrapper(status, headers, exc=None):
+        pass
+    response = ''.join(app(env, start_response_wrapper))
+    assert 'matchdict items are []' in response
+
+def test_no_singleton():
+    map = Mapper(explicit=False)
+    map.minimization = True
+    map.connect('myapp/*path_info', controller='myapp')
+    map.connect('project/*path_info', controller='myapp')
+    map.create_regs(['content', 'myapp'])
+    
+    app = RoutesMiddleware(simple_app, map, singleton=False)
     env = {'PATH_INFO': '/', 'REQUEST_METHOD': 'POST', 'CONTENT_TYPE': 'text/plain;text/html'}
     def start_response_wrapper(status, headers, exc=None):
         pass
     response = ''.join(app(env, start_response_wrapper))
-    assert 'matchdict items are []' in response    
+    assert 'matchdict items are []' in response
+    
+    # Now a match
+    env = {'PATH_INFO': '/project/fred', 'REQUEST_METHOD': 'POST', 'CONTENT_TYPE': 'text/plain;text/html'}
+    def start_response_wrapper(status, headers, exc=None):
+        pass
+    response = ''.join(app(env, start_response_wrapper))
+    assert "matchdict items are [('action', u'index'), ('controller', u'myapp'), ('path_info', 'fred')]" in response
+    
 
 def test_path_info():
     map = Mapper(explicit=False)

@@ -13,7 +13,7 @@ class RoutesMiddleware(object):
     """Routing middleware that handles resolving the PATH_INFO in
     addition to optionally recognizing method overriding."""
     def __init__(self, wsgi_app, mapper, use_method_override=True, 
-                 path_info=True):
+                 path_info=True, singleton=True):
         """Create a Route middleware object
         
         Using the use_method_override keyword will require Paste to be
@@ -32,6 +32,7 @@ class RoutesMiddleware(object):
         """
         self.app = wsgi_app
         self.mapper = mapper
+        self.singleton = singleton
         self.use_method_override = use_method_override
         self.path_info = path_info
         log_debug = self.log_debug = logging.DEBUG >= log.getEffectiveLevel()
@@ -73,11 +74,18 @@ class RoutesMiddleware(object):
         
         # Run the actual route matching
         # -- Assignment of environ to config triggers route matching
-        results = self.mapper.routematch(environ=environ)
-        if results:
-            match, route = results[0], results[1]
+        if self.singleton:
+            config = request_config()
+            config.mapper = self.mapper
+            config.environ = environ
+            match = config.mapper_dict
+            route = config.route
         else:
-            match = route = None
+            results = self.mapper.routematch(environ=environ)
+            if results:
+                match, route = results[0], results[1]
+            else:
+                match = route = None
                 
         if old_method:
             environ['REQUEST_METHOD'] = old_method
