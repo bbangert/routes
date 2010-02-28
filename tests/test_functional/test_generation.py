@@ -22,6 +22,17 @@ class TestGeneration(unittest.TestCase):
             eq_('/hi/show', m.generate(fred='show'))
             eq_('/hi/list%20people', m.generate(fred='list people'))
             eq_(None, m.generate())
+    
+    def test_relative_url(self):
+        m = Mapper(explicit=False)
+        m.minimization = True
+        m.environ = dict(HTTP_HOST='localhost')
+        url = URLGenerator(m, m.environ)
+        m.connect(':controller/:action/:id')
+        m.create_regs(['content','blog','admin/comments'])
+
+        eq_('about', url('about'))
+        eq_('http://localhost/about', url('about', qualified=True))
 
     def test_basic_dynamic_explicit_use(self):
         m = Mapper()

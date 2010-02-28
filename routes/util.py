@@ -399,7 +399,9 @@ class URLGenerator(object):
             if not protocol:
                 protocol = hostinfo['protocol']
             if url is not None:
-                url = protocol + '://' + host + url
+                if host[-1] != '/':
+                    host += '/'
+                url = protocol + '://' + host + url.lstrip('/')
 
         if not isinstance(url, str) and url is not None:
             raise GenerationException("Can only return a string, got "
