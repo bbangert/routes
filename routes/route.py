@@ -50,6 +50,7 @@ class Route(object):
         self.prior = None
         self.redirect = False
         self.name = name
+        self._kargs = kargs
         self.minimization = kargs.pop('_minimize', False)
         self.encoding = kargs.pop('_encoding', 'utf-8')
         self.reqs = kargs.get('requirements', {})
@@ -81,7 +82,6 @@ class Route(object):
         # Strip preceding '/' if present, and not minimizing
         if routepath.startswith('/') and self.minimization:
             self.routepath = routepath[1:]
-        self._kargs = kargs
         self._setup_route()
         
     def _setup_route(self):
@@ -103,7 +103,8 @@ class Route(object):
         # Update our defaults and set new default keys if needed. defaults
         # needs to be saved
         (self.defaults, defaultkeys) = self._defaults(routekeys, 
-                                                      self.reserved_keys, self._kargs)
+                                                      self.reserved_keys, 
+                                                      self._kargs.copy())
         # Save the maximum keys we could utilize
         self.maxkeys = defaultkeys | routekeys
         

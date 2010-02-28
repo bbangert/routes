@@ -3,6 +3,8 @@ Routes Changelog
 
 Release 1.12 (**tip**)
 ======================
+* Fix bug with mapper.extend and Routes modifying their original args.
+  Fixes #24.
 * Fix url.current() not returning current args when explicit is True.
 * Added explicit way to directly use the Mapper to match with environ.
 * Fix bug with improper len placement for submapper.

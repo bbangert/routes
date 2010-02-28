@@ -3,6 +3,7 @@ import os, sys, time, unittest
 from nose.tools import eq_, assert_raises
 
 from routes import *
+from routes.route import Route
 from routes.util import GenerationException
 
 class TestUtils(unittest.TestCase):
@@ -82,3 +83,12 @@ class TestUtils(unittest.TestCase):
         environ['wsgiorg.routing_args'] = (None, match)
         url = URLGenerator(m, environ)
         eq_('/hi/smith', url.current())
+
+    def test_add_routes(self):
+        map = Mapper(explicit=True)
+        map.minimization = False
+        routes = [
+            Route('foo', '/foo',)
+        ]
+        map.extend(routes)
+        eq_(map.match('/foo'), {})
