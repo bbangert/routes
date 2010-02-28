@@ -10,8 +10,9 @@ Release 1.12 (**tip**)
   in a single regexp match should none of the routes match.
 * Give Mapper a tabular string representation.
 * Make SubMapper objects nestable and add route-generation helpers.
-* Add SubMapper-based collections
-* Make the deprecated Mapper.minimization False (disabled) by default
+* Add SubMapper-based collections.
+* Make the deprecated Mapper.minimization False (disabled) by default.
+* Make the mapper explicit (true) by default.
 
 Release 1.11 (September 28, 2009)
 =================================
