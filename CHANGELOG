@@ -3,6 +3,7 @@ Routes Changelog
 
 Release 1.12 (**tip**)
 ======================
+* Fix url.current() not returning current args when explicit is True.
 * Added explicit way to directly use the Mapper to match with environ.
 * Fix bug with improper len placement for submapper.
 * Adding regular expression builder for entire regexp for faster rejection

@@ -23,7 +23,7 @@ class GenerationException(RoutesException):
     """Tossed during URL generation exceptions"""
 
 
-def _screenargs(kargs, mapper, environ):
+def _screenargs(kargs, mapper, environ, force_explicit=False):
     """
     Private function that takes a dict, and screens it against the current 
     request dict to determine what the dict should look like that is used. 
@@ -35,9 +35,9 @@ def _screenargs(kargs, mapper, environ):
         if isinstance(val, unicode):
             kargs[key] = val.encode(encoding)
     
-    if mapper.explicit and mapper.sub_domains:
+    if mapper.explicit and mapper.sub_domains and not force_explicit:
         return _subdomain_check(kargs, mapper, environ)
-    elif mapper.explicit:
+    elif mapper.explicit and not force_explicit:
         return kargs
     
     controller_name = kargs.get('controller')
@@ -53,6 +53,8 @@ def _screenargs(kargs, mapper, environ):
     route_args = environ.get('wsgiorg.routing_args')
     if route_args:
         memory_kargs = route_args[1].copy()
+    else:
+        memory_kargs = {}
      
     # Remove keys from memory and kargs if kargs has them as None
     for key in [key for key in kargs.keys() if kargs[key] is None]:
@@ -372,7 +374,7 @@ class URLGenerator(object):
                     newargs = _subdomain_check(newargs, self.mapper,
                                                self.environ)
             elif use_current:
-                newargs = _screenargs(kargs, self.mapper, self.environ)
+                newargs = _screenargs(kargs, self.mapper, self.environ, force_explicit=True)
             elif 'sub_domain' in kargs:
                 newargs = _subdomain_check(kargs, self.mapper, self.environ)
             else:

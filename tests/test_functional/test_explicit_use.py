@@ -71,3 +71,14 @@ class TestUtils(unittest.TestCase):
         url = URLGenerator(m, {})
         
         eq_('/here?q=fred&q=here%20now', url('/here', q=[u'fred', 'here now']))
+    
+    def test_current(self):
+        m = Mapper()
+        m.explicit = True
+        m.connect('/hi/{fred}')
+        
+        environ = {'HTTP_HOST': 'localhost.com', 'PATH_INFO': '/hi/smith'}
+        match = m.routematch(environ=environ)[0]
+        environ['wsgiorg.routing_args'] = (None, match)
+        url = URLGenerator(m, environ)
+        eq_('/hi/smith', url.current())
