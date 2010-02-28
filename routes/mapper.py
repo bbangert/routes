@@ -393,7 +393,7 @@ class Mapper(SubMapperParent):
         def format_methods(r):
             if r.conditions:
                 method = r.conditions.get('method', '')
-                return method if type(method) is str else ', '.join(method)
+                return type(method) is str and method or ', '.join(method)
             else:
                 return ''
 
