@@ -3,6 +3,7 @@ Routes Changelog
 
 Release 1.12 (**tip**)
 ======================
+* Split up the Routes docs.
 * Fix bug with relative URL's using qualified merging host and URL without
   including the appropriate slash. Fixes #13.
 * Fix bug with mapper.extend and Routes modifying their original args.

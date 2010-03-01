@@ -9,4 +9,6 @@ syntax:glob
 build
 dist
 docs/_build
+*.xml
+html_coverage
 .hgignore

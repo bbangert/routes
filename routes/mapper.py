@@ -1,10 +1,7 @@
+"""Mapper and Sub-Mapper"""
 import re
 import sys
 import threading
-import threadinglocal
-
-if sys.version < '2.4':
-    from sets import ImmutableSet as frozenset
 
 from routes import request_config
 from routes.lru import LRUCache
@@ -367,7 +364,7 @@ class Mapper(SubMapperParent):
         self._created_gens = False
         self._master_regexp = None
         self.prefix = None
-        self.req_data = threadinglocal.local()
+        self.req_data = threading.local()
         self.directory = directory
         self.always_scan = always_scan
         self.controller_scan = controller_scan

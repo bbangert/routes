@@ -1,5 +1,5 @@
 """Provides common classes and functions most users will want access to."""
-import threadinglocal, sys
+import threading, sys
 
 class _RequestConfig(object):
     """
@@ -8,7 +8,7 @@ class _RequestConfig(object):
     The Routes RequestConfig object is a thread-local singleton that should 
     be initialized by the web framework that is utilizing Routes.
     """
-    __shared_state = threadinglocal.local()
+    __shared_state = threading.local()
     
     def __getattr__(self, name):
         return getattr(self.__shared_state, name)
