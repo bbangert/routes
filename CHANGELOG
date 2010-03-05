@@ -3,7 +3,7 @@ Routes Changelog
 
 Release 1.13 (**tip**)
 ======================
-
+* Fix bug with routes not handling sub-domain defaults during generation.
 
 Release 1.12 (February 28, 2010)
 ================================

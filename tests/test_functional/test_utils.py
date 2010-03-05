@@ -675,6 +675,32 @@ class TestUtils(unittest.TestCase):
             del self.con.environ['routes.cached_hostinfo']
             eq_('http://new.example.com/category', urlobj('category_home', sub_domain='new'))
     
+    def test_subdomains_with_default(self):
+        base_environ = dict(SCRIPT_NAME='', PATH_INFO='/', HTTP_HOST='example.com:8000', SERVER_NAME='example.com')
+        self.con.mapper_dict = {}
+        self.con.environ = base_environ.copy()
+
+        m = Mapper(explicit=False)
+        m.minimization = True
+        m.sub_domains = True
+        m.connect(':controller/:action/:id')
+        m.connect('category_home', 'category/:section', controller='blog', action='view', section='home',
+                  sub_domain='cat', conditions=dict(sub_domain=['cat']))
+        m.connect('building', 'building/:campus/:building/alljacks', controller='building', action='showjacks')
+        m.create_regs(['content','blog','admin/comments','building'])
+        self.con.mapper = m
+        
+        urlobj = URLGenerator(m, self.con.environ)
+        self.con.environ['HTTP_HOST'] = 'example.com:8000'
+        eq_('/content/view', urlobj(controller='content', action='view'))
+        eq_('http://cat.example.com:8000/category', urlobj('category_home'))
+    
+        self.con.environ['HTTP_HOST'] = 'example.com'
+        del self.con.environ['routes.cached_hostinfo']
+        
+        assert_raises(GenerationException, lambda: urlobj('category_home', sub_domain='new'))
+
+    
     def test_controller_scan(self):
         here_dir = os.path.dirname(__file__)
         controller_dir = os.path.join(os.path.dirname(here_dir), 

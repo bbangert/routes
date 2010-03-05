@@ -370,9 +370,15 @@ class URLGenerator(object):
                 if route.filter:
                     newargs = route.filter(newargs)
                 if not route.static or (route.static and not route.external):
-                    # Handle sub-domains
+                    # Handle sub-domains, retain sub_domain if there is one
+                    sub = newargs.get('sub_domain', None)
                     newargs = _subdomain_check(newargs, self.mapper,
                                                self.environ)
+                    # If the route requires a sub-domain, and we have it, restore
+                    # it
+                    if 'sub_domain' in route.defaults:
+                        newargs['sub_domain'] = sub
+                    
             elif use_current:
                 newargs = _screenargs(kargs, self.mapper, self.environ, force_explicit=True)
             elif 'sub_domain' in kargs:

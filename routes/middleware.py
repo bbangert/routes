@@ -109,7 +109,7 @@ class RoutesMiddleware(object):
 
         if route and route.redirect:
             route_name = '_redirect_%s' % id(route)
-            location = url_for(route_name, **match)
+            location = url(route_name, **match)
             log.debug("Using redirect route, redirect to '%s' with status"
                       "code: %s", location, route.redirect_status)
             start_response(route.redirect_status, 
