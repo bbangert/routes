@@ -92,3 +92,16 @@ class TestUtils(unittest.TestCase):
         ]
         map.extend(routes)
         eq_(map.match('/foo'), {})
+    
+    def test_using_func(self):
+        def fred(view): pass
+        
+        m = Mapper()
+        m.explicit = True
+        m.connect('/hi/{fred}', controller=fred)
+        
+        environ = {'HTTP_HOST': 'localhost.com', 'PATH_INFO': '/hi/smith'}
+        match = m.routematch(environ=environ)[0]
+        environ['wsgiorg.routing_args'] = (None, match)
+        url = URLGenerator(m, environ)
+        eq_('/hi/smith', url.current())

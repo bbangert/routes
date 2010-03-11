@@ -814,7 +814,7 @@ class Mapper(SubMapperParent):
                     kval = kval.decode(self.encoding)
                 else:
                     kval = unicode(kval)
-                if kval != route.defaults[key]:
+                if kval != route.defaults[key] and not callable(route.defaults[key]):
                     fail = True
                     break
             if fail:
@@ -1144,7 +1144,7 @@ class Mapper(SubMapperParent):
         # Create the dict of args for the generation route
         for key in both_args + gen_args:
             if key in kwargs:
-                gen_dict = kwargs[key]
+                gen_dict[key] = kwargs[key]
         gen_dict['_static'] = True
         
         # Create the dict of args for the matching route

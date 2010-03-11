@@ -385,6 +385,7 @@ class URLGenerator(object):
                 newargs = _subdomain_check(kargs, self.mapper, self.environ)
             else:
                 newargs = kargs
+            
             anchor = anchor or newargs.pop('_anchor', None)
             host = host or newargs.pop('_host', None)
             protocol = protocol or newargs.pop('_protocol', None)
