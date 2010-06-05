@@ -1,8 +1,8 @@
 Routes Changelog
 %%%%%%%%%%%%%%%%
 
-Release 1.12.3 (**tip**)
-========================
+Release 1.12.3 (June 5, 2010)
+=============================
 * Fix bug with URLGenerator not properly including SCRIPT_NAME when generating
   URL's and the singleton is not present.
 
