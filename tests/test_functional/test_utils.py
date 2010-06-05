@@ -291,6 +291,7 @@ class TestUtils(unittest.TestCase):
         m.connect(':controller/:action/:id')
         m.connect('home', 'http://www.groovie.org/', _static=True)
         m.connect('space', '/nasa/images', _static=True)
+        m.connect('login', '/login', action='nowhereville')
         m.create_regs(['content', 'blog'])
         
         self.con.environ.update({'wsgiorg.routing_args':((), {})})
@@ -301,6 +302,7 @@ class TestUtils(unittest.TestCase):
             eq_('/webapp/content/view', urlobj(controller='content', action='view'))
             eq_('/webapp/nasa/images?search=all', urlobj('space', search='all'))
             eq_('http://example.com/webapp/nasa/images', urlobj('space', protocol='http'))
+            eq_('http://example.com/webapp/login', urlobj('login', qualified=True))
     
     def test_static_route_with_vars(self):
         m = self.con.mapper

@@ -105,3 +105,17 @@ class TestUtils(unittest.TestCase):
         environ['wsgiorg.routing_args'] = (None, match)
         url = URLGenerator(m, environ)
         eq_('/hi/smith', url.current())
+    
+    def test_using_prefix(self):
+        m = Mapper()
+        m.explicit = True
+        m.connect('/{first}/{last}')
+        
+        environ = {'HTTP_HOST': 'localhost.com', 'PATH_INFO': '/content/index', 'SCRIPT_NAME': '/jones'}
+        match = m.routematch(environ=environ)[0]
+        environ['wsgiorg.routing_args'] = (None, match)
+        url = URLGenerator(m, environ)
+        
+        eq_('/jones/content/index', url.current())
+        eq_('/jones/smith/barney', url(first='smith', last='barney'))
+
