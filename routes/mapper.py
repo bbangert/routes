@@ -3,8 +3,10 @@ import re
 import sys
 import threading
 
+import pkg_resources
+from repoze.lru import LRUCache
+
 from routes import request_config
-from routes.lru import LRUCache
 from routes.util import controller_scan, MatchException, RoutesException
 from routes.route import Route
 
@@ -736,8 +738,9 @@ class Mapper(SubMapperParent):
         
             # Check the url cache to see if it exists, use it if it does
             for key in [cache_key, cache_key_script_name]:
-                if key in self.urlcache:
-                    return self.urlcache[key]
+                val = self.urlcache.get(key, self)
+                if val != self:
+                    return val
         
         actionlist = self._gendict.get(controller) or self._gendict.get('*', {})
         if not actionlist and not args:
@@ -832,7 +835,7 @@ class Mapper(SubMapperParent):
                 else:
                     key = cache_key
                 if self.urlcache is not None:
-                    self.urlcache[key] = str(path)
+                    self.urlcache.put(key, str(path))
                 return str(path)
             else:
                 continue
