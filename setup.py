@@ -5,7 +5,7 @@ except ImportError:
     use_setuptools()
     from setuptools import setup, find_packages
 
-version = '1.12.3'
+version = '2.0'
 
 setup(name="Routes",
       version=version,
@@ -23,6 +23,7 @@ A Routing package for Python that matches URL's to dicts and vice versa
                    "Topic :: Software Development :: Libraries :: Python Modules",
                    ],
       author='Ben Bangert',
+      install_requires=['repoze.lru>=0.3'],
       author_email='ben@groovie.org',
       url='http://routes.groovie.org/',
       zip_safe=False,
