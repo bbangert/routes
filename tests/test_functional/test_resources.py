@@ -127,6 +127,28 @@ class TestResourceRecognition(unittest.TestCase):
         test_path('/people/2.json', 'PUT')
         eq_({'controller':'people', 'action':'update', 'id':'2', 'format':'json'}, con.mapper_dict        )
 
+        # Test for dots in urls
+        test_path('/people/2\.13', 'PUT')
+        eq_({'controller':'people', 'action':'update', 'id':'2\.13'}, con.mapper_dict)
+        test_path('/people/2\.13.xml', 'PUT')
+        eq_({'controller':'people', 'action':'update', 'id':'2\.13', 'format':'xml'}, con.mapper_dict)
+        test_path('/people/user\.name', 'PUT')
+        eq_({'controller':'people', 'action':'update', 'id':'user\.name'}, con.mapper_dict)
+        test_path('/people/user\.\.\.name', 'PUT')
+        eq_({'controller':'people', 'action':'update', 'id':'user\.\.\.name'}, con.mapper_dict)
+        test_path('/people/user\.name\.has\.dots', 'PUT')
+        eq_({'controller':'people', 'action':'update', 'id':'user\.name\.has\.dots'}, con.mapper_dict)
+        test_path('/people/user\.name\.is\.something.xml', 'PUT')
+        eq_({'controller':'people', 'action':'update', 'id':'user\.name\.is\.something', 'format':'xml'}, con.mapper_dict)
+        test_path('/people/user\.name\.ends\.with\.dot\..xml', 'PUT')
+        eq_({'controller':'people', 'action':'update', 'id':'user\.name\.ends\.with\.dot\.', 'format':'xml'}, con.mapper_dict)
+        test_path('/people/user\.name\.ends\.with\.dot\.', 'PUT')
+        eq_({'controller':'people', 'action':'update', 'id':'user\.name\.ends\.with\.dot\.'}, con.mapper_dict)
+        test_path('/people/\.user\.name\.starts\.with\.dot', 'PUT')
+        eq_({'controller':'people', 'action':'update', 'id':'\.user\.name\.starts\.with\.dot'}, con.mapper_dict)
+        test_path('/people/user\.name.json', 'PUT')
+        eq_({'controller':'people', 'action':'update', 'id':'user\.name', 'format':'json'}, con.mapper_dict)
+
     def test_resource_with_nomin(self):
         m = Mapper()
         m.minimization = False
