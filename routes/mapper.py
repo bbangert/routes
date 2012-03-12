@@ -1082,8 +1082,8 @@ class Mapper(SubMapperParent):
                 self.connect("formatted_" + name_prefix + name, formatted_path, 
                              **route_options)
                 self.connect(name_prefix + name, path, **route_options)
-        
-        requirements_regexp = '[^\/]+'
+
+        requirements_regexp = '[^\/]+(?<!\\\)'
 
         # Add the routes that deal with member methods of a resource
         for method, lst in member_methods.iteritems():
