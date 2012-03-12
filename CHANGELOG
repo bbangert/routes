@@ -1,6 +1,11 @@
 Routes Changelog
 %%%%%%%%%%%%%%%%
 
+Release 1.13 (March 12, 2012)
+=============================
+* Fix bug with dots forcing extension by default. The portion with the dot can
+  now be recognized. Patch by Michael Basnight.
+
 Release 1.12.3 (June 5, 2010)
 =============================
 * Fix bug with URLGenerator not properly including SCRIPT_NAME when generating

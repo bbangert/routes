@@ -36,15 +36,15 @@ master_doc = 'contents'
 
 # General substitutions.
 project = 'Routes'
-copyright = '2010, Ben Bangert, Mike Orr'
+copyright = '2010-2012, Ben Bangert, Mike Orr'
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.
 #
 # The short X.Y version.
-version = '1.12.3'
+version = '1.13'
 # The full version, including alpha/beta/rc tags.
-release = '1.12.3'
+release = '1.13'
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
