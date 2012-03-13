@@ -1,11 +1,6 @@
 Introduction
 ============
 
-.. image:: routes-logo.png
-    :width: 100px
-    :height: 171px
-    :align: left
-
 Routes tackles an interesting problem that comes up frequently in web
 development, *how do you map URLs to your application's actions*? That is, how
 do you say that *this* should be accessed as "/blog/2008/01/08", and "/login"
@@ -49,10 +44,3 @@ recommend reading the `Glossary <glossary.html>`_ before continuing.
 This manual is written from the user's perspective: how to use Routes in a
 framework that already supports it. The `Porting <porting.html>`_ 
 manual describes how to add Routes support to a new framework.
-
-You may have heard about a development version called "Routes 2".  Routes 2 is
-now called "Routes-experimental".  It was originally intended to be a
-refactoring with a new API.  Instead its features are being incorporated into
-Routes 1 in a compatible manner.  There may be another Routes 2 in the future
-that drops deprecated features, but it's too early to say when/if that might
-happen.

@@ -3,15 +3,18 @@ Setting up routes
 
 It is assumed that you are using a framework that has preconfigured Routes for
 you.  In Pylons, you define your routes in the ``make_map`` function in your
-*myapp/config/routing.py* module.  Here is a typical configuration::
+*myapp/config/routing.py* module.  Here is a typical configuration:
 
-    1   from routes import Mapper
-    2   map = Mapper()
-    3   map.connect(None, "/error/{action}/{id}, controller="error")
-    4   map.connect("home", "/", controller="main", action="index")
-    5   # ADD CUSTOM ROUTES HERE
-    6   map.connect(None, "/{controller}/{action}")
-    7   map.connect(None, "/{controller}/{action}/{id}")
+.. code-block:: python
+    :number-lines: 1
+
+    from routes import Mapper
+    map = Mapper()
+    map.connect(None, "/error/{action}/{id}, controller="error")
+    map.connect("home", "/", controller="main", action="index")
+    # ADD CUSTOM ROUTES HERE
+    map.connect(None, "/{controller}/{action}")
+    map.connect(None, "/{controller}/{action}/{id}")
 
 Lines 1 and 2 create a mapper.
 
