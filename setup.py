@@ -33,5 +33,4 @@ setup(name="Routes",
       install_requires=[
           "repoze.lru>=0.3"
       ],
-      packages=find_packages(exclude=['tests', 'ez_setup']),
 )
