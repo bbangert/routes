@@ -2,4 +2,4 @@
 
 .. _changes:
 
-.. include:: ../CHANGELOG
+.. include:: ../CHANGELOG.rst
