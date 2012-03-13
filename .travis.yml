@@ -4,5 +4,6 @@ python:
   - "2.7"
 install:
   - python setup.py develop
-  - pip install webob
+  - pip install webob webtest
+  - sudo apt-get install python-dev
 script: nosetests
