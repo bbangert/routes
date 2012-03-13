@@ -11,6 +11,18 @@ Routes is a Python re-implementation of the Rails routes system for mapping URLs
 
 Routes allows conditional matching based on domain, cookies, HTTP method, or a custom function. Sub-domain support is built in. Routes comes with an extensive unit test suite.
 
+Current features:
+
+* Sophisticated route lookup and URL generation
+* Named routes
+* Redirect routes
+* Wildcard paths before and after static parts
+* Sub-domain support built-in
+* Conditional matching based on domain, cookies, HTTP method (RESTful), and more
+* Easily extensible utilizing custom condition functions and route generation
+  functions
+* Extensive unit tests
+
 Installing
 ==========
 
