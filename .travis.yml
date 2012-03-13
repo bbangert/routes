@@ -5,6 +5,4 @@ python:
 install:
   - python setup.py develop
   - pip install webob webtest coverage
-  - sudo apt-get update
-  - sudo apt-get install python-profiler
 script: nosetests

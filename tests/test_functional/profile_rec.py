@@ -1,4 +1,7 @@
-import profile
+try:
+    import profile
+except ImportError:
+    pass
 import pstats
 import tempfile
 import os
