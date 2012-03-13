@@ -33,6 +33,11 @@ Example
    result = map.match('/error/myapp/4')
    # result == {'controller': 'main', 'action': 'myapp', 'id': '4'}
 
+Source
+======
+
+The `routes source can be found on GitHub <http://github.com/bbangert/routes>`_.
+
 .. toctree::
    :maxdepth: 2
    
