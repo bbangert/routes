@@ -1,8 +1,8 @@
 try:
     import profile
+    import pstats
 except ImportError:
     pass
-import pstats
 import tempfile
 import os
 import time
