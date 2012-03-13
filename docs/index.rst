@@ -45,6 +45,9 @@ Source
 
 The `routes source can be found on GitHub <http://github.com/bbangert/routes>`_.
 
+Documentation
+=============
+
 .. toctree::
    :maxdepth: 2
    
