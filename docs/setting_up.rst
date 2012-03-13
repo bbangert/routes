@@ -5,8 +5,8 @@ It is assumed that you are using a framework that has preconfigured Routes for
 you.  In Pylons, you define your routes in the ``make_map`` function in your
 *myapp/config/routing.py* module.  Here is a typical configuration:
 
-.. code:: python
-    :number-lines:
+.. code-block:: python
+    :linenos:
 
     from routes import Mapper
     map = Mapper()
