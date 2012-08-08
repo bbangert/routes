@@ -116,7 +116,19 @@ class SubMapperParent(object):
             controller = resource_name or collection_name
 
         if path_prefix is None:
-            path_prefix = '/' + collection_name
+            if collection_name is None:
+                path_prefix_str = ''
+            else:
+                path_prefix_str = '/{collection_name}'
+        else:
+            if collection_name is None:
+                path_prefix_str = "{pre}"
+            else:
+                path_prefix_str = "{pre}/{collection_name}"
+
+        # generate what will be the path prefix for the collection
+        path_prefix = path_prefix_str.format(pre=path_prefix,
+                                             collection_name=collection_name)
 
         collection = SubMapper(self, collection_name=collection_name,
                                resource_name=resource_name,
@@ -148,30 +160,44 @@ class SubMapper(SubMapperParent):
             self.formatted = getattr(obj, 'formatted', None)
             if self.formatted is None:
                 self.formatted = True
-
-        self.add_actions(actions or [])
+        self.add_actions(actions or [], **kwargs)
 
     def connect(self, *args, **kwargs):
         newkargs = {}
-        newargs = args
+        # newargs = args
+        routename, path = args
         for key, value in six.iteritems(self.kwargs):
             if key == 'path_prefix':
                 if len(args) > 1:
-                    newargs = (args[0], self.kwargs[key] + args[1])
+                    # if there's a name_prefix, add it to the route name
+                    # and if there's a path_prefix
+                    path = ''.join((self.kwargs[key], args[1]))
                 else:
-                    newargs = (self.kwargs[key] + args[0],)
+                    path = ''.join((self.kwargs[key], args[0]))
+            elif key == 'name_prefix':
+                if len(args) > 1:
+                    # if there's a name_prefix, add it to the route name
+                    # and if there's a path_prefix
+                    routename = ''.join((self.kwargs[key], args[0]))
+                else:
+                    routename = None
             elif key in kwargs:
                 if isinstance(value, dict):
                     newkargs[key] = dict(value, **kwargs[key])  # merge dicts
-                elif key == 'controller':
-                    newkargs[key] = kwargs[key]
                 else:
-                    newkargs[key] = value + kwargs[key]
+                    # Originally used this form:
+                    # newkargs[key] = value + kwargs[key]
+                    # New version avoids the inheritance concatenation issue
+                    # with submappers. Only prefixes concatenate, everything
+                    # else overrides in submappers.
+                    newkargs[key] = kwargs[key]
             else:
                 newkargs[key] = self.kwargs[key]
         for key in kwargs:
             if key not in self.kwargs:
                 newkargs[key] = kwargs[key]
+
+        newargs = (routename, path)
         return self.obj.connect(*newargs, **newkargs)
 
     def link(self, rel=None, name=None, action=None, method='GET',
@@ -263,8 +289,8 @@ class SubMapper(SubMapperParent):
         """Generates the "delete" action for a collection member submapper."""
         return self.action(action='delete', method='DELETE', **kwargs)
 
-    def add_actions(self, actions):
-        [getattr(self, action)() for action in actions]
+    def add_actions(self, actions, **kwargs):
+        [getattr(self, action)(**kwargs) for action in actions]
 
     # Provided for those who prefer using the 'with' syntax in Python 2.5+
     def __enter__(self):
