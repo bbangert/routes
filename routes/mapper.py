@@ -160,6 +160,8 @@ class SubMapper(SubMapperParent):
             elif key in kwargs:
                 if isinstance(value, dict):
                     newkargs[key] = dict(value, **kwargs[key]) # merge dicts
+                elif key == 'controller':
+                    newkargs[key] = kwargs[key]
                 else:
                     newkargs[key] = value + kwargs[key]
             else:
