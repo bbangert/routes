@@ -92,7 +92,7 @@ class SubMapperParent(object):
         
         Its interface is the same as the ``submapper`` together with
         ``member_prefix``, ``member_actions`` and ``member_options``
-        which are passed to the ``member` submatter as ``path_prefix``,
+        which are passed to the ``member`` submapper as ``path_prefix``,
         ``actions`` and keyword arguments respectively.
         
         Example::
