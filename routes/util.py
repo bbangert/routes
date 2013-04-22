@@ -103,7 +103,7 @@ def _subdomain_check(kargs, mapper, environ):
         return kargs
 
 
-def _url_quote(string, encoding):
+def _url_quote(string, encoding, safe='/'):
     """A Unicode handling version of urllib.quote."""
     if encoding:
         if isinstance(string, unicode):
@@ -115,7 +115,7 @@ def _url_quote(string, encoding):
             s = unicode(string).encode(encoding)
     else:
         s = str(string)
-    return urllib.quote(s, '/')
+    return urllib.quote(s, safe)
 
 
 def _str_encode(string, encoding):

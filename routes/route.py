@@ -92,6 +92,11 @@ class Route(object):
         self.dotkeys = frozenset([key['name'] for key in routelist
                                   if isinstance(key, dict) and 
                                      key['type'] == '.'])
+        self.slashkeys = frozenset([key['name'] for key in routelist
+                                  if isinstance(key, dict) and
+                                     key['name'] not in ('controller',
+                                                         'action') and
+                                     key['type'] != '*'])
 
         if not self.minimization:
             self.make_full_route()
@@ -602,12 +607,16 @@ class Route(object):
 
         # Encode all the argument that the regpath can use
         for k in kargs:
+            if k in self.slashkeys:
+                safe = ''
+            else:
+                safe = '/'
             if k in self.maxkeys:
                 if k in self.dotkeys:
                     if kargs[k]:
-                        kargs[k] = url_quote('.' + kargs[k], self.encoding)
+                        kargs[k] = url_quote('.' + kargs[k], self.encoding, safe)
                 else:
-                    kargs[k] = url_quote(kargs[k], self.encoding)
+                    kargs[k] = url_quote(kargs[k], self.encoding, safe)
 
         return self.regpath % kargs
     
@@ -623,6 +632,10 @@ class Route(object):
                 # For efficiency, check these just once
                 has_arg = kargs.has_key(arg)
                 has_default = self.defaults.has_key(arg)
+                if arg in self.slashkeys:
+                    safe = ''
+                else:
+                    safe = '/'
                 
                 # Determine if we can leave this part off
                 # First check if the default exists and wasn't provided in the 
@@ -654,7 +667,7 @@ class Route(object):
                 else:
                     return False
                     
-                urllist.append(url_quote(val, self.encoding))
+                urllist.append(url_quote(val, self.encoding, safe))
                 if part['type'] == '.':
                     urllist.append('.')
 
