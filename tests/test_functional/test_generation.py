@@ -21,6 +21,7 @@ class TestGeneration(unittest.TestCase):
             eq_('/hi/index', m.generate(fred='index'))
             eq_('/hi/show', m.generate(fred='show'))
             eq_('/hi/list%20people', m.generate(fred='list people'))
+            eq_('/hi/list%2Fpeople', m.generate(fred='list/people'))
             eq_(None, m.generate())
     
     def test_relative_url(self):
