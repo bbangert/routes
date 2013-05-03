@@ -37,12 +37,11 @@ class TestRecognition(unittest.TestCase):
     
     def test_unicode(self):
         hoge = u'\u30c6\u30b9\u30c8' # the word test in Japanese
-        hoge_enc = hoge.encode('utf-8')
         m = Mapper(explicit=False)
         m.minimization = True
         m.connect(':hoge')
         eq_({'controller': 'content', 'action': 'index', 'hoge': hoge},
-                         m.match('/' + hoge_enc))
+                         m.match('/' + hoge))
     
     def test_disabling_unicode(self):
         hoge = u'\u30c6\u30b9\u30c8' # the word test in Japanese

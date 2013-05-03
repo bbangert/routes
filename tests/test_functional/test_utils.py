@@ -49,7 +49,7 @@ class TestUtils(unittest.TestCase):
         url = URLGenerator(con.mapper, {})
         for urlobj in [url_for, url]:
             def raise_url():
-                return urlobj(u'/some/stirng')
+                return urlobj(u'/some/st\xc3rng')
             assert_raises(Exception, raise_url)
     
     def test_url_for(self):
