@@ -605,9 +605,9 @@ class Route(object):
             if k in self.maxkeys:
                 if k in self.dotkeys:
                     if kargs[k]:
-                        kargs[k] = url_quote('.' + kargs[k], self.encoding)
+                        kargs[k] = url_quote('.' + as_unicode(kargs[k], self.encoding), self.encoding)
                 else:
-                    kargs[k] = url_quote(kargs[k], self.encoding)
+                    kargs[k] = url_quote(as_unicode(kargs[k], self.encoding), self.encoding)
 
         return self.regpath % kargs
     

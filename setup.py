@@ -15,7 +15,7 @@ extra_options = {
 
 if PY3:
     extra_options["use_2to3"] = True
-    if "test" in sys.argv:
+    if "test" in sys.argv or "develop" in sys.argv:
         for root, directories, files in os.walk("tests"):
             for directory in directories:
                 extra_options["packages"].append(os.path.join(root, directory))
