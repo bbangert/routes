@@ -5,7 +5,7 @@ import urllib
 if sys.version < '2.4':
     from sets import ImmutableSet as frozenset
 
-from routes.util import _url_quote as url_quote, _str_encode
+from routes.util import _url_quote as url_quote, _str_encode, as_unicode
 
 
 class Route(object):
@@ -135,7 +135,7 @@ class Route(object):
         """Transform the given argument into a unicode string."""
         if isinstance(s, unicode):
             return s
-        elif isinstance(s, str):
+        elif isinstance(s, bytes):
             return s.decode(self.encoding)
         elif callable(s):
             return s
@@ -557,7 +557,7 @@ class Route(object):
                 # change back into python unicode objects from the URL 
                 # representation
                 try:
-                    val = val and val.decode(self.encoding, self.decode_errors)
+                    val = as_unicode(val, self.encoding, self.decode_errors)
                 except UnicodeDecodeError:
                     return False
             
@@ -654,6 +654,7 @@ class Route(object):
                 else:
                     return False
                     
+                val = as_unicode(val, self.encoding)
                 urllist.append(url_quote(val, self.encoding))
                 if part['type'] == '.':
                     urllist.append('.')
@@ -699,7 +700,7 @@ class Route(object):
         
         # Verify that if we have a method arg, its in the method accept list. 
         # Also, method will be changed to _method for route generation
-        meth = kargs.get('method')
+        meth = as_unicode(kargs.get('method'), self.encoding)
         if meth:
             if self.conditions and 'method' in self.conditions \
                 and meth.upper() not in self.conditions['method']:
@@ -731,8 +732,10 @@ class Route(object):
                 val = kargs[key]
                 if isinstance(val, (tuple, list)):
                     for value in val:
+                        value = as_unicode(value, self.encoding)
                         fragments.append((key, _str_encode(value, self.encoding)))
                 else:
+                    val = as_unicode(val, self.encoding)
                     fragments.append((key, _str_encode(val, self.encoding)))
             if fragments:
                 url += '?'

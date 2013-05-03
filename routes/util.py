@@ -40,7 +40,7 @@ def _screenargs(kargs, mapper, environ, force_explicit=False):
     elif mapper.explicit and not force_explicit:
         return kargs
     
-    controller_name = kargs.get('controller')
+    controller_name = as_unicode(kargs.get('controller'), encoding)
     
     if controller_name and controller_name.startswith('/'):
         # If the controller name starts with '/', ignore route memory
@@ -92,6 +92,7 @@ def _subdomain_check(kargs, mapper, environ):
             port += ':' + hostmatch[1]
         sub_match = re.compile('^.+?\.(%s)$' % mapper.domain_match)
         domain = re.sub(sub_match, r'\1', host)
+        subdomain = as_unicode(subdomain, mapper.encoding)
         if subdomain and not host.startswith(subdomain) and \
             subdomain not in mapper.sub_domains_ignore:
             kargs['_host'] = subdomain + '.' + domain + port
@@ -260,7 +261,7 @@ def url_for(*args, **kargs):
         if url is not None:
             url = protocol + '://' + host + url
     
-    if not isinstance(url, str) and url is not None:
+    if not ascii_characters(url) and url is not None:
         raise GenerationException("url_for can only return a string, got "
                         "unicode instead: %s" % url)
     if url is None:
@@ -411,7 +412,7 @@ class URLGenerator(object):
                     host += '/'
                 url = protocol + '://' + host + url.lstrip('/')
 
-        if not isinstance(url, str) and url is not None:
+        if not ascii_characters(url) and url is not None:
             raise GenerationException("Can only return a string, got "
                             "unicode instead: %s" % url)
         if url is None:
@@ -496,9 +497,21 @@ def controller_scan(directory=None):
                 controllers.extend(find_controllers(filename, 
                                                     prefix=prefix+fname+'/'))
         return controllers
-    def longest_first(fst, lst):
-        """Compare the length of one string to another, shortest goes first"""
-        return cmp(len(lst), len(fst))
     controllers = find_controllers(directory)
-    controllers.sort(longest_first)
+    # Sort by string length, shortest goes first
+    controllers.sort(key=len, reverse=True)
     return controllers
+
+def as_unicode(value, encoding, errors='strict'):
+
+    if value is not None and isinstance(value, bytes):
+        return value.decode(encoding, errors)
+
+    return value
+
+def ascii_characters(string):
+
+    if string is None:
+        return True
+
+    return all(ord(c) < 128 for c in string)
