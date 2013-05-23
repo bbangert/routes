@@ -8,7 +8,7 @@ def simple_app(environ, start_response):
     start_response('200 OK', [('Content-type', 'text/plain')])
     items = route_dict.items()
     items.sort()
-    return ['The matchdict items are %s and environ is %s' % (items, environ)]
+    return [('The matchdict items are %s and environ is %s' % (items, environ)).encode()]
 
 def test_basic():
     map = Mapper(explicit=False)
@@ -17,10 +17,11 @@ def test_basic():
     map.create_regs(['content'])
     app = TestApp(RoutesMiddleware(simple_app, map))
     res = app.get('/')
-    assert 'matchdict items are []' in res
+    assert b'matchdict items are []' in res
     
     res = app.get('/content')
-    assert "matchdict items are [('action', 'index'), ('controller', u'content'), ('id', None)]" in res
+    assert b"matchdict items are [('action', 'index'), ('controller', " + repr(
+        u'content').encode() + b"), ('id', None)]" in res
 
 def test_no_query():
     map = Mapper(explicit=False)
@@ -33,8 +34,8 @@ def test_no_query():
     env = {'PATH_INFO': '/', 'REQUEST_METHOD': 'GET', 'HTTP_HOST': 'localhost'}
     def start_response_wrapper(status, headers, exc=None):
         pass
-    response = ''.join(app(env, start_response_wrapper))
-    assert 'matchdict items are []' in response    
+    response = b''.join(app(env, start_response_wrapper))
+    assert b'matchdict items are []' in response
 
 def test_content_split():
     map = Mapper(explicit=False)
@@ -48,8 +49,8 @@ def test_content_split():
            'HTTP_HOST': 'localhost'}
     def start_response_wrapper(status, headers, exc=None):
         pass
-    response = ''.join(app(env, start_response_wrapper))
-    assert 'matchdict items are []' in response
+    response = b''.join(app(env, start_response_wrapper))
+    assert b'matchdict items are []' in response
 
 def test_no_singleton():
     map = Mapper(explicit=False)
@@ -62,15 +63,16 @@ def test_no_singleton():
     env = {'PATH_INFO': '/', 'REQUEST_METHOD': 'POST', 'CONTENT_TYPE': 'text/plain;text/html'}
     def start_response_wrapper(status, headers, exc=None):
         pass
-    response = ''.join(app(env, start_response_wrapper))
-    assert 'matchdict items are []' in response
+    response = b''.join(app(env, start_response_wrapper))
+    assert b'matchdict items are []' in response
     
     # Now a match
     env = {'PATH_INFO': '/project/fred', 'REQUEST_METHOD': 'POST', 'CONTENT_TYPE': 'text/plain;text/html'}
     def start_response_wrapper(status, headers, exc=None):
         pass
-    response = ''.join(app(env, start_response_wrapper))
-    assert "matchdict items are [('action', u'index'), ('controller', u'myapp'), ('path_info', 'fred')]" in response
+    response = b''.join(app(env, start_response_wrapper))
+    assert b"matchdict items are [('action', " + repr(u'index').encode() + \
+           b"), ('controller', " + repr(u'myapp').encode() + b"), ('path_info', 'fred')]" in response
     
 
 def test_path_info():
@@ -86,7 +88,8 @@ def test_path_info():
     
     res = app.get('/myapp/some/other/url')
     print res
-    assert "matchdict items are [('action', u'index'), ('controller', u'myapp'), ('path_info', 'some/other/url')]" in res
+    assert b"matchdict items are [('action', " + repr(u'index').encode() + \
+           b"), ('controller', " + repr(u'myapp').encode() + b"), ('path_info', 'some/other/url')]" in res
     assert "'SCRIPT_NAME': '/myapp'" in res
     assert "'PATH_INFO': '/some/other/url'" in res
     
@@ -113,7 +116,9 @@ def test_redirect_middleware():
     
     res = app.get('/myapp/some/other/url')
     print res
-    assert "matchdict items are [('action', u'index'), ('controller', u'myapp'), ('path_info', 'some/other/url')]" in res
+    assert b"matchdict items are [('action', " + repr(u'index').encode() + \
+           b"), ('controller', " + repr(u'myapp').encode() + \
+           b"), ('path_info', 'some/other/url')]" in res
     assert "'SCRIPT_NAME': '/myapp'" in res
     assert "'PATH_INFO': '/some/other/url'" in res
     
@@ -132,15 +137,20 @@ def test_method_conversion():
     assert 'matchdict items are []' in res
     
     res = app.get('/content')
-    assert "matchdict items are [('action', 'index'), ('controller', u'content'), ('id', None)]" in res
+    assert b"matchdict items are [('action', 'index'), ('controller', " + \
+           repr(u'content').encode() + b"), ('id', None)]" in res
     
     res = app.get('/content/hopper', params={'_method':'DELETE'})
-    assert "matchdict items are [('action', u'index'), ('controller', u'content'), ('type', u'hopper')]" in res
+    assert b"matchdict items are [('action', " + repr(u'index').encode() + \
+           b"), ('controller', " + repr(u'content').encode() + \
+           b"), ('type', " + repr(u'hopper').encode() + b")]" in res
     
     res = app.post('/content/grind', 
                    params={'_method':'DELETE', 'name':'smoth'},
                    headers={'Content-Type': 'application/x-www-form-urlencoded'})
-    assert "matchdict items are [('action', u'index'), ('controller', u'content'), ('type', u'grind')]" in res
+    assert b"matchdict items are [('action', " + repr(u'index').encode() + \
+           b"), ('controller', " + repr(u'content').encode() + \
+           b"), ('type', " + repr(u'grind').encode() + b")]" in res
     assert "'REQUEST_METHOD': 'POST'" in res
 
     #res = app.post('/content/grind',
