@@ -158,6 +158,12 @@ class TestUtils(unittest.TestCase):
         eq_('/post/index/4', url.current(controller='post'))
         eq_('http://www.example.com:8080/blog/view/4', url.current(qualified=True))
         
+    def test_route_overflow(self):
+        m = self.con.mapper
+        m.create_regs(["x"*50000])
+        m.connect('route-overflow', "x"*50000)
+        url = URLGenerator(m, {})
+        eq_("/%s" % ("x"*50000), url('route-overflow'))
     
     def test_with_route_names(self):
         m = self.con.mapper
