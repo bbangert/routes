@@ -1,6 +1,11 @@
 Routes Changelog
 %%%%%%%%%%%%%%%%
 
+Release 2.0 (November 17, 2013)
+===============================
+* Python 3.2/3.3 Support. Fixes Issue #2. Thanks to Alejandro Sánchez for
+  the pull request!
+
 Release 1.13 (March 12, 2012)
 =============================
 * Fix bug with dots forcing extension by default. The portion with the dot can
@@ -148,7 +153,7 @@ Release 1.7.1 (Nov. 16th, 2007)
 * Applied test patch fix for path checking. Thanks Mike Naberezny.
 * Added additional checking of remaining URL, to properly swallow periods in
   the appropriate context. Fixes #57.
-* Added mapper.hardcode_names option which restricts url generation to the 
+* Added mapper.hardcode_names option which restricts url generation to the
   named route during generation rather than using the routes default options
   during generation.
 * Fixed the special '_method' attribute not being recognized during POST
@@ -178,7 +183,7 @@ Release 1.6.3 (April 10th, 2007)
 ================================
 * Fixed matching so that an attempt to match an empty path raises a
   RouteException. Fixes #44.
-* Added ability to use characters in URL's such as '-' and '_' in 
+* Added ability to use characters in URL's such as '-' and '_' in
   map.resource. Patch by Wyatt Baldwin. Fixes #45.
 * Updated Mapper.resource handling with name_prefix and path_prefix checking
   to specify defaults. Also ensures that should either of them be set, they
@@ -191,7 +196,7 @@ Release 1.6.3 (April 10th, 2007)
   used in route paths. Found by Mike Orr.
 * Added ability to specify parent resource to map.resource command. Patch from
   Wyatt Baldwin.
-* Fixed formatted route issue with map.resource when additional collection 
+* Fixed formatted route issue with map.resource when additional collection
   methods are specified. Added unit tests to verify the collection methods
   work properly.
 * Updated URL parsing to properly use HTTP_HOST for hostname + port info before
@@ -200,7 +205,7 @@ Release 1.6.3 (April 10th, 2007)
   map.resource.
 * Updated routes.middleware to make the Routes matched accessible as
   environ['routes.route'].
-* Updating mapper object to use thread local for request data (such as 
+* Updating mapper object to use thread local for request data (such as
   environ) and middleware now deletes environ references at the end of the
   request.
 * Added explicit option to Routes and Mapper. Routes _explicit setting will
@@ -284,7 +289,7 @@ Release 1.5 (Sept. 19th, 2006)
 
 Release 1.4.1 (Sept. 6th, 2006)
 ===============================
-* Added sub_domains option to mapper, along with sub_domains_ignore list for 
+* Added sub_domains option to mapper, along with sub_domains_ignore list for
   subdomains that are considered equivilant to the main domain. When sub_domains
   is active, url_for will now take a sub_domain option that can alter the host
   the route will go to.
@@ -318,7 +323,7 @@ Release 1.3.2 (April 30th, 2006)
 Release 1.3.1 (April 4th, 2006)
 ===============================
 * Mapper has an optional attribute ``append_slash``. When set to ``True``, any URL's
-  generated will have a slash appended to the end. 
+  generated will have a slash appended to the end.
 * Fixed prefix option so that if the PATH_INFO is empty after prefix regexp, its set to
   '/' so the match proceeds ok.
 * Fixed prefix bug that caused routes after the initial one to not see the proper url
@@ -356,7 +361,7 @@ Release 1.2 (Feb. 17th, 2006)
 Release 1.1 (Jan. 13th, 2006)
 =============================
 * Routes Mapper additions:
-  Now takes several optional arguments that determine how it will 
+  Now takes several optional arguments that determine how it will
   generate the regexp's.
   Can now hold a function for use when determining what the available
   controllers are. Comes with a default directory scanner
@@ -398,7 +403,7 @@ Release 1.0 (Nov. 21st, 2005)
       request_config, Mapper, url_for, redirect_to
 
 * Route Names - You can now name a route, which will save a copy of the defaults
-  defined for later use by url_for or redirect_to. 
+  defined for later use by url_for or redirect_to.
   Thus, a route and url_for looking like this::
 
        m.connect('home', controller='blog', action='splash')
