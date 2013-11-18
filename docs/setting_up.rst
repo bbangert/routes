@@ -10,7 +10,7 @@ you.  In Pylons, you define your routes in the ``make_map`` function in your
 
     from routes import Mapper
     map = Mapper()
-    map.connect(None, "/error/{action}/{id}, controller="error")
+    map.connect(None, "/error/{action}/{id}", controller="error")
     map.connect("home", "/", controller="main", action="index")
     # ADD CUSTOM ROUTES HERE
     map.connect(None, "/{controller}/{action}")
