@@ -33,7 +33,7 @@ Example
    # Setup a mapper
    from routes import Mapper
    map = Mapper()
-   map.connect(None, "/error/{action}/{id}, controller="error")
+   map.connect(None, "/error/{action}/{id}", controller="error")
    map.connect("home", "/", controller="main", action="index")
 
    # Match a URL, returns a dict or None if no match
