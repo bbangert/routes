@@ -142,6 +142,18 @@ class TestSubmapper(unittest.TestCase):
             eq_(True, r.conditions['sub_domain'])
             eq_(requirement, r.reqs)
 
+    def test_subsubmapper_with_controller(self):
+        m = Mapper()
+        col1 = m.collection('parents', 'parent',
+                            controller='col1',
+                            member_prefix='/{parent_id}')
+        # NOTE: If one uses functions as controllers, the error will be here.
+        col2 = col1.member.collection('children', 'child',
+                                      controller='col2',
+                                      member_prefix='/{child_id}')
+        match = m.match('/parents/1/children/2')
+        eq_('col2', match.get('controller'))
+
 
 if __name__ == '__main__':
     unittest.main()
