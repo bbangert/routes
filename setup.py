@@ -23,7 +23,7 @@ if PY3:
 setup(name="Routes",
       version=__version__,
       description='Routing Recognition and Generation Tools',
-      long_description=README + '\n\n' +CHANGES,
+      long_description=README + '\n\n' + CHANGES,
       classifiers=["Development Status :: 5 - Production/Stable",
                    "Intended Audience :: Developers",
                    "License :: OSI Approved :: BSD License",
