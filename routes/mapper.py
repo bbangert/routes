@@ -596,7 +596,10 @@ class Mapper(SubMapperParent):
         # Save the master regexp
         regexp = '|'.join(['(?:%s)' % x for x in regexps])
         self._master_reg = regexp
-        self._master_regexp = re.compile(regexp)
+        try:
+            self._master_regexp = re.compile(regexp)
+        except OverflowError:
+            self._master_regexp = None
         self._created_regs = True
     
     def _match(self, url, environ):
@@ -633,9 +636,15 @@ class Mapper(SubMapperParent):
         domain_match = self.domain_match
         debug = self.debug
         
-        # Check to see if its a valid url against the main regexp
-        # Done for faster invalid URL elimination
-        valid_url = re.match(self._master_regexp, url)
+        if self._master_regexp is not None:
+            # Check to see if its a valid url against the main regexp
+            # Done for faster invalid URL elimination
+            valid_url = re.match(self._master_regexp, url)
+        else:
+            # Regex is None due to OverflowError caused by too many routes.
+            # This will allow larger projects to work but might increase time
+            # spent invalidating URLs in the loop below.
+            valid_url = True
         if not valid_url:
             return (None, None, matchlog)
         
