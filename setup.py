@@ -1,12 +1,14 @@
 __version__ = '2.0'
 
-import os, sys
+import io, os, sys
 
 from setuptools import setup, find_packages
 
 here = os.path.abspath(os.path.dirname(__file__))
-README = open(os.path.join(here, 'README.rst')).read()
-CHANGES = open(os.path.join(here, 'CHANGELOG.rst')).read()
+with io.open(os.path.join(here, 'README.rst'), encoding='utf8') as f:
+    README = f.read()
+with io.open(os.path.join(here, 'CHANGELOG.rst'), encoding='utf8') as f:
+    CHANGES = f.read()
 PY3 = sys.version_info[0] == 3
 
 extra_options = {
