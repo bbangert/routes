@@ -460,6 +460,13 @@ class Mapper(SubMapperParent):
                 routepath = route.routepath
             self.connect(route.name, routepath, **route._kargs)
                 
+    def make_route(self, *args, **kargs):
+        """Make a new Route object
+
+        A subclass can override this method to use a custom Route class.
+        """
+        return Route(*args, **kargs)
+
     def connect(self, *args, **kargs):
         """Create and connect a new Route to the Mapper.
         
@@ -486,7 +493,7 @@ class Mapper(SubMapperParent):
             kargs['_explicit'] = self.explicit
         if '_minimize' not in kargs:
             kargs['_minimize'] = self.minimization
-        route = Route(*args, **kargs)
+        route = self.make_route(*args, **kargs)
                 
         # Apply encoding and errors if its not the defaults and the route 
         # didn't have one passed in.

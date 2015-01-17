@@ -1,6 +1,9 @@
 Routes Changelog
 %%%%%%%%%%%%%%%%
 
+* Extract Route creation into separate method in Mapper.  Subclasses of Route
+  can be created by Mappers now.
+
 Release 2.0 (November 17, 2013)
 ===============================
 * Python 3.2/3.3 Support. Fixes Issue #2. Thanks to Alejandro Sánchez for
