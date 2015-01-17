@@ -1,6 +1,8 @@
-__version__ = '2.0'
+__version__ = '2.1'
 
-import io, os, sys
+import io
+import os
+import sys
 
 from setuptools import setup, find_packages
 
