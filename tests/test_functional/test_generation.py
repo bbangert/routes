@@ -584,6 +584,13 @@ class TestGeneration(unittest.TestCase):
         eq_('/notblog/content', m.generate(controller='content'))
         eq_('/notblog/admin/comments', m.generate(controller='admin/comments'))
 
+    def test_url_with_environ_and_caching(self):
+        m = Mapper()
+        m.connect("foo", "/", controller="main", action="index")
+
+        eq_('/', m.generate(controller='main', action='index'))
+        eq_('/bar/', m.generate(controller='main', action='index', _environ=dict(SCRIPT_NAME='/bar')))
+        eq_('/', m.generate(controller='main', action='index'))
 
     def test_url_with_environ_and_absolute(self):
         m = Mapper(explicit=False)

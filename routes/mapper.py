@@ -744,7 +744,13 @@ class Mapper(SubMapperParent):
             if 'action' not in kargs:
                 kargs['action'] = 'index'
 
-        environ = kargs.pop('_environ', self.environ)
+        environ = kargs.pop('_environ', self.environ) or {}
+        if 'SCRIPT_NAME' in environ:
+            script_name = environ['SCRIPT_NAME']
+        elif self.environ and 'SCRIPT_NAME' in self.environ:
+            script_name = self.environ['SCRIPT_NAME']
+        else:
+            script_name = ""
         controller = kargs.get('controller', None)
         action = kargs.get('action', None)
 
@@ -755,17 +761,12 @@ class Mapper(SubMapperParent):
             unicode(kargs).encode('utf8')
 
         if self.urlcache is not None:
-            if self.environ:
-                cache_key_script_name = '%s:%s' % (
-                    environ.get('SCRIPT_NAME', ''), cache_key)
-            else:
-                cache_key_script_name = cache_key
+            cache_key_script_name = '%s:%s' % (script_name, cache_key)
 
             # Check the url cache to see if it exists, use it if it does
-            for key in [cache_key, cache_key_script_name]:
-                val = self.urlcache.get(key, self)
-                if val != self:
-                    return val
+            val = self.urlcache.get(cache_key_script_name, self)
+            if val != self:
+                return val
 
         controller = as_unicode(controller, self.encoding)
         action = as_unicode(action, self.encoding)
@@ -869,9 +870,8 @@ class Mapper(SubMapperParent):
                 if self.prefix:
                     path = self.prefix + path
                 external_static = route.static and route.external
-                if environ and environ.get('SCRIPT_NAME', '') != ''\
-                        and not route.absolute and not external_static:
-                    path = environ['SCRIPT_NAME'] + path
+                if not route.absolute and not external_static:
+                    path = script_name + path
                     key = cache_key_script_name
                 else:
                     key = cache_key

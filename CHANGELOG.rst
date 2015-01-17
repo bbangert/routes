@@ -3,6 +3,10 @@ Routes Changelog
 
 Release 2.1 (**dev**)
 =====================
+* URL generation with/without SCRIPT_NAME was resulting in the URL cache
+  failing to return the appropriate cached URL generation. The URL cache
+  should always include the SCRIPT_NAME, even if its empty, in the cache
+  to avoid this, and now does. Fixes #6.
 * Extract Route creation into separate method in Mapper.  Subclasses of Route
   can be created by Mappers now.
 * Use the first X_FORWARDED_FOR value if there are multiple proxies in the
