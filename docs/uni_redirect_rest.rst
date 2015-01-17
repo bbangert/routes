@@ -49,16 +49,18 @@ simply print your application's mapper::
 
     >>> map.collection("entries", "entry")
     >>> print map
-    Route name   Methods Path
-    entries      GET     /entries{.format}
-    create_entry POST    /entries{.format}
-    new_entry    GET     /entries/new{.format}
-    entry        GET     /entries/{id}{.format}
-    update_entry PUT     /entries/{id}{.format}
-    delete_entry DELETE  /entries/{id}{.format}
-    edit_entry   GET     /entries/{id}/edit{.format}
+    Route name   Methods Path                        Controller action
+    entries      GET     /entries{.format}           entry      index
+    create_entry POST    /entries{.format}           entry      create
+    new_entry    GET     /entries/new{.format}       entry      new
+    entry        GET     /entries/{id}{.format}      entry      show
+    update_entry PUT     /entries/{id}{.format}      entry      update
+    delete_entry DELETE  /entries/{id}{.format}      entry      delete
+    edit_entry   GET     /entries/{id}/edit{.format} entry      edit
 
 *New in Routes 1.12.*
+
+*Controller/action fields new in Routes 2.1*
 
 
 Introspection
@@ -146,7 +148,7 @@ in matching, but are available as default values for generation::
     url("basic", controller="help") => "/help/about?weather=sunny"
 
 With minimization, the same route path would also match shorter URLs such as
-"/help", "/foo", and "/".  Missing values on the right of the URL would be 
+"/help", "/foo", and "/".  Missing values on the right of the URL would be
 taken from the extra variables.  This was intended to lessen the number of
 routes you had to write.  In practice it led to obscure application bugs
 because sometimes an unexpected route would be matched.  Thus Routes 1.9
@@ -154,7 +156,7 @@ introduced non-minimization and recommended "map.minimization = False" for
 all new applications.
 
 A corollary problem was generating the wrong route.  Routes 1.9 tightened up
-the rule for generating named routes.  If a route name is specified in 
+the rule for generating named routes.  If a route name is specified in
 ``url()`` or ``url_for()``, *only* that named route will be chosen.  In
 previous versions, it might choose another route based on the keyword args.
 
@@ -171,7 +173,7 @@ To enable implicit defaults, set ``map.minimization = True; map.explicit =
 False``.  You can also enable implicit defaults on a per-route basis by setting
 ``map.explicit = True`` and defining each route with a keyword argument ``explicit=False``.
 
-Previous versions also had implicit default values for "controller", 
+Previous versions also had implicit default values for "controller",
 "action", and "id".  These are now disabled by default, but can be enabled via
 ``map.explicit = True``.  This also enables route memory
 
@@ -184,7 +186,7 @@ cases and ``url`` never does.  Route memory is where variables from the current
 URL (the current request) are injected into the generated URL.  To use route
 memory with ``url``, call ``url.current()`` passing the variables you want to
 override.  Any other variables needed by the route will be taken from the
-current routing variables.  
+current routing variables.
 
 In other words, ``url_for`` combines ``url`` and ``url.current()`` into one
 function.  The location of ``url_for`` is also different.  ``url_for`` is
