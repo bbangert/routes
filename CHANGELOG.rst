@@ -1,8 +1,8 @@
 Routes Changelog
 %%%%%%%%%%%%%%%%
 
-Release 2.1 (**dev**)
-=====================
+Release 2.1 (January 17, 2015)
+==============================
 * Fix 3 other route matching groups in route.py to use anonymous groups for
   optional sections to avoid exceeding regex limits. Fixes #15.
 * Printing a mapper now includes the Controller/action parameters from the
