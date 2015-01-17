@@ -3,7 +3,7 @@ RESTful services
 
 Routes makes it easy to configure RESTful web services.  ``map.resource``
 creates a set of add/modify/delete routes conforming to the Atom publishing
-protocol.  
+protocol.
 
 A resource route addresses *members* in a *collection*, and the collection
 itself.  Normally a collection is a plural word, and a member is the
@@ -16,34 +16,34 @@ corresponding singular word.  For instance, consider a collection of messages::
     map.connect("messages", "/messages",
         controller="messages", action="create",
         conditions=dict(method=["POST"]))
-    map.connect("messages", "/messages", 
+    map.connect("messages", "/messages",
         controller="messages", action="index",
         conditions=dict(method=["GET"]))
-    map.connect("formatted_messages", "/messages.{format}", 
-        controller="messages", action="index", 
+    map.connect("formatted_messages", "/messages.{format}",
+        controller="messages", action="index",
         conditions=dict(method=["GET"]))
-    map.connect("new_message", "/messages/new", 
+    map.connect("new_message", "/messages/new",
         controller="messages", action="new",
         conditions=dict(method=["GET"]))
-    map.connect("formatted_new_message", "/messages/new.{format}", 
+    map.connect("formatted_new_message", "/messages/new.{format}",
         controller="messages", action="new",
         conditions=dict(method=["GET"]))
-    map.connect("/messages/{id}", 
+    map.connect("/messages/{id}",
         controller="messages", action="update",
         conditions=dict(method=["PUT"]))
-    map.connect("/messages/{id}", 
+    map.connect("/messages/{id}",
         controller="messages", action="delete",
         conditions=dict(method=["DELETE"]))
-    map.connect("edit_message", "/messages/{id}/edit", 
+    map.connect("edit_message", "/messages/{id}/edit",
         controller="messages", action="edit",
         conditions=dict(method=["GET"]))
-    map.connect("formatted_edit_message", "/messages/{id}.{format}/edit", 
-        controller="messages", action="edit", 
+    map.connect("formatted_edit_message", "/messages/{id}.{format}/edit",
+        controller="messages", action="edit",
         conditions=dict(method=["GET"]))
-    map.connect("message", "/messages/{id}", 
+    map.connect("message", "/messages/{id}",
         controller="messages", action="show",
         conditions=dict(method=["GET"]))
-    map.connect("formatted_message", "/messages/{id}.{format}", 
+    map.connect("formatted_message", "/messages/{id}.{format}",
         controller="messages", action="show",
         conditions=dict(method=["GET"]))
 
@@ -56,6 +56,13 @@ This establishes the following convention::
     DELETE /messages/1      => messages.delete(id) => url("message", id=1)
     GET    /messages/1      => messages.show(id)   => url("message", id=1)
     GET    /messages/1/edit => messages.edit(id)   => url("edit_message", id=1)
+
+.. note::
+
+    Due to how Routes matches a list of URL's, it has no inherent knowledge of
+    a route being a **resource**. As such, if a route fails to match due to
+    the method requirements not being met, a 404 will return just like any
+    other failure to match a route.
 
 Thus, you GET the collection to see an index of links to members ("index"
 method).  You GET a member to see it ("show").  You GET "COLLECTION/new" to
@@ -138,7 +145,7 @@ new
     Additional URLs to allow for new-member functionality. ::
 
         map.resource("message", "messages", new={"preview": "POST"})
-        # "POST /messages/new/preview"  
+        # "POST /messages/new/preview"
 
 path_prefix
 
