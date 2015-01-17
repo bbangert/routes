@@ -72,10 +72,7 @@ class SubMapperParent(object):
 
             >>> from routes.util import url_for
             >>> map = Mapper(controller_scan=None)
-            >>> m = map.submapper(path_prefix='/entries',
-                                  collection_name='entries',
-                                  resource_name='entry',
-                                  actions=['index', 'new'])
+            >>> m = map.submapper(path_prefix='/entries', collection_name='entries', resource_name='entry', actions=['index', 'new'])
             >>> url_for('entries') == '/entries'
             True
             >>> url_for('new_entry', format='xml') == '/entries/new.xml'
@@ -193,8 +190,7 @@ class SubMapper(SubMapperParent):
             True
             >>> url_for('ping_entry', id=1) == '/entries/1/ping'
             True
-            >>> url_for('ping_entry', id=1, format='xml') \
-                == '/entries/1/ping.xml'
+            >>> url_for('ping_entry', id=1, format='xml') == '/entries/1/ping.xml'
             True
 
         """
@@ -227,14 +223,11 @@ class SubMapper(SubMapperParent):
             >>> c = map.submapper(path_prefix='/entries', controller='entry')
             >>> c.action(action='index', name='entries', formatted=True)
             >>> c.action(action='create', method='POST')
-            >>> url_for(controller='entry', action='index', method='GET') \
-                == '/entries'
+            >>> url_for(controller='entry', action='index', method='GET') == '/entries'
             True
-            >>> url_for(controller='entry', action='index', method='GET',
-                        format='xml') == '/entries.xml'
+            >>> url_for(controller='entry', action='index', method='GET', format='xml') == '/entries.xml'
             True
-            >>> url_for(controller='entry', action='create', method='POST') \
-                == '/entries'
+            >>> url_for(controller='entry', action='create', method='POST') == '/entries'
             True
 
         """
