@@ -400,8 +400,9 @@ class Mapper(SubMapperParent):
             else:
                 return ''
 
-        table = [('Route name', 'Methods', 'Path')] + \
-                [(r.name or '', format_methods(r), r.routepath or '')
+        table = [('Route name', 'Methods', 'Path', 'Controller', 'action')] + \
+                [(r.name or '', format_methods(r), r.routepath or '',
+                  r.defaults.get('controller', ''), r.defaults.get('action', ''))
                  for r in self.matchlist]
 
         widths = [max(len(row[col]) for row in table)

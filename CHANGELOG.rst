@@ -3,6 +3,8 @@ Routes Changelog
 
 Release 2.1 (**dev**)
 =====================
+* Printing a mapper now includes the Controller/action parameters from the
+  route. Fixes #11.
 * Fix regression that didn't allow passing in params 'host', 'protocol', or
   'anchor'. They can now be passed in with a trailing '_' as was possible
   before commit d1d1742903fa5ca24ef848a6ae895303f2661b2a. Fixes #7.
