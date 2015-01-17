@@ -424,7 +424,7 @@ class Route(object):
                 # our regexp first. It's still possible we could be completely
                 # blank as we have a default
                 if var in self.reqs and var in self.defaults:
-                    reg = '(' + partreg + rest + ')?'
+                    reg = '(?:' + partreg + rest + ')?'
 
                 # Or we have a regexp match with no default, so now being
                 # completely blank form here on out isn't possible
@@ -454,7 +454,7 @@ class Route(object):
                 # something else in the chain does have req's though, we have
                 # to make the partreg here required to continue matching
                 if allblank and var in self.defaults:
-                    reg = '(' + partreg + rest + ')?'
+                    reg = '(?:' + partreg + rest + ')?'
 
                 # Same as before, but they can't all be blank, so we have to
                 # require it all to ensure our matches line up right
@@ -490,7 +490,7 @@ class Route(object):
                     noreqs = False
         elif part and part[-1] in self.done_chars:
             if allblank:
-                reg = re.escape(part[:-1]) + '(' + re.escape(part[-1]) + rest
+                reg = re.escape(part[:-1]) + '(?:' + re.escape(part[-1]) + rest
                 reg += ')?'
             else:
                 allblank = False
