@@ -60,7 +60,10 @@ class _RequestConfig(object):
             pass
 
         if 'HTTP_X_FORWARDED_HOST' in environ:
-            self.__shared_state.host = environ['HTTP_X_FORWARDED_HOST']
+            # Apache will add multiple comma separated values to
+            # X-Forwarded-Host if there are multiple reverse proxies
+            self.__shared_state.host = \
+                environ['HTTP_X_FORWARDED_HOST'].split(', ', 1)[0]
         elif 'HTTP_HOST' in environ:
             self.__shared_state.host = environ['HTTP_HOST']
         else:
