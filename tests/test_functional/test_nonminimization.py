@@ -12,16 +12,16 @@ def test_basic():
     m.minimization = False
     m.connect('/:controller/:action/:id')
     m.create_regs(['content'])
-    
+
     # Recognize
     eq_(None, m.match('/content'))
     eq_(None, m.match('/content/index'))
     eq_(None, m.match('/content/index/'))
-    eq_({'controller':'content','action':'index','id':'4'}, 
+    eq_({'controller':'content','action':'index','id':'4'},
         m.match('/content/index/4'))
     eq_({'controller':'content','action':'view','id':'4.html'},
         m.match('/content/view/4.html'))
-    
+
     # Generate
     eq_(None, m.generate(controller='content'))
     eq_('/content/index/4', m.generate(controller='content', id=4))
@@ -33,20 +33,20 @@ def test_full():
     m.connect('/:controller/:action/', id=None)
     m.connect('/:controller/:action/:id')
     m.create_regs(['content'])
-    
+
     # Recognize
     eq_(None, m.match('/content'))
     eq_(None, m.match('/content/index'))
-    eq_({'controller':'content','action':'index','id':None}, 
+    eq_({'controller':'content','action':'index','id':None},
         m.match('/content/index/'))
-    eq_({'controller':'content','action':'index','id':'4'}, 
+    eq_({'controller':'content','action':'index','id':'4'},
         m.match('/content/index/4'))
     eq_({'controller':'content','action':'view','id':'4.html'},
         m.match('/content/view/4.html'))
-    
+
     # Generate
     eq_(None, m.generate(controller='content'))
-    
+
     # Looks odd, but only controller/action are set with non-explicit, so we
     # do need the id to match
     eq_('/content/index/', m.generate(controller='content', id=None))
@@ -59,7 +59,7 @@ def test_action_required():
     m.explicit = True
     m.connect('/:controller/index', action='index')
     m.create_regs(['content'])
-    
+
     eq_(None, m.generate(controller='content'))
     eq_(None, m.generate(controller='content', action='fred'))
     eq_('/content/index', m.generate(controller='content', action='index'))
@@ -70,25 +70,25 @@ def test_query_params():
     m.explicit = True
     m.connect('/:controller/index', action='index')
     m.create_regs(['content'])
-    
+
     eq_(None, m.generate(controller='content'))
-    eq_('/content/index?test=sample', 
+    eq_('/content/index?test=sample',
         m.generate(controller='content', action='index', test='sample'))
-    
+
 
 def test_syntax():
     m = Mapper(explicit=False)
     m.minimization = False
     m.connect('/{controller}/{action}/{id}')
     m.create_regs(['content'])
-    
+
     # Recognize
     eq_(None, m.match('/content'))
     eq_(None, m.match('/content/index'))
     eq_(None, m.match('/content/index/'))
-    eq_({'controller':'content','action':'index','id':'4'}, 
+    eq_({'controller':'content','action':'index','id':'4'},
         m.match('/content/index/4'))
-    
+
     # Generate
     eq_(None, m.generate(controller='content'))
     eq_('/content/index/4', m.generate(controller='content', id=4))
@@ -99,15 +99,15 @@ def test_regexp_syntax():
     m.minimization = False
     m.connect('/{controller}/{action}/{id:\d\d}')
     m.create_regs(['content'])
-    
+
     # Recognize
     eq_(None, m.match('/content'))
     eq_(None, m.match('/content/index'))
     eq_(None, m.match('/content/index/'))
     eq_(None, m.match('/content/index/3'))
-    eq_({'controller':'content','action':'index','id':'44'}, 
+    eq_({'controller':'content','action':'index','id':'44'},
         m.match('/content/index/44'))
-    
+
     # Generate
     eq_(None, m.generate(controller='content'))
     eq_(None, m.generate(controller='content', id=4))
@@ -139,6 +139,6 @@ def test_other_special_chars():
     m.minimization = False
     m.connect('/:year/:(slug).:(format),:(locale)', locale='en', format='html')
     m.create_regs(['content'])
-    
+
     eq_('/2007/test.xml,ja', m.generate(year=2007, slug='test', format='xml', locale='ja'))
     eq_(None, m.generate(year=2007, format='html'))

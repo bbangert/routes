@@ -9,7 +9,7 @@ class TestSubmapper(unittest.TestCase):
         m = Mapper()
         c = m.submapper(path_prefix='/entries', requirements=dict(id='\d+'))
         c.connect('entry', '/{id}')
-        
+
         eq_('/entries/1', url_for('entry', id=1))
         assert_raises(Exception, url_for, 'entry', id='foo')
 
@@ -18,10 +18,10 @@ class TestSubmapper(unittest.TestCase):
         c = m.submapper(path_prefix='/entries', controller='entry',
                         requirements=dict(id='\d+'))
         e = c.submapper(path_prefix='/{id}')
-        
+
         eq_('entry', c.resource_name)
         eq_('entry', e.resource_name)
-        
+
         e.connect('entry', '')
         e.connect('edit_entry', '/edit')
 
@@ -35,7 +35,7 @@ class TestSubmapper(unittest.TestCase):
 
         c.action(name='entries', action='list')
         c.action(action='create', method='POST')
-                
+
         eq_('/entries', url_for('entries', method='GET'))
         eq_('/entries', url_for('create_entry', method='POST'))
         eq_('/entries', url_for(controller='entry', action='list', method='GET'))
@@ -45,10 +45,10 @@ class TestSubmapper(unittest.TestCase):
     def test_submapper_link(self):
         m = Mapper(explicit=True)
         c = m.submapper(path_prefix='/entries', controller='entry')
-        
+
         c.link(rel='new')
         c.link(rel='ping', method='POST')
-        
+
         eq_('/entries/new', url_for('new_entry', method='GET'))
         eq_('/entries/ping', url_for('ping_entry', method='POST'))
         eq_('/entries/new', url_for(controller='entry', action='new', method='GET'))
@@ -61,7 +61,7 @@ class TestSubmapper(unittest.TestCase):
         c = m.submapper(path_prefix='/entries', collection_name='entries',
                         controller='entry')
         e = c.submapper(path_prefix='/{id}')
-        
+
         c.index()
         c.create()
         e.show()
@@ -71,7 +71,7 @@ class TestSubmapper(unittest.TestCase):
         eq_('/entries', url_for('entries', method='GET'))
         eq_('/entries', url_for('create_entry', method='POST'))
         assert_raises(Exception, url_for, 'entries', method='DELETE')
-        
+
         eq_('/entries/1', url_for('entry', id=1, method='GET'))
         eq_('/entries/1', url_for('update_entry', id=1, method='PUT'))
         eq_('/entries/1', url_for('delete_entry', id=1, method='DELETE'))
@@ -81,13 +81,13 @@ class TestSubmapper(unittest.TestCase):
         m = Mapper()
         c = m.submapper(path_prefix='/entries', controller='entry')
         e = c.submapper(path_prefix='/{id}')
-        
+
         c.new()
         e.edit()
 
         eq_('/entries/new', url_for('new_entry', method='GET'))
         assert_raises(Exception, url_for, 'new_entry', method='POST')
-        
+
         eq_('/entries/1/edit', url_for('edit_entry', id=1, method='GET'))
         assert_raises(Exception, url_for, 'edit_entry', id=1, method='POST')
 
@@ -102,7 +102,7 @@ class TestSubmapper(unittest.TestCase):
         eq_('/entries', url_for('entries', method='GET'))
         eq_('/entries', url_for('create_entry', method='POST'))
         assert_raises(Exception, url_for, 'entries', method='DELETE')
-        
+
         eq_('/entries/1', url_for('entry', id=1, method='GET'))
         eq_('/entries/1', url_for('update_entry', id=1, method='PUT'))
         eq_('/entries/1', url_for('delete_entry', id=1, method='DELETE'))
@@ -110,7 +110,7 @@ class TestSubmapper(unittest.TestCase):
 
         eq_('/entries/new', url_for('new_entry', method='GET'))
         assert_raises(Exception, url_for, 'new_entry', method='POST')
-        
+
         eq_('/entries/1/edit', url_for('edit_entry', id=1, method='GET'))
         assert_raises(Exception, url_for, 'edit_entry', id=1, method='POST')
 
@@ -121,7 +121,7 @@ class TestSubmapper(unittest.TestCase):
         eq_('/entries', url_for('entries', method='GET'))
         eq_('/entries', url_for('create_entry', method='POST'))
         assert_raises(Exception, url_for, 'entries', method='DELETE')
-        
+
         eq_('/entries/1', url_for('entry', id=1, method='GET'))
         eq_('/entries/1', url_for('update_entry', id=1, method='PUT'))
         eq_('/entries/1', url_for('delete_entry', id=1, method='DELETE'))
@@ -129,7 +129,7 @@ class TestSubmapper(unittest.TestCase):
 
         eq_('/entries/new', url_for('new_entry', method='GET'))
         assert_raises(Exception, url_for, 'new_entry', method='POST')
-        
+
         eq_('/entries/1/edit', url_for('edit_entry', id=1, method='GET'))
         assert_raises(Exception, url_for, 'edit_entry', id=1, method='POST')
 
