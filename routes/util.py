@@ -460,12 +460,12 @@ def cache_hostinfo(environ):
     """
     hostinfo = {}
     if environ.get('HTTPS') or environ.get('wsgi.url_scheme') == 'https' \
-       or environ.get('HTTP_X_FORWARDED_PROTO') == 'https':
+       or 'https' in environ.get('HTTP_X_FORWARDED_PROTO', "").split(', '):
         hostinfo['protocol'] = 'https'
     else:
         hostinfo['protocol'] = 'http'
     if environ.get('HTTP_X_FORWARDED_HOST'):
-        hostinfo['host'] = environ['HTTP_X_FORWARDED_HOST']
+        hostinfo['host'] = environ['HTTP_X_FORWARDED_HOST'].split(', ', 1)[0]
     elif environ.get('HTTP_HOST'):
         hostinfo['host'] = environ['HTTP_HOST']
     else:

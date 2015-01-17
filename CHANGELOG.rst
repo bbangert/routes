@@ -5,6 +5,8 @@ Release 2.1 (**dev**)
 =====================
 * Extract Route creation into separate method in Mapper.  Subclasses of Route
   can be created by Mappers now.
+* Use the first X_FORWARDED_FOR value if there are multiple proxies in the
+  path. Fixes #5.
 
 Release 2.0 (November 17, 2013)
 ===============================
