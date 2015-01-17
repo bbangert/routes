@@ -94,7 +94,8 @@ class TestUtils(unittest.TestCase):
         eq_(map.match('/foo'), {})
 
     def test_using_func(self):
-        def fred(view): pass
+        def fred(view):
+            pass
 
         m = Mapper()
         m.explicit = True
@@ -111,7 +112,8 @@ class TestUtils(unittest.TestCase):
         m.explicit = True
         m.connect('/{first}/{last}')
 
-        environ = {'HTTP_HOST': 'localhost.com', 'PATH_INFO': '/content/index', 'SCRIPT_NAME': '/jones'}
+        environ = {'HTTP_HOST': 'localhost.com', 'PATH_INFO': '/content/index',
+                   'SCRIPT_NAME': '/jones'}
         match = m.routematch(environ=environ)[0]
         environ['wsgiorg.routing_args'] = (None, match)
         url = URLGenerator(m, environ)
@@ -119,3 +121,11 @@ class TestUtils(unittest.TestCase):
         eq_('/jones/content/index', url.current())
         eq_('/jones/smith/barney', url(first='smith', last='barney'))
 
+    def test_with_host_param(self):
+        m = Mapper()
+        m.explicit = True
+        m.connect('/hi/{fred}')
+
+        environ = {'HTTP_HOST': 'localhost.com'}
+        url = URLGenerator(m, environ)
+        eq_('/hi/smith?host=here', url(fred='smith', host_='here'))

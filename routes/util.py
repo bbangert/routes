@@ -184,6 +184,8 @@ def url_for(*args, **kargs):
     for key in ['anchor', 'host', 'protocol']:
         if kargs.get(key):
             del kargs[key]
+        if key+'_' in kargs:
+            kargs[key] = kargs.pop(key+'_')
     config = request_config()
     route = None
     static = False
@@ -326,6 +328,8 @@ class URLGenerator(object):
         for key in ['anchor', 'host', 'protocol']:
             if kargs.get(key):
                 del kargs[key]
+            if key+'_' in kargs:
+                kargs[key] = kargs.pop(key+'_')
 
         route = None
         use_current = '_use_current' in kargs and kargs.pop('_use_current')

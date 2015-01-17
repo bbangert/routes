@@ -3,6 +3,9 @@ Routes Changelog
 
 Release 2.1 (**dev**)
 =====================
+* Fix regression that didn't allow passing in params 'host', 'protocol', or
+  'anchor'. They can now be passed in with a trailing '_' as was possible
+  before commit d1d1742903fa5ca24ef848a6ae895303f2661b2a. Fixes #7.
 * URL generation with/without SCRIPT_NAME was resulting in the URL cache
   failing to return the appropriate cached URL generation. The URL cache
   should always include the SCRIPT_NAME, even if its empty, in the cache
