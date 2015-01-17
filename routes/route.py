@@ -11,39 +11,39 @@ from routes.util import _url_quote as url_quote, _str_encode, as_unicode
 class Route(object):
     """The Route object holds a route recognition and generation
     routine.
-    
+
     See Route.__init__ docs for usage.
-    
+
     """
     # reserved keys that don't count
     reserved_keys = ['requirements']
-    
+
     # special chars to indicate a natural split in the URL
     done_chars = ('/', ',', ';', '.', '#')
-    
+
     def __init__(self, name, routepath, **kargs):
         """Initialize a route, with a given routepath for
         matching/generation
-        
+
         The set of keyword args will be used as defaults.
-        
+
         Usage::
-        
+
             >>> from routes.base import Route
             >>> newroute = Route(None, ':controller/:action/:id')
             >>> sorted(newroute.defaults.items())
             [('action', 'index'), ('id', None)]
-            >>> newroute = Route(None, 'date/:year/:month/:day',  
+            >>> newroute = Route(None, 'date/:year/:month/:day',
             ...     controller="blog", action="view")
-            >>> newroute = Route(None, 'archives/:page', controller="blog", 
+            >>> newroute = Route(None, 'archives/:page', controller="blog",
             ...     action="by_page", requirements = { 'page':'\d{1,2}' })
             >>> newroute.reqs
             {'page': '\\\d{1,2}'}
-        
-        .. Note:: 
+
+        .. Note::
             Route is generally not called directly, a Mapper instance
             connect method should be used to add routes.
-        
+
         """
         self.routepath = routepath
         self.sub_domains = False
@@ -55,71 +55,72 @@ class Route(object):
         self.encoding = kargs.pop('_encoding', 'utf-8')
         self.reqs = kargs.get('requirements', {})
         self.decode_errors = 'replace'
-        
+
         # Don't bother forming stuff we don't need if its a static route
         self.static = kargs.pop('_static', False)
         self.filter = kargs.pop('_filter', None)
         self.absolute = kargs.pop('_absolute', False)
-        
+
         # Pull out the member/collection name if present, this applies only to
         # map.resource
         self.member_name = kargs.pop('_member_name', None)
         self.collection_name = kargs.pop('_collection_name', None)
         self.parent_resource = kargs.pop('_parent_resource', None)
-        
+
         # Pull out route conditions
         self.conditions = kargs.pop('conditions', None)
-        
+
         # Determine if explicit behavior should be used
         self.explicit = kargs.pop('_explicit', False)
-                
+
         # Since static need to be generated exactly, treat them as
         # non-minimized
         if self.static:
             self.external = '://' in self.routepath
             self.minimization = False
-        
+
         # Strip preceding '/' if present, and not minimizing
         if routepath.startswith('/') and self.minimization:
             self.routepath = routepath[1:]
         self._setup_route()
-        
+
     def _setup_route(self):
         # Build our routelist, and the keys used in the route
         self.routelist = routelist = self._pathkeys(self.routepath)
         routekeys = frozenset([key['name'] for key in routelist
                                if isinstance(key, dict)])
         self.dotkeys = frozenset([key['name'] for key in routelist
-                                  if isinstance(key, dict) and 
-                                     key['type'] == '.'])
+                                  if isinstance(key, dict) and
+                                  key['type'] == '.'])
 
         if not self.minimization:
             self.make_full_route()
-        
+
         # Build a req list with all the regexp requirements for our args
         self.req_regs = {}
         for key, val in self.reqs.iteritems():
             self.req_regs[key] = re.compile('^' + val + '$')
         # Update our defaults and set new default keys if needed. defaults
         # needs to be saved
-        (self.defaults, defaultkeys) = self._defaults(routekeys, 
-                                                      self.reserved_keys, 
+        (self.defaults, defaultkeys) = self._defaults(routekeys,
+                                                      self.reserved_keys,
                                                       self._kargs.copy())
         # Save the maximum keys we could utilize
         self.maxkeys = defaultkeys | routekeys
-        
+
         # Populate our minimum keys, and save a copy of our backward keys for
         # quicker generation later
         (self.minkeys, self.routebackwards) = self._minkeys(routelist[:])
-        
-        # Populate our hardcoded keys, these are ones that are set and don't 
+
+        # Populate our hardcoded keys, these are ones that are set and don't
         # exist in the route
-        self.hardcoded = frozenset([key for key in self.maxkeys \
-            if key not in routekeys and self.defaults[key] is not None])
-        
+        self.hardcoded = frozenset(
+            [key for key in self.maxkeys if key not in routekeys and
+             self.defaults[key] is not None])
+
         # Cache our default keys
         self._default_keys = frozenset(self.defaults.keys())
-    
+
     def make_full_route(self):
         """Make a full routelist string for use with non-minimized
         generation"""
@@ -130,7 +131,7 @@ class Route(object):
             else:
                 regpath += part
         self.regpath = regpath
-    
+
     def make_unicode(self, s):
         """Transform the given argument into a unicode string."""
         if isinstance(s, unicode):
@@ -141,7 +142,7 @@ class Route(object):
             return s
         else:
             return unicode(s)
-    
+
     def _pathkeys(self, routepath):
         """Utility function to walk the route, and pull out the valid
         dynamic/wildcard keys."""
@@ -198,17 +199,17 @@ class Route(object):
 
     def _minkeys(self, routelist):
         """Utility function to walk the route backwards
-        
+
         Will also determine the minimum keys we can handle to generate
         a working route.
-        
+
         routelist is a list of the '/' split route path
         defaults is a dict of all the defaults provided for the route
-        
+
         """
         minkeys = []
         backcheck = routelist[:]
-        
+
         # If we don't honor minimization, we need all the keys in the
         # route path
         if not self.minimization:
@@ -216,7 +217,7 @@ class Route(object):
                 if isinstance(part, dict):
                     minkeys.append(part['name'])
             return (frozenset(minkeys), backcheck)
-        
+
         gaps = False
         backcheck.reverse()
         for part in backcheck:
@@ -226,23 +227,23 @@ class Route(object):
             elif not isinstance(part, dict):
                 continue
             key = part['name']
-            if self.defaults.has_key(key) and not gaps:
+            if key in self.defaults and not gaps:
                 continue
             minkeys.append(key)
             gaps = True
-        return  (frozenset(minkeys), backcheck)
-    
+        return (frozenset(minkeys), backcheck)
+
     def _defaults(self, routekeys, reserved_keys, kargs):
         """Creates default set with values stringified
-        
+
         Put together our list of defaults, stringify non-None values
         and add in our action/id default if they use it and didn't
         specify it.
-        
+
         defaultkeys is a list of the currently assumed default keys
         routekeys is a list of the keys found in the route path
         reserved_keys is a list of keys that are not
-        
+
         """
         defaults = {}
         # Add in a controller/action default if they don't exist
@@ -252,59 +253,59 @@ class Route(object):
         if 'action' not in routekeys and 'action' not in kargs \
            and not self.explicit:
             kargs['action'] = 'index'
-        defaultkeys = frozenset([key for key in kargs.keys() \
+        defaultkeys = frozenset([key for key in kargs.keys()
                                  if key not in reserved_keys])
         for key in defaultkeys:
             if kargs[key] is not None:
                 defaults[key] = self.make_unicode(kargs[key])
             else:
                 defaults[key] = None
-        if 'action' in routekeys and not defaults.has_key('action') \
+        if 'action' in routekeys and 'action' not in defaults \
            and not self.explicit:
             defaults['action'] = 'index'
-        if 'id' in routekeys and not defaults.has_key('id') \
+        if 'id' in routekeys and 'id' not in defaults \
            and not self.explicit:
             defaults['id'] = None
-        newdefaultkeys = frozenset([key for key in defaults.keys() \
+        newdefaultkeys = frozenset([key for key in defaults.keys()
                                     if key not in reserved_keys])
-        
+
         return (defaults, newdefaultkeys)
-        
+
     def makeregexp(self, clist, include_names=True):
         """Create a regular expression for matching purposes
-        
+
         Note: This MUST be called before match can function properly.
-        
-        clist should be a list of valid controller strings that can be 
+
+        clist should be a list of valid controller strings that can be
         matched, for this reason makeregexp should be called by the web
         framework after it knows all available controllers that can be
         utilized.
-        
+
         include_names indicates whether this should be a match regexp
         assigned to itself using regexp grouping names, or if names
         should be excluded for use in a single larger regexp to
         determine if any routes match
-        
+
         """
         if self.minimization:
             reg = self.buildnextreg(self.routelist, clist, include_names)[0]
             if not reg:
                 reg = '/'
             reg = reg + '/?' + '$'
-        
+
             if not reg.startswith('/'):
                 reg = '/' + reg
         else:
             reg = self.buildfullreg(clist, include_names)
-        
+
         reg = '^' + reg
-        
+
         if not include_names:
             return reg
-        
+
         self.regexp = reg
         self.regmatch = re.compile(reg)
-    
+
     def buildfullreg(self, clist, include_names=True):
         """Build the regexp by iterating through the routelist and
         replacing dicts with the appropriate regexp match"""
@@ -332,36 +333,37 @@ class Route(object):
                 regparts.append(re.escape(part))
         regexp = ''.join(regparts) + '$'
         return regexp
-    
+
     def buildnextreg(self, path, clist, include_names=True):
         """Recursively build our regexp given a path, and a controller
         list.
-        
+
         Returns the regular expression string, and two booleans that
         can be ignored as they're only used internally by buildnextreg.
-        
+
         """
         if path:
             part = path[0]
         else:
             part = ''
         reg = ''
-        
-        # noreqs will remember whether the remainder has either a string 
+
+        # noreqs will remember whether the remainder has either a string
         # match, or a non-defaulted regexp match on a key, allblank remembers
         # if the rest could possible be completely empty
         (rest, noreqs, allblank) = ('', True, True)
         if len(path[1:]) > 0:
             self.prior = part
-            (rest, noreqs, allblank) = self.buildnextreg(path[1:], clist, include_names)
-        
+            (rest, noreqs, allblank) = self.buildnextreg(path[1:], clist,
+                                                         include_names)
+
         if isinstance(part, dict) and part['type'] in (':', '.'):
             var = part['name']
             typ = part['type']
             partreg = ''
-            
+
             # First we plug in the proper part matcher
-            if self.reqs.has_key(var):
+            if var in self.reqs:
                 if include_names:
                     partreg = '(?P<%s>%s)' % (var, self.reqs[var])
                 else:
@@ -370,7 +372,8 @@ class Route(object):
                     partreg = '(?:\.%s)??' % partreg
             elif var == 'controller':
                 if include_names:
-                    partreg = '(?P<%s>%s)' % (var, '|'.join(map(re.escape, clist)))
+                    partreg = '(?P<%s>%s)' % (var, '|'.join(map(re.escape,
+                                                                clist)))
                 else:
                     partreg = '(?:%s)' % '|'.join(map(re.escape, clist))
             elif self.prior in ['/', '#']:
@@ -404,41 +407,40 @@ class Route(object):
                         partreg = '(?P<%s>[^%s]+?)' % (var, ''.join(rem))
                     else:
                         partreg = '(?:[^%s]+?)' % ''.join(rem)
-            
-            if self.reqs.has_key(var):
+
+            if var in self.reqs:
                 noreqs = False
-            if not self.defaults.has_key(var): 
+            if var not in self.defaults:
                 allblank = False
                 noreqs = False
-            
-            # Now we determine if its optional, or required. This changes 
-            # depending on what is in the rest of the match. If noreqs is 
+
+            # Now we determine if its optional, or required. This changes
+            # depending on what is in the rest of the match. If noreqs is
             # true, then its possible the entire thing is optional as there's
             # no reqs or string matches.
             if noreqs:
-                # The rest is optional, but now we have an optional with a 
+                # The rest is optional, but now we have an optional with a
                 # regexp. Wrap to ensure that if we match anything, we match
                 # our regexp first. It's still possible we could be completely
                 # blank as we have a default
-                if self.reqs.has_key(var) and self.defaults.has_key(var):
+                if var in self.reqs and var in self.defaults:
                     reg = '(' + partreg + rest + ')?'
-                
-                # Or we have a regexp match with no default, so now being 
+
+                # Or we have a regexp match with no default, so now being
                 # completely blank form here on out isn't possible
-                elif self.reqs.has_key(var):
+                elif var in self.reqs:
                     allblank = False
                     reg = partreg + rest
-                
+
                 # If the character before this is a special char, it has to be
                 # followed by this
-                elif self.defaults.has_key(var) and \
-                     self.prior in (',', ';', '.'):
+                elif var in self.defaults and self.prior in (',', ';', '.'):
                     reg = partreg + rest
-                
+
                 # Or we have a default with no regexp, don't touch the allblank
-                elif self.defaults.has_key(var):
+                elif var in self.defaults:
                     reg = partreg + '?' + rest
-                
+
                 # Or we have a key with no default, and no reqs. Not possible
                 # to be all blank from here
                 else:
@@ -448,13 +450,13 @@ class Route(object):
             # matched
             else:
                 # If they can all be blank, and we have a default here, we know
-                # its safe to make everything from here optional. Since 
+                # its safe to make everything from here optional. Since
                 # something else in the chain does have req's though, we have
                 # to make the partreg here required to continue matching
-                if allblank and self.defaults.has_key(var):
+                if allblank and var in self.defaults:
                     reg = '(' + partreg + rest + ')?'
-                    
-                # Same as before, but they can't all be blank, so we have to 
+
+                # Same as before, but they can't all be blank, so we have to
                 # require it all to ensure our matches line up right
                 else:
                     reg = partreg + rest
@@ -465,16 +467,16 @@ class Route(object):
                     reg = '(?P<%s>.*)' % var + rest
                 else:
                     reg = '(?:.*)' + rest
-                if not self.defaults.has_key(var):
+                if var not in self.defaults:
                     allblank = False
                     noreqs = False
             else:
-                if allblank and self.defaults.has_key(var):
+                if allblank and var in self.defaults:
                     if include_names:
                         reg = '(?P<%s>.*)' % var + rest
                     else:
                         reg = '(?:.*)' + rest
-                elif self.defaults.has_key(var):
+                elif var in self.defaults:
                     if include_names:
                         reg = '(?P<%s>.*)' % var + rest
                     else:
@@ -493,53 +495,53 @@ class Route(object):
             else:
                 allblank = False
                 reg = re.escape(part) + rest
-        
-        # We have a normal string here, this is a req, and it prevents us from 
+
+        # We have a normal string here, this is a req, and it prevents us from
         # being all blank
         else:
             noreqs = False
             allblank = False
             reg = re.escape(part) + rest
-        
+
         return (reg, noreqs, allblank)
-    
-    def match(self, url, environ=None, sub_domains=False, 
+
+    def match(self, url, environ=None, sub_domains=False,
               sub_domains_ignore=None, domain_match=''):
-        """Match a url to our regexp. 
-        
+        """Match a url to our regexp.
+
         While the regexp might match, this operation isn't
         guaranteed as there's other factors that can cause a match to
         fail even though the regexp succeeds (Default that was relied
         on wasn't given, requirement regexp doesn't pass, etc.).
-        
+
         Therefore the calling function shouldn't assume this will
         return a valid dict, the other possible return is False if a
         match doesn't work out.
-        
+
         """
         # Static routes don't match, they generate only
         if self.static:
             return False
-        
+
         match = self.regmatch.match(url)
-        
+
         if not match:
             return False
-            
+
         sub_domain = None
-        
+
         if sub_domains and environ and 'HTTP_HOST' in environ:
             host = environ['HTTP_HOST'].split(':')[0]
             sub_match = re.compile('^(.+?)\.%s$' % domain_match)
             subdomain = re.sub(sub_match, r'\1', host)
             if subdomain not in sub_domains_ignore and host != subdomain:
                 sub_domain = subdomain
-        
+
         if self.conditions:
             if 'method' in self.conditions and environ and \
-                environ['REQUEST_METHOD'] not in self.conditions['method']:
+                    environ['REQUEST_METHOD'] not in self.conditions['method']:
                 return False
-            
+
             # Check sub-domains?
             use_sd = self.conditions.get('sub_domain')
             if use_sd and not sub_domain:
@@ -548,38 +550,38 @@ class Route(object):
                 return False
             if isinstance(use_sd, list) and sub_domain not in use_sd:
                 return False
-        
+
         matchdict = match.groupdict()
         result = {}
         extras = self._default_keys - frozenset(matchdict.keys())
         for key, val in matchdict.iteritems():
             if key != 'path_info' and self.encoding:
-                # change back into python unicode objects from the URL 
+                # change back into python unicode objects from the URL
                 # representation
                 try:
                     val = as_unicode(val, self.encoding, self.decode_errors)
                 except UnicodeDecodeError:
                     return False
-            
+
             if not val and key in self.defaults and self.defaults[key]:
                 result[key] = self.defaults[key]
             else:
                 result[key] = val
         for key in extras:
             result[key] = self.defaults[key]
-        
+
         # Add the sub-domain if there is one
         if sub_domains:
             result['sub_domain'] = sub_domain
-        
+
         # If there's a function, call it with environ and expire if it
         # returns False
         if self.conditions and 'function' in self.conditions and \
-            not self.conditions['function'](environ, result):
+                not self.conditions['function'](environ, result):
             return False
-        
+
         return result
-    
+
     def generate_non_minimized(self, kargs):
         """Generate a non-minimal version of the URL"""
         # Iterate through the keys that are defaults, and NOT in the route
@@ -589,9 +591,9 @@ class Route(object):
             if k not in kargs:
                 return False
             elif self.make_unicode(kargs[k]) != \
-                self.make_unicode(self.defaults[k]):
+                    self.make_unicode(self.defaults[k]):
                 return False
-                
+
         # Ensure that all the args in the route path are present and not None
         for arg in self.minkeys:
             if arg not in kargs or kargs[arg] is None:
@@ -605,12 +607,14 @@ class Route(object):
             if k in self.maxkeys:
                 if k in self.dotkeys:
                     if kargs[k]:
-                        kargs[k] = url_quote('.' + as_unicode(kargs[k], self.encoding), self.encoding)
+                        kargs[k] = url_quote('.' + as_unicode(kargs[k],
+                                             self.encoding), self.encoding)
                 else:
-                    kargs[k] = url_quote(as_unicode(kargs[k], self.encoding), self.encoding)
+                    kargs[k] = url_quote(as_unicode(kargs[k], self.encoding),
+                                         self.encoding)
 
         return self.regpath % kargs
-    
+
     def generate_minimized(self, kargs):
         """Generate a minimized version of the URL"""
         routelist = self.routebackwards
@@ -619,32 +623,33 @@ class Route(object):
         for part in routelist:
             if isinstance(part, dict) and part['type'] in (':', '.'):
                 arg = part['name']
-                
+
                 # For efficiency, check these just once
-                has_arg = kargs.has_key(arg)
-                has_default = self.defaults.has_key(arg)
-                
+                has_arg = arg in kargs
+                has_default = arg in self.defaults
+
                 # Determine if we can leave this part off
-                # First check if the default exists and wasn't provided in the 
+                # First check if the default exists and wasn't provided in the
                 # call (also no gaps)
                 if has_default and not has_arg and not gaps:
                     continue
-                    
-                # Now check to see if there's a default and it matches the 
+
+                # Now check to see if there's a default and it matches the
                 # incoming call arg
-                if (has_default and has_arg) and self.make_unicode(kargs[arg]) == \
-                    self.make_unicode(self.defaults[arg]) and not gaps: 
+                if (has_default and has_arg) and \
+                    self.make_unicode(kargs[arg]) == \
+                        self.make_unicode(self.defaults[arg]) and not gaps:
                     continue
-                
-                # We need to pull the value to append, if the arg is None and 
+
+                # We need to pull the value to append, if the arg is None and
                 # we have a default, use that
                 if has_arg and kargs[arg] is None and has_default and not gaps:
                     continue
-                
+
                 # Otherwise if we do have an arg, use that
                 elif has_arg:
                     val = kargs[arg]
-                
+
                 elif has_default and self.defaults[arg] is not None:
                     val = self.defaults[arg]
                 # Optional format parameter?
@@ -653,7 +658,7 @@ class Route(object):
                 # No arg at all? This won't work
                 else:
                     return False
-                    
+
                 val = as_unicode(val, self.encoding)
                 urllist.append(url_quote(val, self.encoding))
                 if part['type'] == '.':
@@ -683,13 +688,13 @@ class Route(object):
         urllist.reverse()
         url = ''.join(urllist)
         return url
-    
+
     def generate(self, _ignore_req_list=False, _append_slash=False, **kargs):
         """Generate a URL from ourself given a set of keyword arguments
-        
+
         Toss an exception if this
         set of keywords would cause a gap in the url.
-        
+
         """
         # Verify that our args pass any regexp requirements
         if not _ignore_req_list:
@@ -697,24 +702,24 @@ class Route(object):
                 val = kargs.get(key)
                 if val and not self.req_regs[key].match(self.make_unicode(val)):
                     return False
-        
-        # Verify that if we have a method arg, its in the method accept list. 
+
+        # Verify that if we have a method arg, its in the method accept list.
         # Also, method will be changed to _method for route generation
         meth = as_unicode(kargs.get('method'), self.encoding)
         if meth:
             if self.conditions and 'method' in self.conditions \
-                and meth.upper() not in self.conditions['method']:
+                    and meth.upper() not in self.conditions['method']:
                 return False
             kargs.pop('method')
-        
+
         if self.minimization:
             url = self.generate_minimized(kargs)
         else:
             url = self.generate_non_minimized(kargs)
-        
+
         if url is False:
             return url
-        
+
         if not url.startswith('/') and not self.static:
             url = '/' + url
         extras = frozenset(kargs.keys()) - self.maxkeys
@@ -733,7 +738,8 @@ class Route(object):
                 if isinstance(val, (tuple, list)):
                     for value in val:
                         value = as_unicode(value, self.encoding)
-                        fragments.append((key, _str_encode(value, self.encoding)))
+                        fragments.append((key, _str_encode(value,
+                                                           self.encoding)))
                 else:
                     val = as_unicode(val, self.encoding)
                     fragments.append((key, _str_encode(val, self.encoding)))

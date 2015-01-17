@@ -25,8 +25,8 @@ class GenerationException(RoutesException):
 
 def _screenargs(kargs, mapper, environ, force_explicit=False):
     """
-    Private function that takes a dict, and screens it against the current 
-    request dict to determine what the dict should look like that is used. 
+    Private function that takes a dict, and screens it against the current
+    request dict to determine what the dict should look like that is used.
     This is responsible for the requests "memory" of the current.
     """
     # Coerce any unicode args with the encoding
@@ -34,14 +34,14 @@ def _screenargs(kargs, mapper, environ, force_explicit=False):
     for key, val in kargs.iteritems():
         if isinstance(val, unicode):
             kargs[key] = val.encode(encoding)
-    
+
     if mapper.explicit and mapper.sub_domains and not force_explicit:
         return _subdomain_check(kargs, mapper, environ)
     elif mapper.explicit and not force_explicit:
         return kargs
-    
+
     controller_name = as_unicode(kargs.get('controller'), encoding)
-    
+
     if controller_name and controller_name.startswith('/'):
         # If the controller name starts with '/', ignore route memory
         kargs['controller'] = kargs['controller'][1:]
@@ -49,22 +49,22 @@ def _screenargs(kargs, mapper, environ, force_explicit=False):
     elif controller_name and not kargs.has_key('action'):
         # Fill in an action if we don't have one, but have a controller
         kargs['action'] = 'index'
-    
+
     route_args = environ.get('wsgiorg.routing_args')
     if route_args:
         memory_kargs = route_args[1].copy()
     else:
         memory_kargs = {}
-     
+
     # Remove keys from memory and kargs if kargs has them as None
     for key in [key for key in kargs.keys() if kargs[key] is None]:
         del kargs[key]
         if memory_kargs.has_key(key):
             del memory_kargs[key]
-    
+
     # Merge the new args on top of the memory args
     memory_kargs.update(kargs)
-    
+
     # Setup a sub-domain if applicable
     if mapper.sub_domains:
         memory_kargs = _subdomain_check(memory_kargs, mapper, environ)
@@ -78,13 +78,13 @@ def _subdomain_check(kargs, mapper, environ):
         subdomain = kargs.pop('sub_domain', None)
         if isinstance(subdomain, unicode):
             subdomain = str(subdomain)
-        
+
         fullhost = environ.get('HTTP_HOST') or environ.get('SERVER_NAME')
-        
+
         # In case environ defaulted to {}
         if not fullhost:
             return kargs
-        
+
         hostmatch = fullhost.split(':')
         host = hostmatch[0]
         port = ''
@@ -132,54 +132,54 @@ def _str_encode(string, encoding):
 
 
 def url_for(*args, **kargs):
-    """Generates a URL 
-    
-    All keys given to url_for are sent to the Routes Mapper instance for 
+    """Generates a URL
+
+    All keys given to url_for are sent to the Routes Mapper instance for
     generation except for::
-        
+
         anchor          specified the anchor name to be appened to the path
         host            overrides the default (current) host if provided
         protocol        overrides the default (current) protocol if provided
-        qualified       creates the URL with the host/port information as 
+        qualified       creates the URL with the host/port information as
                         needed
-        
-    The URL is generated based on the rest of the keys. When generating a new 
-    URL, values will be used from the current request's parameters (if 
-    present). The following rules are used to determine when and how to keep 
+
+    The URL is generated based on the rest of the keys. When generating a new
+    URL, values will be used from the current request's parameters (if
+    present). The following rules are used to determine when and how to keep
     the current requests parameters:
-    
+
     * If the controller is present and begins with '/', no defaults are used
-    * If the controller is changed, action is set to 'index' unless otherwise 
+    * If the controller is changed, action is set to 'index' unless otherwise
       specified
-    
+
     For example, if the current request yielded a dict of
-    {'controller': 'blog', 'action': 'view', 'id': 2}, with the standard 
+    {'controller': 'blog', 'action': 'view', 'id': 2}, with the standard
     ':controller/:action/:id' route, you'd get the following results::
-    
+
         url_for(id=4)                    =>  '/blog/view/4',
         url_for(controller='/admin')     =>  '/admin',
         url_for(controller='admin')      =>  '/admin/view/2'
         url_for(action='edit')           =>  '/blog/edit/2',
         url_for(action='list', id=None)  =>  '/blog/list'
-    
+
     **Static and Named Routes**
-    
-    If there is a string present as the first argument, a lookup is done 
+
+    If there is a string present as the first argument, a lookup is done
     against the named routes table to see if there's any matching routes. The
-    keyword defaults used with static routes will be sent in as GET query 
+    keyword defaults used with static routes will be sent in as GET query
     arg's if a route matches.
-    
-    If no route by that name is found, the string is assumed to be a raw URL. 
+
+    If no route by that name is found, the string is assumed to be a raw URL.
     Should the raw URL begin with ``/`` then appropriate SCRIPT_NAME data will
-    be added if present, otherwise the string will be used as the url with 
+    be added if present, otherwise the string will be used as the url with
     keyword args becoming GET query args.
-    
+
     """
     anchor = kargs.get('anchor')
     host = kargs.get('host')
     protocol = kargs.get('protocol')
     qualified = kargs.pop('qualified', None)
-    
+
     # Remove special words from kargs, convert placeholders
     for key in ['anchor', 'host', 'protocol']:
         if kargs.get(key):
@@ -191,16 +191,16 @@ def url_for(*args, **kargs):
     url = ''
     if len(args) > 0:
         route = config.mapper._routenames.get(args[0])
-        
+
         # No named route found, assume the argument is a relative path
         if not route:
             static = True
             url = args[0]
-        
+
         if url.startswith('/') and hasattr(config, 'environ') \
                 and config.environ.get('SCRIPT_NAME'):
             url = config.environ.get('SCRIPT_NAME') + url
-        
+
         if static:
             if kargs:
                 url += '?'
@@ -225,7 +225,7 @@ def url_for(*args, **kargs):
         else:
             match_dict = {}
         environ['wsgiorg.routing_args'] = ((), match_dict)
-    
+
     if not static:
         route_args = []
         if route:
@@ -233,11 +233,11 @@ def url_for(*args, **kargs):
                 route_args.append(route)
             newargs = route.defaults.copy()
             newargs.update(kargs)
-            
+
             # If this route has a filter, apply it
             if route.filter:
                 newargs = route.filter(newargs)
-            
+
             if not route.static:
                 # Handle sub-domains
                 newargs = _subdomain_check(newargs, config.mapper, environ)
@@ -260,7 +260,7 @@ def url_for(*args, **kargs):
             protocol = config.protocol
         if url is not None:
             url = protocol + '://' + host + url
-    
+
     if not ascii_characters(url) and url is not None:
         raise GenerationException("url_for can only return a string, got "
                         "unicode instead: %s" % url)
@@ -273,47 +273,47 @@ def url_for(*args, **kargs):
 
 class URLGenerator(object):
     """The URL Generator generates URL's
-    
+
     It is automatically instantiated by the RoutesMiddleware and put
     into the ``wsgiorg.routing_args`` tuple accessible as::
-    
+
         url = environ['wsgiorg.routing_args'][0][0]
-    
+
     Or via the ``routes.url`` key::
-    
+
         url = environ['routes.url']
-    
+
     The url object may be instantiated outside of a web context for use
     in testing, however sub_domain support and fully qualified URL's
     cannot be generated without supplying a dict that must contain the
     key ``HTTP_HOST``.
-    
+
     """
     def __init__(self, mapper, environ):
         """Instantiate the URLGenerator
-        
+
         ``mapper``
             The mapper object to use when generating routes.
         ``environ``
             The environment dict used in WSGI, alternately, any dict
             that contains at least an ``HTTP_HOST`` value.
-        
+
         """
         self.mapper = mapper
         if 'SCRIPT_NAME' not in environ:
             environ['SCRIPT_NAME'] = ''
         self.environ = environ
-    
-    def __call__(self, *args, **kargs):
-        """Generates a URL 
 
-        All keys given to url_for are sent to the Routes Mapper instance for 
+    def __call__(self, *args, **kargs):
+        """Generates a URL
+
+        All keys given to url_for are sent to the Routes Mapper instance for
         generation except for::
 
             anchor          specified the anchor name to be appened to the path
             host            overrides the default (current) host if provided
             protocol        overrides the default (current) protocol if provided
-            qualified       creates the URL with the host/port information as 
+            qualified       creates the URL with the host/port information as
                             needed
 
         """
@@ -326,18 +326,18 @@ class URLGenerator(object):
         for key in ['anchor', 'host', 'protocol']:
             if kargs.get(key):
                 del kargs[key]
-        
+
         route = None
         use_current = '_use_current' in kargs and kargs.pop('_use_current')
-        
+
         static = False
         encoding = self.mapper.encoding
         url = ''
-                
+
         more_args = len(args) > 0
         if more_args:
             route = self.mapper._routenames.get(args[0])
-        
+
         if not route and more_args:
             static = True
             url = args[0]
@@ -366,7 +366,7 @@ class URLGenerator(object):
                     route_args.append(route)
                 newargs = route.defaults.copy()
                 newargs.update(kargs)
-                
+
                 # If this route has a filter, apply it
                 if route.filter:
                     newargs = route.filter(newargs)
@@ -379,14 +379,14 @@ class URLGenerator(object):
                     # it
                     if 'sub_domain' in route.defaults:
                         newargs['sub_domain'] = sub
-                    
+
             elif use_current:
                 newargs = _screenargs(kargs, self.mapper, self.environ, force_explicit=True)
             elif 'sub_domain' in kargs:
                 newargs = _subdomain_check(kargs, self.mapper, self.environ)
             else:
                 newargs = kargs
-            
+
             anchor = anchor or newargs.pop('_anchor', None)
             host = host or newargs.pop('_host', None)
             protocol = protocol or newargs.pop('_protocol', None)
@@ -398,7 +398,7 @@ class URLGenerator(object):
             if 'routes.cached_hostinfo' not in self.environ:
                 cache_hostinfo(self.environ)
             hostinfo = self.environ['routes.cached_hostinfo']
-            
+
             if not host and not qualified:
                 # Ensure we don't use a specific port, as changing the protocol
                 # means that we most likely need a new port
@@ -420,11 +420,11 @@ class URLGenerator(object):
                 "Could not generate URL. Called with args: %s %s" % \
                 (args, kargs))
         return url
-    
+
     def current(self, *args, **kwargs):
         """Generate a route that includes params used on the current
         request
-        
+
         The arguments for this method are identical to ``__call__``
         except that arguments set to None will remove existing route
         matches of the same name from the set of arguments used to
@@ -434,11 +434,11 @@ class URLGenerator(object):
 
 
 def redirect_to(*args, **kargs):
-    """Issues a redirect based on the arguments. 
-    
-    Redirect's *should* occur as a "302 Moved" header, however the web 
+    """Issues a redirect based on the arguments.
+
+    Redirect's *should* occur as a "302 Moved" header, however the web
     framework may utilize a different method.
-    
+
     All arguments are passed to url_for to retrieve the appropriate URL, then
     the resulting URL it sent to the redirect function as the URL.
     """
@@ -449,14 +449,14 @@ def redirect_to(*args, **kargs):
 
 def cache_hostinfo(environ):
     """Processes the host information and stores a copy
-    
+
     This work was previously done but wasn't stored in environ, nor is
     it guaranteed to be setup in the future (Routes 2 and beyond).
-    
+
     cache_hostinfo processes environ keys that may be present to
     determine the proper host, protocol, and port information to use
     when generating routes.
-    
+
     """
     hostinfo = {}
     if environ.get('HTTPS') or environ.get('wsgi.url_scheme') == 'https' \
@@ -484,17 +484,17 @@ def controller_scan(directory=None):
     """Scan a directory for python files and use them as controllers"""
     if directory is None:
         return []
-    
+
     def find_controllers(dirname, prefix=''):
         """Locate controllers in a directory"""
         controllers = []
         for fname in os.listdir(dirname):
             filename = os.path.join(dirname, fname)
             if os.path.isfile(filename) and \
-                re.match('^[^_]{1,1}.*\.py$', fname):
+                    re.match('^[^_]{1,1}.*\.py$', fname):
                 controllers.append(prefix + fname[:-3])
             elif os.path.isdir(filename):
-                controllers.extend(find_controllers(filename, 
+                controllers.extend(find_controllers(filename,
                                                     prefix=prefix+fname+'/'))
         return controllers
     controllers = find_controllers(directory)
@@ -502,15 +502,15 @@ def controller_scan(directory=None):
     controllers.sort(key=len, reverse=True)
     return controllers
 
-def as_unicode(value, encoding, errors='strict'):
 
+def as_unicode(value, encoding, errors='strict'):
     if value is not None and isinstance(value, bytes):
         return value.decode(encoding, errors)
 
     return value
 
-def ascii_characters(string):
 
+def ascii_characters(string):
     if string is None:
         return True
 
