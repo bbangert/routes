@@ -11,7 +11,7 @@ and realize that moving a method changes its public URL and invalidates users'
 bookmarks.  Likewise, if you want to reorganize your URLs and make a section
 into a subsection, you have to change your carefully-tested logic code.
 
-Routes takes a different approach. You determine your URL hierarchy and and
+Routes takes a different approach. You determine your URL hierarchy and 
 actions separately, and then link them together in whichever ways you decide.
 If you change your mind about a particular URL, just change one line in your
 route map and never touch your action logic. You can even have multiple URLs
