@@ -24,8 +24,8 @@ specified.  Example::
 
     m.connect("archives", "/archives/{id}",
         controller="archives", action="view", id=1)
-    url("blog", id=123)  =>  "/blog/123"
-    url("blog")  =>  "/blog/1"
+    url("archives", id=123)  =>  "/archives/123"
+    url("archives")  =>  "/archives/1"
 
 (The extra variable is *not* used for matching unless minimization is enabled.)
 
