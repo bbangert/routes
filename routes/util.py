@@ -7,7 +7,10 @@ framework.
 """
 import os
 import re
-import urllib
+
+import six
+from six.moves import urllib
+
 from routes import request_config
 
 
@@ -31,8 +34,8 @@ def _screenargs(kargs, mapper, environ, force_explicit=False):
     """
     # Coerce any unicode args with the encoding
     encoding = mapper.encoding
-    for key, val in kargs.iteritems():
-        if isinstance(val, unicode):
+    for key, val in six.iteritems(kargs):
+        if isinstance(val, six.text_type):
             kargs[key] = val.encode(encoding)
 
     if mapper.explicit and mapper.sub_domains and not force_explicit:
@@ -46,7 +49,7 @@ def _screenargs(kargs, mapper, environ, force_explicit=False):
         # If the controller name starts with '/', ignore route memory
         kargs['controller'] = kargs['controller'][1:]
         return kargs
-    elif controller_name and not kargs.has_key('action'):
+    elif controller_name and 'action' not in kargs:
         # Fill in an action if we don't have one, but have a controller
         kargs['action'] = 'index'
 
@@ -57,10 +60,10 @@ def _screenargs(kargs, mapper, environ, force_explicit=False):
         memory_kargs = {}
 
     # Remove keys from memory and kargs if kargs has them as None
-    for key in [key for key in kargs.keys() if kargs[key] is None]:
+    empty_keys = [key for key, value in six.iteritems(kargs) if value is None]
+    for key in empty_keys:
         del kargs[key]
-        if memory_kargs.has_key(key):
-            del memory_kargs[key]
+        memory_kargs.pop(key, None)
 
     # Merge the new args on top of the memory args
     memory_kargs.update(kargs)
@@ -76,7 +79,7 @@ def _subdomain_check(kargs, mapper, environ):
     on the current subdomain or lack therof."""
     if mapper.sub_domains:
         subdomain = kargs.pop('sub_domain', None)
-        if isinstance(subdomain, unicode):
+        if isinstance(subdomain, six.text_type):
             subdomain = str(subdomain)
 
         fullhost = environ.get('HTTP_HOST') or environ.get('SERVER_NAME')
@@ -107,27 +110,27 @@ def _subdomain_check(kargs, mapper, environ):
 def _url_quote(string, encoding):
     """A Unicode handling version of urllib.quote."""
     if encoding:
-        if isinstance(string, unicode):
+        if isinstance(string, six.text_type):
             s = string.encode(encoding)
-        elif isinstance(string, str):
+        elif isinstance(string, six.text_type):
             # assume the encoding is already correct
             s = string
         else:
-            s = unicode(string).encode(encoding)
+            s = six.text_type(string).encode(encoding)
     else:
         s = str(string)
-    return urllib.quote(s, '/')
+    return urllib.parse.quote(s, '/')
 
 
 def _str_encode(string, encoding):
     if encoding:
-        if isinstance(string, unicode):
+        if isinstance(string, six.text_type):
             s = string.encode(encoding)
-        elif isinstance(string, str):
+        elif isinstance(string, six.text_type):
             # assume the encoding is already correct
             s = string
         else:
-            s = unicode(string).encode(encoding)
+            s = six.text_type(string).encode(encoding)
     return s
 
 
@@ -207,16 +210,16 @@ def url_for(*args, **kargs):
             if kargs:
                 url += '?'
                 query_args = []
-                for key, val in kargs.iteritems():
+                for key, val in six.iteritems(kargs):
                     if isinstance(val, (list, tuple)):
                         for value in val:
                             query_args.append("%s=%s" % (
-                                urllib.quote(unicode(key).encode(encoding)),
-                                urllib.quote(unicode(value).encode(encoding))))
+                                urllib.parse.quote(six.text_type(key).encode(encoding)),
+                                urllib.parse.quote(six.text_type(value).encode(encoding))))
                     else:
                         query_args.append("%s=%s" % (
-                            urllib.quote(unicode(key).encode(encoding)),
-                            urllib.quote(unicode(val).encode(encoding))))
+                            urllib.parse.quote(six.text_type(key).encode(encoding)),
+                            urllib.parse.quote(six.text_type(val).encode(encoding))))
                 url += '&'.join(query_args)
     environ = getattr(config, 'environ', {})
     if 'wsgiorg.routing_args' not in environ:
@@ -352,16 +355,16 @@ class URLGenerator(object):
                 if kargs:
                     url += '?'
                     query_args = []
-                    for key, val in kargs.iteritems():
+                    for key, val in six.iteritems(kargs):
                         if isinstance(val, (list, tuple)):
                             for value in val:
                                 query_args.append("%s=%s" % (
-                                    urllib.quote(unicode(key).encode(encoding)),
-                                    urllib.quote(unicode(value).encode(encoding))))
+                                    urllib.parse.quote(six.text_type(key).encode(encoding)),
+                                    urllib.parse.quote(six.text_type(value).encode(encoding))))
                         else:
                             query_args.append("%s=%s" % (
-                                urllib.quote(unicode(key).encode(encoding)),
-                                urllib.quote(unicode(val).encode(encoding))))
+                                urllib.parse.quote(six.text_type(key).encode(encoding)),
+                                urllib.parse.quote(six.text_type(val).encode(encoding))))
                     url += '&'.join(query_args)
         if not static:
             route_args = []

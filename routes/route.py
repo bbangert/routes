@@ -1,9 +1,11 @@
 import re
 import sys
-import urllib
-
+from six.moves import urllib
 if sys.version < '2.4':
     from sets import ImmutableSet as frozenset
+
+import six
+from six.moves.urllib import parse as urlparse
 
 from routes.util import _url_quote as url_quote, _str_encode, as_unicode
 
@@ -87,18 +89,18 @@ class Route(object):
     def _setup_route(self):
         # Build our routelist, and the keys used in the route
         self.routelist = routelist = self._pathkeys(self.routepath)
-        routekeys = frozenset([key['name'] for key in routelist
-                               if isinstance(key, dict)])
-        self.dotkeys = frozenset([key['name'] for key in routelist
-                                  if isinstance(key, dict) and
-                                  key['type'] == '.'])
+        routekeys = frozenset(key['name'] for key in routelist
+                              if isinstance(key, dict))
+        self.dotkeys = frozenset(key['name'] for key in routelist
+                                 if isinstance(key, dict) and
+                                 key['type'] == '.')
 
         if not self.minimization:
             self.make_full_route()
 
         # Build a req list with all the regexp requirements for our args
         self.req_regs = {}
-        for key, val in self.reqs.iteritems():
+        for key, val in six.iteritems(self.reqs):
             self.req_regs[key] = re.compile('^' + val + '$')
         # Update our defaults and set new default keys if needed. defaults
         # needs to be saved
@@ -114,9 +116,9 @@ class Route(object):
 
         # Populate our hardcoded keys, these are ones that are set and don't
         # exist in the route
-        self.hardcoded = frozenset(
-            [key for key in self.maxkeys if key not in routekeys and
-             self.defaults[key] is not None])
+        self.hardcoded = frozenset(key for key in self.maxkeys
+                                   if key not in routekeys
+                                      and self.defaults[key] is not None)
 
         # Cache our default keys
         self._default_keys = frozenset(self.defaults.keys())
@@ -134,14 +136,14 @@ class Route(object):
 
     def make_unicode(self, s):
         """Transform the given argument into a unicode string."""
-        if isinstance(s, unicode):
+        if isinstance(s, six.text_type):
             return s
         elif isinstance(s, bytes):
             return s.decode(self.encoding)
         elif callable(s):
             return s
         else:
-            return unicode(s)
+            return six.text_type(s)
 
     def _pathkeys(self, routepath):
         """Utility function to walk the route, and pull out the valid
@@ -253,8 +255,8 @@ class Route(object):
         if 'action' not in routekeys and 'action' not in kargs \
            and not self.explicit:
             kargs['action'] = 'index'
-        defaultkeys = frozenset([key for key in kargs.keys()
-                                 if key not in reserved_keys])
+        defaultkeys = frozenset(key for key in kargs.keys()
+                                if key not in reserved_keys)
         for key in defaultkeys:
             if kargs[key] is not None:
                 defaults[key] = self.make_unicode(kargs[key])
@@ -266,8 +268,8 @@ class Route(object):
         if 'id' in routekeys and 'id' not in defaults \
            and not self.explicit:
             defaults['id'] = None
-        newdefaultkeys = frozenset([key for key in defaults.keys()
-                                    if key not in reserved_keys])
+        newdefaultkeys = frozenset(key for key in defaults.keys()
+                                   if key not in reserved_keys)
 
         return (defaults, newdefaultkeys)
 
@@ -554,7 +556,7 @@ class Route(object):
         matchdict = match.groupdict()
         result = {}
         extras = self._default_keys - frozenset(matchdict.keys())
-        for key, val in matchdict.iteritems():
+        for key, val in six.iteritems(matchdict):
             if key != 'path_info' and self.encoding:
                 # change back into python unicode objects from the URL
                 # representation
@@ -745,7 +747,7 @@ class Route(object):
                     fragments.append((key, _str_encode(val, self.encoding)))
             if fragments:
                 url += '?'
-                url += urllib.urlencode(fragments)
+                url += urlparse.urlencode(fragments)
         elif _append_slash and not url.endswith('/'):
             url += '/'
         return url

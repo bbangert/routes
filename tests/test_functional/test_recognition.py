@@ -3,7 +3,7 @@
 import sys
 import time
 import unittest
-import urllib
+from six.moves import urllib
 from nose.tools import eq_, assert_raises
 from routes import *
 from routes.util import RoutesException
@@ -45,7 +45,7 @@ class TestRecognition(unittest.TestCase):
 
     def test_disabling_unicode(self):
         hoge = u'\u30c6\u30b9\u30c8' # the word test in Japanese
-        hoge_enc = urllib.quote(hoge.encode('utf-8'))
+        hoge_enc = urllib.parse.quote(hoge.encode('utf-8'))
         m = Mapper(explicit=False)
         m.minimization = True
         m.encoding = None
@@ -989,9 +989,9 @@ else:
         en = time.time()
         total = end-start-(en-ts)
         per_url = total / (n*10)
-        print "Recognition\n"
-        print "%s ms/url" % (per_url*1000)
-        print "%s urls/s\n" % (1.00/per_url)
+        print("Recognition\n")
+        print("%s ms/url" % (per_url*1000))
+        print("%s urls/s\n" % (1.00/per_url))
 
 """
 Copyright (c) 2005 Ben Bangert <ben@groovie.org>, Parachute

@@ -18,7 +18,6 @@ extra_options = {
     }
 
 if PY3:
-    extra_options["use_2to3"] = True
     if "test" in sys.argv or "develop" in sys.argv:
         for root, directories, files in os.walk("tests"):
             for directory in directories:
@@ -54,6 +53,7 @@ setup(name="Routes",
       zip_safe=False,
       tests_require=['nose', 'webtest', 'webob', 'coverage'],
       install_requires=[
+          "six",
           "repoze.lru>=0.3"
       ],
       **extra_options
