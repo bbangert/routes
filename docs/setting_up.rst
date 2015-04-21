@@ -84,7 +84,7 @@ backslashes.  Without the R you'd have to double every backslash.
 
 Another example::
 
-    m.connect("archives/{year}/{month}/{day}", controller="archives",
+    m.connect("/archives/{year}/{month}/{day}", controller="archives",
               action="view", year=2004,
               requirements=dict(year=R"\d{2,4}", month=R"\d{1,2}"))
 
@@ -344,6 +344,7 @@ Adding routes from a nested application
 gives the parent a list of routes to add to its mapper.  These can be added
 with the ``.extend`` method, optionally providing a path prefix::
 
+    from routes.route import Route
     routes = [
         Route("index", "/index.html", controller="home", action="index"),
         ]
