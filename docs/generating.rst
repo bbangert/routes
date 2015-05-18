@@ -128,7 +128,7 @@ named.  To define a static route, use the argument ``_static=True``.
 This example provides a convenient way to link to a search::
 
     map.connect("google", "http://google.com/", _static=True)
-    url("google", q="search term")  =>  "/http://google.com/?q=search+term")
+    url("google", q="search term")  =>  "http://google.com/?q=search+term")
 
 This example generates a URL to a static image in a Pylons public directory.
 Pylons serves the public directory in a way that bypasses Routes, so there's no
