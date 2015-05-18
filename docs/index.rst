@@ -49,7 +49,7 @@ Bugs/Support
 ============
 
 Bug's can be reported on the `github issue tracker
-<https://github.com/bbangert/routes/issues`_. Note that routes is in maintenance
+<https://github.com/bbangert/routes/issues>`_. Note that routes is in maintenance
 mode so bug reports are unlikely to be worked on, pull requests will be applied
 if submitted with tests.
 
