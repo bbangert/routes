@@ -37,7 +37,7 @@ When the URL is looked up, it should be matched against the Mapper. When
 matching an incoming URL, it is assumed that the URL path is the only string
 being matched. All query args should be stripped before matching::
 
-    m.connect('articles/{year}/{month}', controller='blog', action='view', year=None)
+    m.connect('/articles/{year}/{month}', controller='blog', action='view', year=None)
 
     m.match('/articles/2003/10')
     # {'controller':'blog', 'action':'view', 'year':'2003', 'month':'10'}
@@ -46,7 +46,7 @@ Matching a URL will return a dict of the match results, if you'd like to
 differentiate between where the argument came from you can use routematch which
 will return the Route object that has all these details::
 
-    m.connect('articles/{year}/{month}', controller='blog', action='view', year=None)
+    m.connect('/articles/{year}/{month}', controller='blog', action='view', year=None)
 
     result = m.routematch('/articles/2003/10')
     # result is a tuple of the match dict and the Route object
