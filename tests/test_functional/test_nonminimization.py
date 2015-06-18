@@ -1,5 +1,5 @@
 """Test non-minimization recognition"""
-import urllib
+from six.moves import urllib
 
 from nose.tools import eq_
 
@@ -116,7 +116,7 @@ def test_regexp_syntax():
 
 def test_unicode():
     hoge = u'\u30c6\u30b9\u30c8' # the word test in Japanese
-    hoge_enc = urllib.quote(hoge.encode('utf-8'))
+    hoge_enc = urllib.parse.quote(hoge.encode('utf-8'))
     m = Mapper()
     m.minimization = False
     m.connect(':hoge')
@@ -125,7 +125,7 @@ def test_unicode():
 
 def test_unicode_static():
     hoge = u'\u30c6\u30b9\u30c8' # the word test in Japanese
-    hoge_enc = urllib.quote(hoge.encode('utf-8'))
+    hoge_enc = urllib.parse.quote(hoge.encode('utf-8'))
     m = Mapper()
     m.minimization = False
     m.connect('google-jp', 'http://www.google.co.jp/search', _static=True)

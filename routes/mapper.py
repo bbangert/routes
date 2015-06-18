@@ -3,6 +3,7 @@ import re
 import threading
 
 from repoze.lru import LRUCache
+import six
 
 from routes import request_config
 from routes.util import (
@@ -153,7 +154,7 @@ class SubMapper(SubMapperParent):
     def connect(self, *args, **kwargs):
         newkargs = {}
         newargs = args
-        for key, value in self.kwargs.items():
+        for key, value in six.iteritems(self.kwargs):
             if key == 'path_prefix':
                 if len(args) > 1:
                     newargs = (args[0], self.kwargs[key] + args[1])
@@ -547,8 +548,8 @@ class Mapper(SubMapperParent):
         # Setup the lists of all controllers/actions we'll add each route
         # to. We include the '*' in the case that a generate contains a
         # controller/action that has no hardcodes
-        controllerlist = controllerlist.keys() + ['*']
-        actionlist = actionlist.keys() + ['*']
+        controllerlist = list(controllerlist.keys()) + ['*']
+        actionlist = list(actionlist.keys()) + ['*']
 
         # Go through our list again, assemble the controllers/actions we'll
         # add each route to. If its hardcoded, we only add it to that dict key.
@@ -562,7 +563,7 @@ class Mapper(SubMapperParent):
             if 'controller' in route.hardcoded:
                 clist = [route.defaults['controller']]
             if 'action' in route.hardcoded:
-                alist = [unicode(route.defaults['action'])]
+                alist = [six.text_type(route.defaults['action'])]
             for controller in clist:
                 for action in alist:
                     actiondict = gendict.setdefault(controller, {})
@@ -592,7 +593,7 @@ class Mapper(SubMapperParent):
             else:
                 clist = self.controller_scan
 
-        for key, val in self.maxkeys.iteritems():
+        for key, val in six.iteritems(self.maxkeys):
             for route in val:
                 route.makeregexp(clist)
 
@@ -758,8 +759,8 @@ class Mapper(SubMapperParent):
         # If the URL didn't depend on the SCRIPT_NAME, we'll cache it
         # keyed by just by kargs; otherwise we need to cache it with
         # both SCRIPT_NAME and kargs:
-        cache_key = unicode(args).encode('utf8') + \
-            unicode(kargs).encode('utf8')
+        cache_key = six.text_type(args).encode('utf8') + \
+            six.text_type(kargs).encode('utf8')
 
         if self.urlcache is not None:
             cache_key_script_name = '%s:%s' % (script_name, cache_key)
@@ -782,7 +783,7 @@ class Mapper(SubMapperParent):
 
         keys = frozenset(kargs.keys())
         cacheset = False
-        cachekey = unicode(keys)
+        cachekey = six.text_type(keys)
         cachelist = sortcache.get(cachekey)
         if args:
             keylist = args
@@ -1047,7 +1048,7 @@ class Mapper(SubMapperParent):
         def swap(dct, newdct):
             """Swap the keys and values in the dict, and uppercase the values
             from the dict during the swap."""
-            for key, val in dct.iteritems():
+            for key, val in six.iteritems(dct):
                 newdct.setdefault(val.upper(), []).append(key)
             return newdct
         collection_methods = swap(collection, {})
@@ -1088,7 +1089,7 @@ class Mapper(SubMapperParent):
             return opts
 
         # Add the routes for handling collection methods
-        for method, lst in collection_methods.iteritems():
+        for method, lst in six.iteritems(collection_methods):
             primary = (method != 'GET' and lst.pop(0)) or None
             route_options = requirements_for(method)
             for action in lst:
@@ -1112,7 +1113,7 @@ class Mapper(SubMapperParent):
                      action='index', conditions={'method': ['GET']}, **options)
 
         # Add the routes that deal with new resource methods
-        for method, lst in new_methods.iteritems():
+        for method, lst in six.iteritems(new_methods):
             route_options = requirements_for(method)
             for action in lst:
                 name = "new_" + member_name
@@ -1131,7 +1132,7 @@ class Mapper(SubMapperParent):
         requirements_regexp = '[^\/]+(?<!\\\)'
 
         # Add the routes that deal with member methods of a resource
-        for method, lst in member_methods.iteritems():
+        for method, lst in six.iteritems(member_methods):
             route_options = requirements_for(method)
             route_options['requirements'] = {'id': requirements_regexp}
             if method not in ['POST', 'GET', 'any']:

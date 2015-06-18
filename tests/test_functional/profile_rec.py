@@ -56,9 +56,9 @@ def bench_rec(mapper, n):
     end = time.time()
     total = end-start-(en-ts)
     per_url = total / (n*10)
-    print "Hit recognition\n"
-    print "%s ms/url" % (per_url*1000)
-    print "%s urls/s\n" % (1.00/per_url)
+    print("Hit recognition\n")
+    print("%s ms/url" % (per_url*1000))
+    print("%s urls/s\n" % (1.00/per_url))
 
     # misses
     start = time.time()
@@ -69,9 +69,9 @@ def bench_rec(mapper, n):
     end = time.time()
     total = end-start-(en-ts)
     per_url = total / (n*10)
-    print "Miss recognition\n"
-    print "%s ms/url" % (per_url*1000)
-    print "%s urls/s\n" % (1.00/per_url)
+    print("Miss recognition\n")
+    print("%s ms/url" % (per_url*1000))
+    print("%s urls/s\n" % (1.00/per_url))
         
 def do_profile(cmd, globals, locals, sort_order, callers):
     fd, fn = tempfile.mkstemp()

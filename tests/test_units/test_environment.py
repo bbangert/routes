@@ -28,7 +28,7 @@ class TestEnvironment(unittest.TestCase):
         assert con.mapper.environ == env
         assert con.protocol == 'http'
         assert con.host == 'somewhere.com'
-        assert con.mapper_dict.has_key('controller')
+        assert 'controller' in con.mapper_dict
         assert con.mapper_dict['controller'] == 'content'
 
 if __name__ == '__main__':

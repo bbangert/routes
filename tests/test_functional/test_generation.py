@@ -1,6 +1,6 @@
 """test_generation"""
 import sys, time, unittest
-import urllib
+from six.moves import urllib
 
 from nose.tools import eq_, assert_raises
 from routes import *
@@ -628,7 +628,7 @@ class TestGeneration(unittest.TestCase):
 
     def test_unicode(self):
         hoge = u'\u30c6\u30b9\u30c8' # the word test in Japanese
-        hoge_enc = urllib.quote(hoge.encode('utf-8'))
+        hoge_enc = urllib.parse.quote(hoge.encode('utf-8'))
         m = Mapper()
         m.connect(':hoge')
         eq_("/%s" % hoge_enc, m.generate(hoge=hoge))
@@ -636,7 +636,7 @@ class TestGeneration(unittest.TestCase):
 
     def test_unicode_static(self):
         hoge = u'\u30c6\u30b9\u30c8' # the word test in Japanese
-        hoge_enc = urllib.quote(hoge.encode('utf-8'))
+        hoge_enc = urllib.parse.quote(hoge.encode('utf-8'))
         m = Mapper()
         m.minimization = True
         m.connect('google-jp', 'http://www.google.co.jp/search', _static=True)
@@ -711,6 +711,6 @@ else:
         en = time.time()
         total = end-start-(en-ts)
         per_url = total / (n*6)
-        print "Generation (%s URLs)" % (n*6)
-        print "%s ms/url" % (per_url*1000)
-        print "%s urls/s\n" % (1.00/per_url)
+        print("Generation (%s URLs)" % (n*6))
+        print("%s ms/url" % (per_url*1000))
+        print("%s urls/s\n" % (1.00/per_url))
