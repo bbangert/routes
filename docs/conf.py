@@ -91,7 +91,7 @@ pygments_style = 'sphinx'
 # typographically correct entities.
 #html_use_smartypants = True
 
-
+html_theme = 'classic'
 html_theme_options = {
     "bgcolor": "#fff",
     "footertextcolor": "#666",
