@@ -65,6 +65,7 @@ Documentation
    restful
    uni_redirect_rest
    changes
+   todo
 
 .. toctree::
    :maxdepth: 1
