@@ -1,6 +1,10 @@
 Routes Changelog
 %%%%%%%%%%%%%%%%
 
+Release 2.2 (July 21, 2015)
+===========================
+* Fix Python 3 support. Patch by Victor Stinner.
+
 Release 2.1 (January 17, 2015)
 ==============================
 * Fix 3 other route matching groups in route.py to use anonymous groups for
