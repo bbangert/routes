@@ -155,8 +155,7 @@ class Route(object):
         just_started = False
         routelist = []
         for char in routepath:
-            if char in [':', '*', '{'] and not collecting and not self.static \
-               or char in ['{'] and not collecting:
+            if char in [':', '*', '{'] and not collecting and not self.static:
                 just_started = True
                 collecting = True
                 var_type = char
