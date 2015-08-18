@@ -154,6 +154,43 @@ class TestSubmapper(unittest.TestCase):
         match = m.match('/parents/1/children/2')
         eq_('col2', match.get('controller'))
 
+    def test_submapper_argument_overriding(self):
+        m = Mapper()
+        first = m.submapper(path_prefix='/first_level',
+                            controller='first', action='test',
+                            name_prefix='first_')
+        first.connect('test', r'/test')
+        second = first.submapper(path_prefix='/second_level',
+                                 controller='second',
+                                 name_prefix='second_')
+        second.connect('test', r'/test')
+        third = second.submapper(path_prefix='/third_level',
+                                 controller="third", action='third_action',
+                                 name_prefix='third_')
+        third.connect('test', r'/test')
+
+        # test first level
+        match = m.match('/first_level/test')
+        eq_('first', match.get('controller'))
+        eq_('test', match.get('action'))
+        # test name_prefix worked
+        eq_('/first_level/test', url_for('first_test'))
+
+        # test second level controller override
+        match = m.match('/first_level/second_level/test')
+        eq_('second', match.get('controller'))
+        eq_('test', match.get('action'))
+        # test name_prefix worked
+        eq_('/first_level/second_level/test', url_for('first_second_test'))
+
+        # test third level controller and action override
+        match = m.match('/first_level/second_level/third_level/test')
+        eq_('third', match.get('controller'))
+        eq_('third_action', match.get('action'))
+        # test name_prefix worked
+        eq_('/first_level/second_level/third_level/test',
+             url_for('first_second_third_test'))
+
 
 if __name__ == '__main__':
     unittest.main()
