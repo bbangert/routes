@@ -1,6 +1,14 @@
 Routes Changelog
 %%%%%%%%%%%%%%%%
 
+Release 2.3 (**dev**)
+=====================
+
+* Concatenation fix when using submappers with path prefixes. Multiple
+  submappers combined the path prefix inside the controller argument in
+  non-obvious ways. The controller argument will now be properly carried
+  through when using submappers. PR #28.
+
 Release 2.2 (July 21, 2015)
 ===========================
 * Fix Python 3 support. Patch by Victor Stinner.
