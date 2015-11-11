@@ -414,6 +414,7 @@ class Mapper(SubMapperParent):
         self.hardcode_names = True
         self.minimization = False
         self.create_regs_lock = threading.Lock()
+        self.resources = {}
         if register:
             config = request_config()
             config.mapper = self
@@ -439,6 +440,10 @@ class Mapper(SubMapperParent):
             ' '.join(row[col].ljust(widths[col])
                      for col in range(len(widths)))
             for row in table)
+
+    @classmethod
+    def _collection_name(cls, member_name):
+        return "%ss" % member_name
 
     def _envget(self):
         try:
@@ -910,7 +915,7 @@ class Mapper(SubMapperParent):
                 continue
         return None
 
-    def resource(self, member_name, collection_name, **kwargs):
+    def resource(self, member_name, collection_name=None, **kwargs):
         """Generate routes for a controller resource
 
         The member_name name should be the appropriate singular version
@@ -1047,6 +1052,23 @@ class Mapper(SubMapperParent):
         path_prefix = kwargs.pop('path_prefix', None)
         name_prefix = kwargs.pop('name_prefix', None)
         parent_resource = kwargs.pop('parent_resource', None)
+        generate_formatted = kwargs.pop('generate_formatted', False)
+        exclude = kwargs.pop('exclude', [])
+
+        if collection_name is None:
+            collection_name = Mapper._collection_name(member_name)
+
+        def get_nested_prefix(parent_name):
+            parent = self.resources.get(parent_name)
+            # TODO: exception handling
+            parent_res = parent.get('parent_resource')
+            prefix = ''
+            if parent_res:
+                prefix = get_nested_prefix(parent_res.get('member_name'))+'/'
+            prefix = '%s%s/:%s_id' % (prefix,
+                                      parent.get('collection_name', Mapper._collection_name(parent_name)),
+                                      parent_name)
+            return prefix
 
         # Generate ``path_prefix`` if ``path_prefix`` wasn't specified and
         # ``parent_resource`` was. Likewise for ``name_prefix``. Make sure
@@ -1054,9 +1076,14 @@ class Mapper(SubMapperParent):
         # they are specified--in particular, we need to be careful when they
         # are explicitly set to "".
         if parent_resource is not None:
-            if path_prefix is None:
-                path_prefix = '%s/:%s_id' % (parent_resource['collection_name'],
-                                             parent_resource['member_name'])
+            parent_name = parent_resource.get('member_name')
+            if parent_resource.get('nested'):
+                #TODO: construct lazyli
+                path_prefix = get_nested_prefix(parent_name)
+            else:
+                if path_prefix is None:
+                    path_prefix = '%s/:%s_id' % (parent_resource['collection_name'],
+                                                 parent_resource['member_name'])
             if name_prefix is None:
                 name_prefix = '%s_' % parent_resource['member_name']
         else:
@@ -1064,6 +1091,12 @@ class Mapper(SubMapperParent):
                 path_prefix = ''
             if name_prefix is None:
                 name_prefix = ''
+        self.resources[member_name] = {
+            'collection_name': collection_name,
+            'path_prefix': path_prefix,
+            'name_prefix': name_prefix,
+            'parent_resource': parent_resource
+        }
 
         # Ensure the edit and new actions are in and GET
         member['edit'] = 'GET'
@@ -1077,9 +1110,13 @@ class Mapper(SubMapperParent):
             for key, val in six.iteritems(dct):
                 newdct.setdefault(val.upper(), []).append(key)
             return newdct
-        collection_methods = swap(collection, {})
-        member_methods = swap(member, {})
-        new_methods = swap(new, {})
+
+        def exclude_keys(dct, to_exclude):
+            return {key: val for key, val in iter(dct.items()) if key not in to_exclude}
+
+        collection_methods = swap(exclude_keys(collection, exclude), {})
+        member_methods = swap(exclude_keys(member, exclude), {})
+        new_methods = swap(exclude_keys(new, exclude), {})
 
         # Insert create, update, and destroy methods
         collection_methods.setdefault('POST', []).insert(0, 'create')
@@ -1121,20 +1158,23 @@ class Mapper(SubMapperParent):
             for action in lst:
                 route_options['action'] = action
                 route_name = "%s%s_%s" % (name_prefix, action, collection_name)
-                self.connect("formatted_" + route_name, "%s/%s.:(format)" %
-                             (collection_path, action), **route_options)
+                if generate_formatted:
+                    self.connect("formatted_" + route_name, "%s/%s.:(format)" %
+                                 (collection_path, action), **route_options)
                 self.connect(route_name, "%s/%s" % (collection_path, action),
                              **route_options)
             if primary:
                 route_options['action'] = primary
-                self.connect("%s.:(format)" % collection_path, **route_options)
+                if generate_formatted:
+                    self.connect("%s.:(format)" % collection_path, **route_options)
                 self.connect(collection_path, **route_options)
 
         # Specifically add in the built-in 'index' collection method and its
         # formatted version
-        self.connect("formatted_" + name_prefix + collection_name,
-                     collection_path + ".:(format)", action='index',
-                     conditions={'method': ['GET']}, **options)
+        if generate_formatted:
+            self.connect("formatted_" + name_prefix + collection_name,
+                         collection_path + ".:(format)", action='index',
+                         conditions={'method': ['GET']}, **options)
         self.connect(name_prefix + collection_name, collection_path,
                      action='index', conditions={'method': ['GET']}, **options)
 
@@ -1151,8 +1191,9 @@ class Mapper(SubMapperParent):
                     path = "%s/%s" % (new_path, action)
                     name = action + "_" + name
                     formatted_path = "%s/%s.:(format)" % (new_path, action)
-                self.connect("formatted_" + name_prefix + name, formatted_path,
-                             **route_options)
+                if generate_formatted:
+                    self.connect("formatted_" + name_prefix + name, formatted_path,
+                                 **route_options)
                 self.connect(name_prefix + name, path, **route_options)
 
         requirements_regexp = '[^\/]+(?<!\\\)'
@@ -1167,23 +1208,26 @@ class Mapper(SubMapperParent):
                 primary = None
             for action in lst:
                 route_options['action'] = action
-                self.connect("formatted_%s%s_%s" % (name_prefix, action,
-                                                    member_name),
-                             "%s/%s.:(format)" % (member_path, action),
-                             **route_options)
+                if generate_formatted:
+                    self.connect("formatted_%s%s_%s" % (name_prefix, action,
+                                                        member_name),
+                                 "%s/%s.:(format)" % (member_path, action),
+                                 **route_options)
                 self.connect("%s%s_%s" % (name_prefix, action, member_name),
                              "%s/%s" % (member_path, action), **route_options)
             if primary:
                 route_options['action'] = primary
-                self.connect("%s.:(format)" % member_path, **route_options)
+                if generate_formatted:
+                    self.connect("%s.:(format)" % member_path, **route_options)
                 self.connect(member_path, **route_options)
 
         # Specifically add the member 'show' method
         route_options = requirements_for('GET')
         route_options['action'] = 'show'
         route_options['requirements'] = {'id': requirements_regexp}
-        self.connect("formatted_" + name_prefix + member_name,
-                     member_path + ".:(format)", **route_options)
+        if generate_formatted:
+            self.connect("formatted_" + name_prefix + member_name,
+                         member_path + ".:(format)", **route_options)
         self.connect(name_prefix + member_name, member_path, **route_options)
 
     def redirect(self, match_path, destination_path, *args, **kwargs):
