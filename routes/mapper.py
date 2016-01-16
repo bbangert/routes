@@ -982,6 +982,22 @@ class Mapper(SubMapperParent):
                 # GET /category/7/message/1
                 # has named route "category_message"
 
+        ``requirements``
+
+           A dictionary that restricts the matching of a
+           variable. Can be used when matching variables with path_prefix.
+
+           Example::
+
+                map.resource('message', 'messages',
+                     path_prefix='{project_id}/',
+                     requirements={"project_id": R"\d+"})
+                # POST /01234/message
+                #    success, project_id is set to "01234"
+                # POST /foo/message
+                #    404 not found, won't be matched by this route
+
+
         ``parent_resource``
             A ``dict`` containing information about the parent
             resource, for creating a nested resource. It should contain
@@ -1105,6 +1121,8 @@ class Mapper(SubMapperParent):
             '_parent_resource': parent_resource,
             '_filter': kwargs.get('_filter')
         }
+        if 'requirements' in kwargs:
+            options['requirements'] = kwargs['requirements']
 
         def requirements_for(meth):
             """Returns a new dict to be used for all route creation as the

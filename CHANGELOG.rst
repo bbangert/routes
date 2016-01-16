@@ -4,6 +4,9 @@ Routes Changelog
 Release 2.3 (**dev**)
 =====================
 
+* Add support for the ``requirements`` option when using
+  mapper.resource to create routes. PR #57. Patch by Sean Dague.
+
 * Concatenation fix when using submappers with path prefixes. Multiple
   submappers combined the path prefix inside the controller argument in
   non-obvious ways. The controller argument will now be properly carried

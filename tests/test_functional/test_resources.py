@@ -85,6 +85,21 @@ class TestResourceGeneration(unittest.TestCase):
         eq_('/messages/new/preview', url_for('category_preview_new_message'))
         assert_raises(Exception, url_for, 'category_preview_new_message', method='get')
 
+    def test_resources_with_requirements(self):
+        m = Mapper()
+        m.resource('message', 'messages', path_prefix='/{project_id}/{user_id}/',
+                   requirements={'project_id': r'[0-9a-f]{4}', 'user_id': r'\d+'})
+        options = dict(controller='messages', project_id='cafe', user_id='123')
+        self._assert_restful_routes(m, options, path_prefix='cafe/123/')
+
+        # in addition to the positive tests we need to guarantee we
+        # are not matching when the requirements don't match.
+        eq_({'action': u'create', 'project_id': u'cafe', 'user_id': u'123', 'controller': u'messages'},
+            m.match('/cafe/123/messages'))
+        eq_(None, m.match('/extensions/123/messages'))
+        eq_(None, m.match('/b0a3/123b/messages'))
+        eq_(None, m.match('/foo/bar/messages'))
+
 
 class TestResourceRecognition(unittest.TestCase):
     def test_resource(self):
