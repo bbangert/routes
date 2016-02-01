@@ -913,7 +913,7 @@ class TestRecognition(unittest.TestCase):
         eq_({'controller':'content','action':'index','id':None}, m.match('/content'))
         eq_({'controller':'content','action':'view','id':'4'}, m.match('/'))
         def call_func():
-            m.match('')
+            m.match(None)
         assert_raises(RoutesException, call_func)
 
     def test_home_noargs(self):
@@ -926,7 +926,7 @@ class TestRecognition(unittest.TestCase):
         eq_(None, m.match('/content'))
         eq_({}, m.match('/'))
         def call_func():
-            m.match('')
+            m.match(None)
         assert_raises(RoutesException, call_func)
 
     def test_dot_format_args(self):
