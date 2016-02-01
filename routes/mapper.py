@@ -713,10 +713,10 @@ class Mapper(SubMapperParent):
             resultdict = m.match('/joe/sixpack')
 
         """
-        if not url and not environ:
+        if url is None and not environ:
             raise RoutesException('URL or environ must be provided')
 
-        if not url:
+        if url is None:
             url = environ['PATH_INFO']
 
         result = self._match(url, environ)
@@ -737,10 +737,10 @@ class Mapper(SubMapperParent):
             resultdict, route_obj = m.match('/joe/sixpack')
 
         """
-        if not url and not environ:
+        if url is None and not environ:
             raise RoutesException('URL or environ must be provided')
 
-        if not url:
+        if url is None:
             url = environ['PATH_INFO']
         result = self._match(url, environ)
         if self.debug:
