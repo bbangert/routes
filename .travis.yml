@@ -14,4 +14,4 @@ matrix:
 install:
   - python setup.py develop
   - pip install webob webtest coverage
-script: nosetests
+script: python -bb $(which nosetests)
