@@ -11,7 +11,5 @@ python:
 matrix:
   allow_failures:
     - python: "nightly"
-install:
-  - python setup.py develop
-  - pip install webob webtest coverage
-script: python -bb $(which nosetests)
+install: pip install tox-travis
+script: tox
