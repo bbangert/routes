@@ -713,10 +713,10 @@ class Mapper(SubMapperParent):
             resultdict = m.match('/joe/sixpack')
 
         """
-        if not url and not environ:
+        if url is None and not environ:
             raise RoutesException('URL or environ must be provided')
 
-        if not url:
+        if url is None:
             url = environ['PATH_INFO']
 
         result = self._match(url, environ)
@@ -737,10 +737,10 @@ class Mapper(SubMapperParent):
             resultdict, route_obj = m.match('/joe/sixpack')
 
         """
-        if not url and not environ:
+        if url is None and not environ:
             raise RoutesException('URL or environ must be provided')
 
-        if not url:
+        if url is None:
             url = environ['PATH_INFO']
         result = self._match(url, environ)
         if self.debug:
@@ -789,7 +789,11 @@ class Mapper(SubMapperParent):
             six.text_type(kargs).encode('utf8')
 
         if self.urlcache is not None:
-            cache_key_script_name = '%s:%s' % (script_name, cache_key)
+            if six.PY3:
+                cache_key_script_name = b':'.join((script_name.encode('utf-8'),
+                                                   cache_key))
+            else:
+                cache_key_script_name = '%s:%s' % (script_name, cache_key)
 
             # Check the url cache to see if it exists, use it if it does
             val = self.urlcache.get(cache_key_script_name, self)

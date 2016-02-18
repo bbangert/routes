@@ -4,9 +4,12 @@ python:
   - "2.7"
   - "3.3"
   - "3.4"
+  - "3.5"
+  - "nightly"
   - "pypy"
   - "pypy3"
-install:
-  - python setup.py develop
-  - pip install webob webtest coverage
-script: nosetests
+matrix:
+  allow_failures:
+    - python: "nightly"
+install: pip install tox-travis
+script: tox
