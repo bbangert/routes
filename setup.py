@@ -57,5 +57,10 @@ setup(name="Routes",
           "six",
           "repoze.lru>=0.3"
       ],
+      extras_require={
+          'middleware': [
+              'webob',
+          ]
+      },
       **extra_options
 )

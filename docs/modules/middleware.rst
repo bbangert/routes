@@ -2,7 +2,6 @@
 ==================================================
 
 .. automodule:: routes.middleware
-.. currentmodule:: routes.middleware
 
 Module Contents
 ---------------

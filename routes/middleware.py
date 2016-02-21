@@ -12,7 +12,12 @@ log = logging.getLogger('routes.middleware')
 
 class RoutesMiddleware(object):
     """Routing middleware that handles resolving the PATH_INFO in
-    addition to optionally recognizing method overriding."""
+    addition to optionally recognizing method overriding.
+    
+    .. Note::
+        This module requires webob to be installed. To depend on it, you may
+        list routes[middleware] in your ``requirements.txt``
+    """
     def __init__(self, wsgi_app, mapper, use_method_override=True,
                  path_info=True, singleton=True):
         """Create a Route middleware object
