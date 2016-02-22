@@ -13,3 +13,5 @@ html_coverage
 .idea
 *.iml
 .tox/
+.eggs/
+.coverage
