@@ -3,6 +3,8 @@ Routes Changelog
 
 Release 2.3 (**dev**)
 =====================
+* Add support for protocol-relative URLs generation (i.e. starting with double
+  slash ``//``). PR #60. Patch by Sviatoslav Sydorenko.
 * Add support for the ``middleware`` extra requirement, making possible to
   depend on ``webob`` optionally. PR #59. Patch by Sviatoslav Sydorenko.
 * Fix matching of an empty string route, which led to exception in earlier
