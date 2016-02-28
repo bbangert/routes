@@ -258,7 +258,7 @@ def url_for(*args, **kargs):
         url = config.mapper.generate(*route_args, **newargs)
     if anchor is not None:
         url += '#' + _url_quote(anchor, encoding)
-    if host or protocol is not None or qualified:
+    if host or (protocol is not None) or qualified:
         if not host and not qualified:
             # Ensure we don't use a specific port, as changing the protocol
             # means that we most likely need a new port
@@ -411,7 +411,7 @@ class URLGenerator(object):
             url = self.mapper.generate(*route_args, **newargs)
         if anchor is not None:
             url += '#' + _url_quote(anchor, encoding)
-        if host or protocol is not None or qualified:
+        if host or (protocol is not None) or qualified:
             if 'routes.cached_hostinfo' not in self.environ:
                 cache_hostinfo(self.environ)
             hostinfo = self.environ['routes.cached_hostinfo']
