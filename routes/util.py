@@ -180,15 +180,19 @@ def url_for(*args, **kargs):
     """
     anchor = kargs.get('anchor')
     host = kargs.get('host')
-    protocol = kargs.get('protocol')
+    protocol = kargs.pop('protocol', None)
     qualified = kargs.pop('qualified', None)
 
     # Remove special words from kargs, convert placeholders
-    for key in ['anchor', 'host', 'protocol']:
+    for key in ['anchor', 'host']:
         if kargs.get(key):
             del kargs[key]
         if key+'_' in kargs:
             kargs[key] = kargs.pop(key+'_')
+
+    if 'protocol_' in kargs:
+        kargs['protocol_'] = protocol
+
     config = request_config()
     route = None
     static = False
@@ -250,21 +254,23 @@ def url_for(*args, **kargs):
             newargs = _screenargs(kargs, config.mapper, environ)
         anchor = newargs.pop('_anchor', None) or anchor
         host = newargs.pop('_host', None) or host
-        protocol = newargs.pop('_protocol', None) or protocol
+        protocol = newargs.pop('_protocol', protocol)
         url = config.mapper.generate(*route_args, **newargs)
     if anchor is not None:
         url += '#' + _url_quote(anchor, encoding)
-    if host or protocol or qualified:
+    if host or (protocol is not None) or qualified:
         if not host and not qualified:
             # Ensure we don't use a specific port, as changing the protocol
             # means that we most likely need a new port
             host = config.host.split(':')[0]
         elif not host:
             host = config.host
-        if not protocol:
+        if protocol is None:
             protocol = config.protocol
+        if protocol != '':
+            protocol += ':'
         if url is not None:
-            url = protocol + '://' + host + url
+            url = protocol + '//' + host + url
 
     if not ascii_characters(url) and url is not None:
         raise GenerationException("url_for can only return a string, got "
@@ -324,15 +330,18 @@ class URLGenerator(object):
         """
         anchor = kargs.get('anchor')
         host = kargs.get('host')
-        protocol = kargs.get('protocol')
+        protocol = kargs.pop('protocol', None)
         qualified = kargs.pop('qualified', None)
 
         # Remove special words from kargs, convert placeholders
-        for key in ['anchor', 'host', 'protocol']:
+        for key in ['anchor', 'host']:
             if kargs.get(key):
                 del kargs[key]
             if key+'_' in kargs:
                 kargs[key] = kargs.pop(key+'_')
+
+        if 'protocol_' in kargs:
+            kargs['protocol_'] = protocol
 
         route = None
         use_current = '_use_current' in kargs and kargs.pop('_use_current')
@@ -396,12 +405,13 @@ class URLGenerator(object):
 
             anchor = anchor or newargs.pop('_anchor', None)
             host = host or newargs.pop('_host', None)
-            protocol = protocol or newargs.pop('_protocol', None)
+            if protocol is None:
+                protocol = newargs.pop('_protocol', None)
             newargs['_environ'] = self.environ
             url = self.mapper.generate(*route_args, **newargs)
         if anchor is not None:
             url += '#' + _url_quote(anchor, encoding)
-        if host or protocol or qualified:
+        if host or (protocol is not None) or qualified:
             if 'routes.cached_hostinfo' not in self.environ:
                 cache_hostinfo(self.environ)
             hostinfo = self.environ['routes.cached_hostinfo']
@@ -412,12 +422,14 @@ class URLGenerator(object):
                 host = hostinfo['host'].split(':')[0]
             elif not host:
                 host = hostinfo['host']
-            if not protocol:
+            if protocol is None:
                 protocol = hostinfo['protocol']
+            if protocol != '':
+                protocol += ':'
             if url is not None:
                 if host[-1] != '/':
                     host += '/'
-                url = protocol + '://' + host + url.lstrip('/')
+                url = protocol + '//' + host + url.lstrip('/')
 
         if not ascii_characters(url) and url is not None:
             raise GenerationException("Can only return a string, got "
