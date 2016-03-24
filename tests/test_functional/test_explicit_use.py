@@ -52,6 +52,14 @@ class TestUtils(unittest.TestCase):
         url = URLGenerator(m, environ.copy())
         assert_raises(GenerationException, lambda: url.current(qualified=True))
 
+        environ = {'HTTP_HOST': 'subdomain.localhost.com'}
+        url = URLGenerator(m, environ.copy())
+        eq_('http://sub.localhost.com/hi/smith', url(fred='smith', sub_domain='sub', qualified=True))
+
+        environ = {'HTTP_HOST': 'sub.sub.localhost.com'}
+        url = URLGenerator(m, environ.copy())
+        eq_('http://new.localhost.com/hi/smith', url(fred='smith', sub_domain='new', qualified=True))
+
         url = URLGenerator(m, {})
         eq_('/hi/smith', url(fred='smith', sub_domain=u'home'))
 
