@@ -93,10 +93,12 @@ def _subdomain_check(kargs, mapper, environ):
         port = ''
         if len(hostmatch) > 1:
             port += ':' + hostmatch[1]
-        sub_match = re.compile('^.+?\.(%s)$' % mapper.domain_match)
-        domain = re.sub(sub_match, r'\1', host)
+
+        match = re.match('^(.+?)\.(%s)$' % mapper.domain_match, host)
+        host_subdomain, domain = match.groups() if match else (None, host)
+
         subdomain = as_unicode(subdomain, mapper.encoding)
-        if subdomain and not host.startswith(subdomain) and \
+        if subdomain and host_subdomain != subdomain and \
             subdomain not in mapper.sub_domains_ignore:
             kargs['_host'] = subdomain + '.' + domain + port
         elif (subdomain in mapper.sub_domains_ignore or \

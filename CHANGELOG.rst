@@ -3,6 +3,7 @@ Routes Changelog
 
 Release 2.3 (**dev**)
 =====================
+* Fix sub_domain equivalence check. Patch by Nikita Uvarov
 * Add support for protocol-relative URLs generation (i.e. starting with double
   slash ``//``). PR #60. Patch by Sviatoslav Sydorenko.
 * Add support for the ``middleware`` extra requirement, making possible to
