@@ -434,7 +434,7 @@ Release 1.0 (Nov. 21st, 2005)
 
   Or::
 
-       from routes import request_confg, Mapper
+       from routes import request_config, Mapper
 
   The following names are available for importing from routes::
 
