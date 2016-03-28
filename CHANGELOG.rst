@@ -1,8 +1,8 @@
 Routes Changelog
 %%%%%%%%%%%%%%%%
 
-Release 2.3 (**dev**)
-=====================
+Release 2.3 (March 28, 2016)
+============================
 * Fix sub_domain equivalence check. Patch by Nikita Uvarov
 * Add support for protocol-relative URLs generation (i.e. starting with double
   slash ``//``). PR #60. Patch by Sviatoslav Sydorenko.
