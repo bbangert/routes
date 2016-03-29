@@ -1,6 +1,11 @@
 Routes Changelog
 %%%%%%%%%%%%%%%%
 
+Release 2.3.1 (**dev**)
+=======================
+* Backwards compatability fix - connect should work with mandatory
+  routename and optional path. Patch by Davanum Srinivas (PR #65).
+
 Release 2.3 (March 28, 2016)
 ============================
 * Fix sub_domain equivalence check. Patch by Nikita Uvarov
