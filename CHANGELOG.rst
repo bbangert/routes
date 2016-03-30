@@ -1,8 +1,8 @@
 Routes Changelog
 %%%%%%%%%%%%%%%%
 
-Release 2.3.1 (**dev**)
-=======================
+Release 2.3.1 (March 30, 2016)
+==============================
 * Backwards compatability fix - connect should work with mandatory
   routename and optional path. Patch by Davanum Srinivas (PR #65).
 
