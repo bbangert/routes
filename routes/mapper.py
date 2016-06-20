@@ -1230,7 +1230,7 @@ class Mapper(SubMapperParent):
         Example::
 
             map = Mapper()
-            map.redirect('/legacyapp/archives/{url:.*}, '/archives/{url})
+            map.redirect('/legacyapp/archives/{url:.*}', '/archives/{url}')
             map.redirect('/home/index', '/',
                          _redirect_code='301 Moved Permanently')
 
