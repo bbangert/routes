@@ -62,6 +62,8 @@ class TestUtils(unittest.TestCase):
             eq_('/content', urlobj())
             eq_('https://www.test.com/viewpost', urlobj(controller='post', action='view', protocol='https'))
             eq_('http://www.test.org/content', urlobj(host='www.test.org'))
+            eq_('//www.test.com/viewpost', urlobj(controller='post', action='view', protocol=''))
+            eq_('//www.test.org/content', urlobj(host='www.test.org', protocol=''))
 
     def test_url_raises(self):
         con = self.con

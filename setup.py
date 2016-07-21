@@ -1,4 +1,4 @@
-__version__ = '2.2'
+__version__ = '2.3.1'
 
 import io
 import os
@@ -47,7 +47,7 @@ setup(name="Routes",
       keywords='routes webob dispatch',
       author="Ben Bangert",
       author_email="ben@groovie.org",
-      url='http://routes.readthedocs.org/',
+      url='https://routes.readthedocs.io/',
       license="MIT",
       test_suite="nose.collector",
       include_package_data=True,

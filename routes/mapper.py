@@ -162,25 +162,25 @@ class SubMapper(SubMapperParent):
                 self.formatted = True
         self.add_actions(actions or [], **kwargs)
 
-    def connect(self, *args, **kwargs):
+    def connect(self, routename, path=None, **kwargs):
         newkargs = {}
-        # newargs = args
-        routename, path = args
+        _routename = routename
+        _path = path
         for key, value in six.iteritems(self.kwargs):
             if key == 'path_prefix':
-                if len(args) > 1:
+                if path is not None:
                     # if there's a name_prefix, add it to the route name
                     # and if there's a path_prefix
-                    path = ''.join((self.kwargs[key], args[1]))
+                    _path = ''.join((self.kwargs[key], path))
                 else:
-                    path = ''.join((self.kwargs[key], args[0]))
+                    _path = ''.join((self.kwargs[key], routename))
             elif key == 'name_prefix':
-                if len(args) > 1:
+                if path is not None:
                     # if there's a name_prefix, add it to the route name
                     # and if there's a path_prefix
-                    routename = ''.join((self.kwargs[key], args[0]))
+                    _routename = ''.join((self.kwargs[key], routename))
                 else:
-                    routename = None
+                    _routename = None
             elif key in kwargs:
                 if isinstance(value, dict):
                     newkargs[key] = dict(value, **kwargs[key])  # merge dicts
@@ -197,7 +197,7 @@ class SubMapper(SubMapperParent):
             if key not in self.kwargs:
                 newkargs[key] = kwargs[key]
 
-        newargs = (routename, path)
+        newargs = (_routename, _path)
         return self.obj.connect(*newargs, **newkargs)
 
     def link(self, rel=None, name=None, action=None, method='GET',
@@ -1230,7 +1230,7 @@ class Mapper(SubMapperParent):
         Example::
 
             map = Mapper()
-            map.redirect('/legacyapp/archives/{url:.*}, '/archives/{url})
+            map.redirect('/legacyapp/archives/{url:.*}', '/archives/{url}')
             map.redirect('/home/index', '/',
                          _redirect_code='301 Moved Permanently')
 

@@ -13,6 +13,12 @@ class TestSubmapper(unittest.TestCase):
         eq_('/entries/1', url_for('entry', id=1))
         assert_raises(Exception, url_for, 'entry', id='foo')
 
+    def test_submapper_with_no_path(self):
+        m = Mapper()
+        c = m.submapper(path_prefix='/')
+        c.connect('entry')
+        eq_('/entry?id=1', url_for('entry', id=1))
+
     def test_submapper_nesting(self):
         m = Mapper()
         c = m.submapper(path_prefix='/entries', controller='entry',

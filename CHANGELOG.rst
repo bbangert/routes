@@ -1,8 +1,16 @@
 Routes Changelog
 %%%%%%%%%%%%%%%%
 
-Release 2.3 (**dev**)
-=====================
+Release 2.3.1 (March 30, 2016)
+==============================
+* Backwards compatability fix - connect should work with mandatory
+  routename and optional path. Patch by Davanum Srinivas (PR #65).
+
+Release 2.3 (March 28, 2016)
+============================
+* Fix sub_domain equivalence check. Patch by Nikita Uvarov
+* Add support for protocol-relative URLs generation (i.e. starting with double
+  slash ``//``). PR #60. Patch by Sviatoslav Sydorenko.
 * Add support for the ``middleware`` extra requirement, making possible to
   depend on ``webob`` optionally. PR #59. Patch by Sviatoslav Sydorenko.
 * Fix matching of an empty string route, which led to exception in earlier
@@ -431,7 +439,7 @@ Release 1.0 (Nov. 21st, 2005)
 
   Or::
 
-       from routes import request_confg, Mapper
+       from routes import request_config, Mapper
 
   The following names are available for importing from routes::
 
