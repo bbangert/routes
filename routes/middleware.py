@@ -5,7 +5,7 @@ import logging
 from webob import Request
 
 from routes.base import request_config
-from routes.util import URLGenerator, url_for
+from routes.util import URLGenerator
 
 log = logging.getLogger('routes.middleware')
 
@@ -13,7 +13,7 @@ log = logging.getLogger('routes.middleware')
 class RoutesMiddleware(object):
     """Routing middleware that handles resolving the PATH_INFO in
     addition to optionally recognizing method overriding.
-    
+
     .. Note::
         This module requires webob to be installed. To depend on it, you may
         list routes[middleware] in your ``requirements.txt``

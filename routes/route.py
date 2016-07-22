@@ -1,6 +1,5 @@
 import re
 import sys
-from six.moves import urllib
 if sys.version < '2.4':
     from sets import ImmutableSet as frozenset
 
