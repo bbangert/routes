@@ -17,6 +17,13 @@ extra_options = {
     "packages": find_packages(),
     }
 
+extras_require = {
+    'middleware': [
+        'webob',
+    ]
+}
+extras_require['docs'] = ['Sphinx'] + extras_require['middleware']
+
 if PY3:
     if "test" in sys.argv or "develop" in sys.argv:
         for root, directories, files in os.walk("tests"):
@@ -58,10 +65,6 @@ setup(name="Routes",
           "six",
           "repoze.lru>=0.3"
       ],
-      extras_require={
-          'middleware': [
-              'webob',
-          ]
-      },
+      extras_require=extras_require,
       **extra_options
 )
