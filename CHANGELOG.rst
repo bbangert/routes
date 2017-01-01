@@ -1,6 +1,13 @@
 Routes Changelog
 %%%%%%%%%%%%%%%%
 
+Release 2.4.0 (January 1, 2017)
+===============================
+
+* Release as a universal wheel. PR #75.
+* Convert readthedocs links for their .org -> .io migration for hosted projects. PR #67.
+
+
 Release 2.3.1 (March 30, 2016)
 ==============================
 * Backwards compatability fix - connect should work with mandatory
