@@ -23,7 +23,6 @@ deploy:
     secure: OB4kVoPEymiU06AHjFxA4ORRIhvl46bmstkxB3gBxOLylUUpvMjspXIUX/dPww3PceiklUbot/Tww8ITn00hJYd7qF6vsOyDXMF3XyQ7a5mqDsGTbWYOVqpv/tn4+lvDMNVHRy2cY68BGsUEU/ePLi0oqhdBgct82bYkKrXrav0=
   on:
     tags: true
-    python:
-      - '3.5'
+    python: 3.5
   distributions: release
   skip_upload_docs: true
