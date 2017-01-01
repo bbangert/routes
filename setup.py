@@ -22,7 +22,7 @@ extras_require = {
         'webob',
     ]
 }
-extras_require['docs'] = ['Sphinx', *extras_require['middleware']]
+extras_require['docs'] = ['Sphinx'] + extras_require['middleware']
 
 if PY3:
     if "test" in sys.argv or "develop" in sys.argv:
