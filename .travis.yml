@@ -1,17 +1,26 @@
 language: python
 python:
-  - "2.6"
-  - "2.7"
-  - "3.3"
-  - "3.4"
-  - "3.5"
-  - "nightly"
-  - "pypy"
-  - "pypy3"
+- '2.6'
+- '2.7'
+- '3.3'
+- '3.4'
+- '3.5'
+- nightly
+- pypy
+- pypy3
 matrix:
   allow_failures:
-    - python: "nightly"
+  - python: nightly
 install: pip install tox-travis
 script: tox
 after_success:
-  - codecov
+- codecov
+deploy:
+  provider: pypi
+  user: bbangert
+  password:
+    secure: OB4kVoPEymiU06AHjFxA4ORRIhvl46bmstkxB3gBxOLylUUpvMjspXIUX/dPww3PceiklUbot/Tww8ITn00hJYd7qF6vsOyDXMF3XyQ7a5mqDsGTbWYOVqpv/tn4+lvDMNVHRy2cY68BGsUEU/ePLi0oqhdBgct82bYkKrXrav0=
+  on:
+    tags: true
+  distributions: "sdist bdist_wheel"
+  skip_upload_docs: true
