@@ -1,7 +1,4 @@
 import re
-import sys
-if sys.version < '2.4':
-    from sets import ImmutableSet as frozenset
 
 import six
 from six.moves.urllib import parse as urlparse
