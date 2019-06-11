@@ -34,9 +34,9 @@ class Route(object):
             >>> newroute = Route(None, 'date/:year/:month/:day',
             ...     controller="blog", action="view")
             >>> newroute = Route(None, 'archives/:page', controller="blog",
-            ...     action="by_page", requirements = { 'page':'\d{1,2}' })
+            ...     action="by_page", requirements = { 'page':'\\d{1,2}' })
             >>> newroute.reqs
-            {'page': '\\\d{1,2}'}
+            {'page': '\\\\d{1,2}'}
 
         .. Note::
             Route is generally not called directly, a Mapper instance
@@ -145,13 +145,22 @@ class Route(object):
         """Utility function to walk the route, and pull out the valid
         dynamic/wildcard keys."""
         collecting = False
+        escaping = False
         current = ''
         done_on = ''
         var_type = ''
         just_started = False
         routelist = []
         for char in routepath:
-            if char in [':', '*', '{'] and not collecting and not self.static \
+            if escaping:
+                if char in ['\\', ':', '*', '{', '}']:
+                    current += char
+                else:
+                    current += '\\' + char
+                escaping = False
+            elif char == '\\':
+                escaping = True
+            elif char in [':', '*', '{'] and not collecting and not self.static \
                or char in ['{'] and not collecting:
                 just_started = True
                 collecting = True
@@ -324,7 +333,7 @@ class Route(object):
                 else:
                     regpart = '(?:%s)' % partmatch
                 if part['type'] == '.':
-                    regparts.append('(?:\.%s)??' % regpart)
+                    regparts.append(r'(?:\.%s)??' % regpart)
                 else:
                     regparts.append(regpart)
             else:
@@ -367,7 +376,7 @@ class Route(object):
                 else:
                     partreg = '(?:%s)' % self.reqs[var]
                 if typ == '.':
-                    partreg = '(?:\.%s)??' % partreg
+                    partreg = r'(?:\.%s)??' % partreg
             elif var == 'controller':
                 if include_names:
                     partreg = '(?P<%s>%s)' % (var, '|'.join(map(re.escape,
@@ -390,7 +399,7 @@ class Route(object):
                     else:
                         partreg = '(?:[^%s]+?)' % exclude_chars
                     if typ == '.':
-                        partreg = '(?:\.%s)??' % partreg
+                        partreg = r'(?:\.%s)??' % partreg
                 else:
                     end = ''.join(self.done_chars)
                     rem = rest
@@ -530,7 +539,7 @@ class Route(object):
 
         if sub_domains and environ and 'HTTP_HOST' in environ:
             host = environ['HTTP_HOST'].split(':')[0]
-            sub_match = re.compile('^(.+?)\.%s$' % domain_match)
+            sub_match = re.compile(r'^(.+?)\.%s$' % domain_match)
             subdomain = re.sub(sub_match, r'\1', host)
             if subdomain not in sub_domains_ignore and host != subdomain:
                 sub_domain = subdomain

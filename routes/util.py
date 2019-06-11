@@ -94,7 +94,7 @@ def _subdomain_check(kargs, mapper, environ):
         if len(hostmatch) > 1:
             port += ':' + hostmatch[1]
 
-        match = re.match('^(.+?)\.(%s)$' % mapper.domain_match, host)
+        match = re.match(r'^(.+?)\.(%s)$' % mapper.domain_match, host)
         host_subdomain, domain = match.groups() if match else (None, host)
 
         subdomain = as_unicode(subdomain, mapper.encoding)
@@ -512,7 +512,7 @@ def controller_scan(directory=None):
         for fname in os.listdir(dirname):
             filename = os.path.join(dirname, fname)
             if os.path.isfile(filename) and \
-                    re.match('^[^_]{1,1}.*\.py$', fname):
+                    re.match(r'^[^_]{1,1}.*\.py$', fname):
                 controllers.append(prefix + fname[:-3])
             elif os.path.isdir(filename):
                 controllers.extend(find_controllers(filename,
