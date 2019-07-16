@@ -381,7 +381,7 @@ class Mapper(SubMapperParent):
         ``minimization``
             Boolean used to indicate whether or not Routes should
             minimize URL's and the generated URL's, or require every
-            part where it appears in the path. Defaults to True.
+            part where it appears in the path. Defaults to False.
 
         ``hardcode_names``
             Whether or not Named Routes result in the default options
