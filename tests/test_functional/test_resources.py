@@ -95,10 +95,10 @@ class TestResourceGeneration(unittest.TestCase):
         # in addition to the positive tests we need to guarantee we
         # are not matching when the requirements don't match.
         eq_({'action': u'create', 'project_id': u'cafe', 'user_id': u'123', 'controller': u'messages'},
-            m.match('/cafe/123/messages'))
-        eq_(None, m.match('/extensions/123/messages'))
-        eq_(None, m.match('/b0a3/123b/messages'))
-        eq_(None, m.match('/foo/bar/messages'))
+            m.match(b'/cafe/123/messages'))
+        eq_(None, m.match(b'/extensions/123/messages'))
+        eq_(None, m.match(b'/b0a3/123b/messages'))
+        eq_(None, m.match(b'/foo/bar/messages'))
 
 
 class TestResourceRecognition(unittest.TestCase):
@@ -114,54 +114,54 @@ class TestResourceRecognition(unittest.TestCase):
             con.mapper_dict = {}
             con.environ = env
 
-        test_path('/people', 'GET')
+        test_path(b'/people', 'GET')
         eq_({'controller':'people', 'action':'index'}, con.mapper_dict)
-        test_path('/people.xml', 'GET')
+        test_path(b'/people.xml', 'GET')
         eq_({'controller':'people', 'action':'index', 'format':'xml'}, con.mapper_dict)
 
-        test_path('/people', 'POST')
+        test_path(b'/people', 'POST')
         eq_({'controller':'people', 'action':'create'}, con.mapper_dict)
-        test_path('/people.html', 'POST')
+        test_path(b'/people.html', 'POST')
         eq_({'controller':'people', 'action':'create', 'format':'html'}, con.mapper_dict)
 
-        test_path('/people/2.xml', 'GET')
+        test_path(b'/people/2.xml', 'GET')
         eq_({'controller':'people', 'action':'show', 'id':'2', 'format':'xml'}, con.mapper_dict)
-        test_path('/people/2', 'GET')
+        test_path(b'/people/2', 'GET')
         eq_({'controller':'people', 'action':'show', 'id':'2'}, con.mapper_dict)
 
-        test_path('/people/2/edit', 'GET')
+        test_path(b'/people/2/edit', 'GET')
         eq_({'controller':'people', 'action':'edit', 'id':'2'}, con.mapper_dict)
-        test_path('/people/2/edit.xml', 'GET')
+        test_path(b'/people/2/edit.xml', 'GET')
         eq_({'controller':'people', 'action':'edit', 'id':'2', 'format':'xml'}, con.mapper_dict)
 
-        test_path('/people/2', 'DELETE')
+        test_path(b'/people/2', 'DELETE')
         eq_({'controller':'people', 'action':'delete', 'id':'2'}, con.mapper_dict)
 
-        test_path('/people/2', 'PUT')
+        test_path(b'/people/2', 'PUT')
         eq_({'controller':'people', 'action':'update', 'id':'2'}, con.mapper_dict        )
-        test_path('/people/2.json', 'PUT')
+        test_path(b'/people/2.json', 'PUT')
         eq_({'controller':'people', 'action':'update', 'id':'2', 'format':'json'}, con.mapper_dict        )
 
         # Test for dots in urls
-        test_path('/people/2\.13', 'PUT')
+        test_path(b'/people/2\.13', 'PUT')
         eq_({'controller':'people', 'action':'update', 'id':'2\.13'}, con.mapper_dict)
-        test_path('/people/2\.13.xml', 'PUT')
+        test_path(b'/people/2\.13.xml', 'PUT')
         eq_({'controller':'people', 'action':'update', 'id':'2\.13', 'format':'xml'}, con.mapper_dict)
-        test_path('/people/user\.name', 'PUT')
+        test_path(b'/people/user\.name', 'PUT')
         eq_({'controller':'people', 'action':'update', 'id':'user\.name'}, con.mapper_dict)
-        test_path('/people/user\.\.\.name', 'PUT')
+        test_path(b'/people/user\.\.\.name', 'PUT')
         eq_({'controller':'people', 'action':'update', 'id':'user\.\.\.name'}, con.mapper_dict)
-        test_path('/people/user\.name\.has\.dots', 'PUT')
+        test_path(b'/people/user\.name\.has\.dots', 'PUT')
         eq_({'controller':'people', 'action':'update', 'id':'user\.name\.has\.dots'}, con.mapper_dict)
-        test_path('/people/user\.name\.is\.something.xml', 'PUT')
+        test_path(b'/people/user\.name\.is\.something.xml', 'PUT')
         eq_({'controller':'people', 'action':'update', 'id':'user\.name\.is\.something', 'format':'xml'}, con.mapper_dict)
-        test_path('/people/user\.name\.ends\.with\.dot\..xml', 'PUT')
+        test_path(b'/people/user\.name\.ends\.with\.dot\..xml', 'PUT')
         eq_({'controller':'people', 'action':'update', 'id':'user\.name\.ends\.with\.dot\.', 'format':'xml'}, con.mapper_dict)
-        test_path('/people/user\.name\.ends\.with\.dot\.', 'PUT')
+        test_path(b'/people/user\.name\.ends\.with\.dot\.', 'PUT')
         eq_({'controller':'people', 'action':'update', 'id':'user\.name\.ends\.with\.dot\.'}, con.mapper_dict)
-        test_path('/people/\.user\.name\.starts\.with\.dot', 'PUT')
+        test_path(b'/people/\.user\.name\.starts\.with\.dot', 'PUT')
         eq_({'controller':'people', 'action':'update', 'id':'\.user\.name\.starts\.with\.dot'}, con.mapper_dict)
-        test_path('/people/user\.name.json', 'PUT')
+        test_path(b'/people/user\.name.json', 'PUT')
         eq_({'controller':'people', 'action':'update', 'id':'user\.name', 'format':'json'}, con.mapper_dict)
 
     def test_resource_with_nomin(self):
@@ -173,25 +173,25 @@ class TestResourceRecognition(unittest.TestCase):
         con = request_config()
         con.mapper = m
         def test_path(path, method):
-            env = dict(HTTP_HOST='example.com', PATH_INFO=path, REQUEST_METHOD=method)
+            env = dict(HTTP_HOST=b'example.com', PATH_INFO=path, REQUEST_METHOD=method)
             con.mapper_dict = {}
             con.environ = env
 
-        test_path('/people', 'GET')
+        test_path(b'/people', 'GET')
         eq_({'controller':'people', 'action':'index'}, con.mapper_dict)
 
-        test_path('/people', 'POST')
+        test_path(b'/people', 'POST')
         eq_({'controller':'people', 'action':'create'}, con.mapper_dict)
 
-        test_path('/people/2', 'GET')
+        test_path(b'/people/2', 'GET')
         eq_({'controller':'people', 'action':'show', 'id':'2'}, con.mapper_dict)
-        test_path('/people/2/edit', 'GET')
+        test_path(b'/people/2/edit', 'GET')
         eq_({'controller':'people', 'action':'edit', 'id':'2'}, con.mapper_dict)
 
-        test_path('/people/2', 'DELETE')
+        test_path(b'/people/2', 'DELETE')
         eq_({'controller':'people', 'action':'delete', 'id':'2'}, con.mapper_dict)
 
-        test_path('/people/2', 'PUT')
+        test_path(b'/people/2', 'PUT')
         eq_({'controller':'people', 'action':'update', 'id':'2'}, con.mapper_dict)
 
     def test_resource_created_with_parent_resource(self):
@@ -209,13 +209,13 @@ class TestResourceRecognition(unittest.TestCase):
             con.mapper_dict = {}
             con.environ = env
 
-        test_path('/regions/13/locations', 'GET')
+        test_path(b'/regions/13/locations', 'GET')
         eq_(con.mapper_dict, {'region_id': '13', 'controller': 'locations',
                                    'action': 'index'})
         url = url_for('region_locations', region_id=13)
         eq_(url, '/regions/13/locations')
 
-        test_path('/regions/13/locations', 'POST')
+        test_path(b'/regions/13/locations', 'POST')
         eq_(con.mapper_dict, {'region_id': '13', 'controller': 'locations',
                                    'action': 'create'})
         # new
@@ -225,25 +225,25 @@ class TestResourceRecognition(unittest.TestCase):
         url = url_for('region_locations', region_id=13)
         eq_(url, '/regions/13/locations')
 
-        test_path('/regions/13/locations/60', 'GET')
+        test_path(b'/regions/13/locations/60', 'GET')
         eq_(con.mapper_dict, {'region_id': '13', 'controller': 'locations',
                                    'id': '60', 'action': 'show'})
         url = url_for('region_location', region_id=13, id=60)
         eq_(url, '/regions/13/locations/60')
 
-        test_path('/regions/13/locations/60/edit', 'GET')
+        test_path(b'/regions/13/locations/60/edit', 'GET')
         eq_(con.mapper_dict, {'region_id': '13', 'controller': 'locations',
                                    'id': '60', 'action': 'edit'})
         url = url_for('region_edit_location', region_id=13, id=60)
         eq_(url, '/regions/13/locations/60/edit')
 
-        test_path('/regions/13/locations/60', 'DELETE')
+        test_path(b'/regions/13/locations/60', 'DELETE')
         eq_(con.mapper_dict, {'region_id': '13', 'controller': 'locations',
                                    'id': '60', 'action': 'delete'})
         url = url_for('region_location', region_id=13, id=60)
         eq_(url, '/regions/13/locations/60')
 
-        test_path('/regions/13/locations/60', 'PUT')
+        test_path(b'/regions/13/locations/60', 'PUT')
         eq_(con.mapper_dict, {'region_id': '13', 'controller': 'locations',
                                    'id': '60', 'action': 'update'})
         url = url_for('region_location', region_id=13, id=60)
@@ -330,13 +330,13 @@ class TestResourceRecognition(unittest.TestCase):
             con.mapper_dict = {}
             con.environ = env
 
-        test_path('/regions/13/locations', 'GET')
+        test_path(b'/regions/13/locations', 'GET')
         eq_(con.mapper_dict, {'region_id': '13', 'controller': 'locations',
                                    'action': 'index'})
         url = url_for('region_locations', region_id=13)
         eq_(url, '/regions/13/locations')
 
-        test_path('/regions/13/locations', 'POST')
+        test_path(b'/regions/13/locations', 'POST')
         eq_(con.mapper_dict, {'region_id': '13', 'controller': 'locations',
                                    'action': 'create'})
         # new
@@ -346,25 +346,25 @@ class TestResourceRecognition(unittest.TestCase):
         url = url_for('region_locations', region_id=13)
         eq_(url, '/regions/13/locations')
 
-        test_path('/regions/13/locations/60', 'GET')
+        test_path(b'/regions/13/locations/60', 'GET')
         eq_(con.mapper_dict, {'region_id': '13', 'controller': 'locations',
                                    'id': '60', 'action': 'show'})
         url = url_for('region_location', region_id=13, id=60)
         eq_(url, '/regions/13/locations/60')
 
-        test_path('/regions/13/locations/60/edit', 'GET')
+        test_path(b'/regions/13/locations/60/edit', 'GET')
         eq_(con.mapper_dict, {'region_id': '13', 'controller': 'locations',
                                    'id': '60', 'action': 'edit'})
         url = url_for('region_edit_location', region_id=13, id=60)
         eq_(url, '/regions/13/locations/60/edit')
 
-        test_path('/regions/13/locations/60', 'DELETE')
+        test_path(b'/regions/13/locations/60', 'DELETE')
         eq_(con.mapper_dict, {'region_id': '13', 'controller': 'locations',
                                    'id': '60', 'action': 'delete'})
         url = url_for('region_location', region_id=13, id=60)
         eq_(url, '/regions/13/locations/60')
 
-        test_path('/regions/13/locations/60', 'PUT')
+        test_path(b'/regions/13/locations/60', 'PUT')
         eq_(con.mapper_dict, {'region_id': '13', 'controller': 'locations',
                                    'id': '60', 'action': 'update'})
         url = url_for('region_location', region_id=13, id=60)

@@ -15,7 +15,7 @@ class TestEnvironment(unittest.TestCase):
         self.con = con
     
     def test_env_set(self):
-        env = dict(PATH_INFO='/content', HTTP_HOST='somewhere.com')
+        env = dict(PATH_INFO=b'/content', HTTP_HOST='somewhere.com')
         con = self.con
         con.mapper_dict = {}
         assert con.mapper_dict == {}

@@ -14,13 +14,13 @@ def test_basic():
     m.create_regs(['content'])
 
     # Recognize
-    eq_(None, m.match('/content'))
-    eq_(None, m.match('/content/index'))
-    eq_(None, m.match('/content/index/'))
+    eq_(None, m.match(b'/content'))
+    eq_(None, m.match(b'/content/index'))
+    eq_(None, m.match(b'/content/index/'))
     eq_({'controller':'content','action':'index','id':'4'},
-        m.match('/content/index/4'))
+        m.match(b'/content/index/4'))
     eq_({'controller':'content','action':'view','id':'4.html'},
-        m.match('/content/view/4.html'))
+        m.match(b'/content/view/4.html'))
 
     # Generate
     eq_(None, m.generate(controller='content'))
@@ -35,14 +35,14 @@ def test_full():
     m.create_regs(['content'])
 
     # Recognize
-    eq_(None, m.match('/content'))
-    eq_(None, m.match('/content/index'))
+    eq_(None, m.match(b'/content'))
+    eq_(None, m.match(b'/content/index'))
     eq_({'controller':'content','action':'index','id':None},
-        m.match('/content/index/'))
+        m.match(b'/content/index/'))
     eq_({'controller':'content','action':'index','id':'4'},
-        m.match('/content/index/4'))
+        m.match(b'/content/index/4'))
     eq_({'controller':'content','action':'view','id':'4.html'},
-        m.match('/content/view/4.html'))
+        m.match(b'/content/view/4.html'))
 
     # Generate
     eq_(None, m.generate(controller='content'))
@@ -83,11 +83,11 @@ def test_syntax():
     m.create_regs(['content'])
 
     # Recognize
-    eq_(None, m.match('/content'))
-    eq_(None, m.match('/content/index'))
-    eq_(None, m.match('/content/index/'))
+    eq_(None, m.match(b'/content'))
+    eq_(None, m.match(b'/content/index'))
+    eq_(None, m.match(b'/content/index/'))
     eq_({'controller':'content','action':'index','id':'4'},
-        m.match('/content/index/4'))
+        m.match(b'/content/index/4'))
 
     # Generate
     eq_(None, m.generate(controller='content'))
@@ -101,12 +101,12 @@ def test_regexp_syntax():
     m.create_regs(['content'])
 
     # Recognize
-    eq_(None, m.match('/content'))
-    eq_(None, m.match('/content/index'))
-    eq_(None, m.match('/content/index/'))
-    eq_(None, m.match('/content/index/3'))
+    eq_(None, m.match(b'/content'))
+    eq_(None, m.match(b'/content/index'))
+    eq_(None, m.match(b'/content/index/'))
+    eq_(None, m.match(b'/content/index/3'))
     eq_({'controller':'content','action':'index','id':'44'},
-        m.match('/content/index/44'))
+        m.match(b'/content/index/44'))
 
     # Generate
     eq_(None, m.generate(controller='content'))

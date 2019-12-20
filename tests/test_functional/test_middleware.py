@@ -16,10 +16,10 @@ def test_basic():
     map.connect(':controller/:action/:id')
     map.create_regs(['content'])
     app = TestApp(RoutesMiddleware(simple_app, map))
-    res = app.get('/')
+    res = app.get(b'/')
     assert b'matchdict items are []' in res
 
-    res = app.get('/content')
+    res = app.get(b'/content')
     assert b"matchdict items are [('action', 'index'), ('controller', " + repr(
         u'content').encode() + b"), ('id', None)]" in res
 
@@ -83,17 +83,17 @@ def test_path_info():
     map.create_regs(['content', 'myapp'])
 
     app = TestApp(RoutesMiddleware(simple_app, map))
-    res = app.get('/')
+    res = app.get(b'/')
     assert 'matchdict items are []' in res
 
-    res = app.get('/myapp/some/other/url')
+    res = app.get(b'/myapp/some/other/url')
     print(res)
     assert b"matchdict items are [('action', " + repr(u'index').encode() + \
            b"), ('controller', " + repr(u'myapp').encode() + b"), ('path_info', 'some/other/url')]" in res
     assert "'SCRIPT_NAME': '/myapp'" in res
     assert "'PATH_INFO': '/some/other/url'" in res
 
-    res = app.get('/project/pylonshq/browser/pylons/templates/default_project/+package+/pylonshq/browser/pylons/templates/default_project/+package+/controllers')
+    res = app.get(b'/project/pylonshq/browser/pylons/templates/default_project/+package+/pylonshq/browser/pylons/templates/default_project/+package+/controllers')
     print(res)
     assert "'SCRIPT_NAME': '/project'" in res
     assert "'PATH_INFO': '/pylonshq/browser/pylons/templates/default_project/+package+/pylonshq/browser/pylons/templates/default_project/+package+/controllers'" in res
@@ -107,14 +107,14 @@ def test_redirect_middleware():
     map.create_regs(['content', 'myapp'])
 
     app = TestApp(RoutesMiddleware(simple_app, map))
-    res = app.get('/')
+    res = app.get(b'/')
     assert 'matchdict items are []' in res
 
-    res = app.get('/faq/home')
+    res = app.get(b'/faq/home')
     eq_('302 Found', res.status)
     eq_(res.headers['Location'], '/static/faq/home.html')
 
-    res = app.get('/myapp/some/other/url')
+    res = app.get(b'/myapp/some/other/url')
     print(res)
     assert b"matchdict items are [('action', " + repr(u'index').encode() + \
            b"), ('controller', " + repr(u'myapp').encode() + \
@@ -122,7 +122,7 @@ def test_redirect_middleware():
     assert "'SCRIPT_NAME': '/myapp'" in res
     assert "'PATH_INFO': '/some/other/url'" in res
 
-    res = app.get('/home/index')
+    res = app.get(b'/home/index')
     assert '301 Moved Permanently' in res.status
     eq_(res.headers['Location'], '/')
 
@@ -133,19 +133,21 @@ def test_method_conversion():
     map.connect(':controller/:action/:id')
     map.create_regs(['content'])
     app = TestApp(RoutesMiddleware(simple_app, map))
+    # import pudb
+    # pudb.set_trace()
     res = app.get('/')
     assert 'matchdict items are []' in res
 
-    res = app.get('/content')
+    res = app.get(b'/content')
     assert b"matchdict items are [('action', 'index'), ('controller', " + \
            repr(u'content').encode() + b"), ('id', None)]" in res
 
-    res = app.get('/content/hopper', params={'_method':'DELETE'})
+    res = app.get(b'/content/hopper', params={'_method':'DELETE'})
     assert b"matchdict items are [('action', " + repr(u'index').encode() + \
            b"), ('controller', " + repr(u'content').encode() + \
            b"), ('type', " + repr(u'hopper').encode() + b")]" in res
 
-    res = app.post('/content/grind',
+    res = app.post(b'/content/grind',
                    params={'_method':'DELETE', 'name':'smoth'},
                    headers={'Content-Type': 'application/x-www-form-urlencoded'})
     assert b"matchdict items are [('action', " + repr(u'index').encode() + \
@@ -158,3 +160,4 @@ def test_method_conversion():
     #               params={'_method':'DELETE', 'name':'smoth'})
     #assert "matchdict items are [('action', u'index'), ('controller', u'content'), ('type', u'grind')]" in res
     #assert "'REQUEST_METHOD': 'POST'" in res
+test_basic()

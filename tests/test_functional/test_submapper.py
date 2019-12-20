@@ -157,7 +157,7 @@ class TestSubmapper(unittest.TestCase):
         col2 = col1.member.collection('children', 'child',
                                       controller='col2',
                                       member_prefix='/{child_id}')
-        match = m.match('/parents/1/children/2')
+        match = m.match(b'/parents/1/children/2')
         eq_('col2', match.get('controller'))
 
     def test_submapper_argument_overriding(self):
@@ -176,21 +176,21 @@ class TestSubmapper(unittest.TestCase):
         third.connect('test', r'/test')
 
         # test first level
-        match = m.match('/first_level/test')
+        match = m.match(b'/first_level/test')
         eq_('first', match.get('controller'))
         eq_('test', match.get('action'))
         # test name_prefix worked
         eq_('/first_level/test', url_for('first_test'))
 
         # test second level controller override
-        match = m.match('/first_level/second_level/test')
+        match = m.match(b'/first_level/second_level/test')
         eq_('second', match.get('controller'))
         eq_('test', match.get('action'))
         # test name_prefix worked
         eq_('/first_level/second_level/test', url_for('first_second_test'))
 
         # test third level controller and action override
-        match = m.match('/first_level/second_level/third_level/test')
+        match = m.match(b'/first_level/second_level/third_level/test')
         eq_('third', match.get('controller'))
         eq_('third_action', match.get('action'))
         # test name_prefix worked

@@ -132,7 +132,7 @@ class TestUtils(unittest.TestCase):
         m.connect('category_home', 'category/:section', controller='blog', action='view', section='home')
         m.connect(':controller/:action/:id')
         m.create_regs(['content','blog','admin/comments'])
-        self.con.environ = dict(SCRIPT_NAME='', HTTP_HOST='www.example.com', PATH_INFO='/blog/view/4')
+        self.con.environ = dict(SCRIPT_NAME='', HTTP_HOST='www.example.com', PATH_INFO=b'/blog/view/4')
         self.con.environ.update({'wsgiorg.routing_args':((), self.con.mapper_dict)})
         url = URLGenerator(m, self.con.environ)
 
@@ -148,7 +148,7 @@ class TestUtils(unittest.TestCase):
         eq_('/blog/view/2', url.current(id=2))
         eq_('/viewpost/4', url.current(controller='post', action='view', id=4))
 
-        env = dict(SCRIPT_NAME='', SERVER_NAME='www.example.com', SERVER_PORT='8080', PATH_INFO='/blog/view/4')
+        env = dict(SCRIPT_NAME='', SERVER_NAME='www.example.com', SERVER_PORT='8080', PATH_INFO=b'/blog/view/4')
         env['wsgi.url_scheme'] = 'http'
         self.con.environ = env
         self.con.environ.update({'wsgiorg.routing_args':((), self.con.mapper_dict)})
@@ -491,12 +491,12 @@ class TestUtils(unittest.TestCase):
             story = dict(year=2003, month=8, day=2, slug='woopee')
             empty = {}
             eq_({'controller':'archives','action':'view','year':'2005',
-                'month':'10','day':'5','slug':'happy'}, m.match('/archives/2005/10/5/happy'))
+                'month':'10','day':'5','slug':'happy'}, m.match(b'/archives/2005/10/5/happy'))
             eq_('/archives/2003/8/2/woopee', urlobj('archives', article=story))
             eq_('/archives/2004/12/20/default', urlobj('archives', article=empty))
 
     def test_with_ssl_environ(self):
-        base_environ = dict(SCRIPT_NAME='', HTTPS='on', SERVER_PORT='443', PATH_INFO='/',
+        base_environ = dict(SCRIPT_NAME='', HTTPS='on', SERVER_PORT='443', PATH_INFO=b'/',
             HTTP_HOST='example.com', SERVER_NAME='example.com')
         self.con.mapper_dict = {}
         self.con.environ = base_environ.copy()
@@ -530,7 +530,7 @@ class TestUtils(unittest.TestCase):
 
 
     def test_with_http_environ(self):
-        base_environ = dict(SCRIPT_NAME='', SERVER_PORT='1080', PATH_INFO='/',
+        base_environ = dict(SCRIPT_NAME='', SERVER_PORT='1080', PATH_INFO=b'/',
             HTTP_HOST='example.com', SERVER_NAME='example.com')
         base_environ['wsgi.url_scheme'] = 'http'
         self.con.environ = base_environ.copy()
@@ -551,7 +551,7 @@ class TestUtils(unittest.TestCase):
 
 
     def test_subdomains(self):
-        base_environ = dict(SCRIPT_NAME='', PATH_INFO='/', HTTP_HOST='example.com', SERVER_NAME='example.com')
+        base_environ = dict(SCRIPT_NAME='', PATH_INFO=b'/', HTTP_HOST='example.com', SERVER_NAME='example.com')
         self.con.mapper_dict = {}
         self.con.environ = base_environ.copy()
 
@@ -574,7 +574,7 @@ class TestUtils(unittest.TestCase):
             eq_('http://new.example.com/content', urlobj(controller='content', sub_domain='new'))
 
     def test_subdomains_with_exceptions(self):
-        base_environ = dict(SCRIPT_NAME='', PATH_INFO='/', HTTP_HOST='example.com', SERVER_NAME='example.com')
+        base_environ = dict(SCRIPT_NAME='', PATH_INFO=b'/', HTTP_HOST='example.com', SERVER_NAME='example.com')
         self.con.mapper_dict = {}
         self.con.environ = base_environ.copy()
 
@@ -620,7 +620,7 @@ class TestUtils(unittest.TestCase):
         eq_('/content', url(controller='content', sub_domain='sub'))
 
     def test_subdomains_with_named_routes(self):
-        base_environ = dict(SCRIPT_NAME='', PATH_INFO='/', HTTP_HOST='example.com', SERVER_NAME='example.com')
+        base_environ = dict(SCRIPT_NAME='', PATH_INFO=b'/', HTTP_HOST='example.com', SERVER_NAME='example.com')
         self.con.mapper_dict = {}
         self.con.environ = base_environ.copy()
 
@@ -659,7 +659,7 @@ class TestUtils(unittest.TestCase):
 
 
     def test_subdomains_with_ports(self):
-        base_environ = dict(SCRIPT_NAME='', PATH_INFO='/', HTTP_HOST='example.com:8000', SERVER_NAME='example.com')
+        base_environ = dict(SCRIPT_NAME='', PATH_INFO=b'/', HTTP_HOST='example.com:8000', SERVER_NAME='example.com')
         self.con.mapper_dict = {}
         self.con.environ = base_environ.copy()
 
@@ -686,7 +686,7 @@ class TestUtils(unittest.TestCase):
             eq_('http://new.example.com/category', urlobj('category_home', sub_domain='new'))
 
     def test_subdomains_with_default(self):
-        base_environ = dict(SCRIPT_NAME='', PATH_INFO='/', HTTP_HOST='example.com:8000', SERVER_NAME='example.com')
+        base_environ = dict(SCRIPT_NAME='', PATH_INFO=b'/', HTTP_HOST='example.com:8000', SERVER_NAME='example.com')
         self.con.mapper_dict = {}
         self.con.environ = base_environ.copy()
 
@@ -730,9 +730,9 @@ class TestUtils(unittest.TestCase):
         m.always_scan = True
         m.connect(':controller/:action/:id')
 
-        eq_({'action':'index', 'controller':'content','id':None}, m.match('/content'))
-        eq_({'action':'index', 'controller':'users','id':None}, m.match('/users'))
-        eq_({'action':'index', 'controller':'admin/users','id':None}, m.match('/admin/users'))
+        eq_({'action':'index', 'controller':'content','id':None}, m.match(b'/content'))
+        eq_({'action':'index', 'controller':'users','id':None}, m.match(b'/users'))
+        eq_({'action':'index', 'controller':'admin/users','id':None}, m.match(b'/admin/users'))
 
 class TestUtilsWithExplicit(unittest.TestCase):
     def setUp(self):
@@ -791,7 +791,7 @@ class TestUtilsWithExplicit(unittest.TestCase):
         m.connect('category_home', 'category/:section', controller='blog', action='view', section='home')
         m.connect(':controller/:action/:id')
         m.create_regs(['content','blog','admin/comments'])
-        env = dict(SCRIPT_NAME='', SERVER_NAME='www.example.com', SERVER_PORT='80', PATH_INFO='/blog/view/4')
+        env = dict(SCRIPT_NAME='', SERVER_NAME='www.example.com', SERVER_PORT='80', PATH_INFO=b'/blog/view/4')
         env['wsgi.url_scheme'] = 'http'
 
         self.con.environ = env
@@ -803,7 +803,7 @@ class TestUtilsWithExplicit(unittest.TestCase):
         eq_('http://www.example.com/blog/view/4', url_for(qualified=True, controller='blog', action='view', id=4))
         eq_('/viewpost/4', url_for(controller='post', action='view', id=4))
 
-        env = dict(SCRIPT_NAME='', SERVER_NAME='www.example.com', SERVER_PORT='8080', PATH_INFO='/blog/view/4')
+        env = dict(SCRIPT_NAME='', SERVER_NAME='www.example.com', SERVER_PORT='8080', PATH_INFO=b'/blog/view/4')
         env['wsgi.url_scheme'] = 'http'
         self.con.environ = env
         assert_raises(Exception, url_for, controller='post')

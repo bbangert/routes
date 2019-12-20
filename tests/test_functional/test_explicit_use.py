@@ -15,7 +15,7 @@ class TestUtils(unittest.TestCase):
         environ = {'HTTP_HOST': 'localhost'}
 
         env = environ.copy()
-        env['PATH_INFO'] = '/hi/george'
+        env['PATH_INFO'] = b'/hi/george'
 
         eq_({'fred': 'george'}, m.match(environ=env))
 
@@ -48,7 +48,7 @@ class TestUtils(unittest.TestCase):
         url = URLGenerator(m, environ)
         eq_('http://home.localhost.com/hi/smith', url(fred='smith', sub_domain=u'home', qualified=True))
 
-        environ = {'HTTP_HOST': 'here.localhost.com', 'PATH_INFO': '/hi/smith'}
+        environ = {'HTTP_HOST': 'here.localhost.com', 'PATH_INFO': b'/hi/smith'}
         url = URLGenerator(m, environ.copy())
         assert_raises(GenerationException, lambda: url.current(qualified=True))
 
@@ -86,7 +86,7 @@ class TestUtils(unittest.TestCase):
         m.explicit = True
         m.connect('/hi/{fred}')
 
-        environ = {'HTTP_HOST': 'localhost.com', 'PATH_INFO': '/hi/smith'}
+        environ = {'HTTP_HOST': 'localhost.com', 'PATH_INFO': b'/hi/smith'}
         match = m.routematch(environ=environ)[0]
         environ['wsgiorg.routing_args'] = (None, match)
         url = URLGenerator(m, environ)
@@ -99,7 +99,7 @@ class TestUtils(unittest.TestCase):
             Route('foo', '/foo',)
         ]
         map.extend(routes)
-        eq_(map.match('/foo'), {})
+        eq_(map.match(b'/foo'), {})
 
     def test_using_func(self):
         def fred(view):
@@ -109,7 +109,7 @@ class TestUtils(unittest.TestCase):
         m.explicit = True
         m.connect('/hi/{fred}', controller=fred)
 
-        environ = {'HTTP_HOST': 'localhost.com', 'PATH_INFO': '/hi/smith'}
+        environ = {'HTTP_HOST': 'localhost.com', 'PATH_INFO': b'/hi/smith'}
         match = m.routematch(environ=environ)[0]
         environ['wsgiorg.routing_args'] = (None, match)
         url = URLGenerator(m, environ)
@@ -120,7 +120,7 @@ class TestUtils(unittest.TestCase):
         m.explicit = True
         m.connect('/{first}/{last}')
 
-        environ = {'HTTP_HOST': 'localhost.com', 'PATH_INFO': '/content/index',
+        environ = {'HTTP_HOST': 'localhost.com', 'PATH_INFO': b'/content/index',
                    'SCRIPT_NAME': '/jones'}
         match = m.routematch(environ=environ)[0]
         environ['wsgiorg.routing_args'] = (None, match)
