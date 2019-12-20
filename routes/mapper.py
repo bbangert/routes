@@ -637,9 +637,9 @@ class Mapper(SubMapperParent):
 
         # Save the master regexp
         regexp = '|'.join(['(?:%s)' % x for x in regexps])
-        self._master_reg = regexp
+        self._master_reg = regexp.encode('utf-8')
         try:
-            self._master_regexp = re.compile(regexp)
+            self._master_regexp = re.compile(regexp.encode('utf-8'))
         except OverflowError:
             self._master_regexp = None
         self._created_regs = True

@@ -304,8 +304,8 @@ class Route(object):
         if not include_names:
             return reg
 
-        self.regexp = reg
-        self.regmatch = re.compile(reg)
+        self.regexp = reg.encode('utf-8')
+        self.regmatch = re.compile(reg.encode('utf-8'))
 
     def buildfullreg(self, clist, include_names=True):
         """Build the regexp by iterating through the routelist and
