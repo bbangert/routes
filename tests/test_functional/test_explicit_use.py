@@ -1,6 +1,6 @@
 """test_explicit_use"""
 import os, sys, time, unittest
-from nose.tools import eq_, assert_raises
+from nose.tools import eq_, assert_raises, assert_is_none
 
 from routes import *
 from routes.route import Route
@@ -100,6 +100,34 @@ class TestUtils(unittest.TestCase):
         ]
         map.extend(routes)
         eq_(map.match('/foo'), {})
+
+    def test_add_routes_conditions_unmet(self):
+        map = Mapper(explicit=True)
+        map.minimization = False
+        routes = [
+            Route('foo', '/foo', conditions=dict(method=["POST"]))
+        ]
+        environ = {
+            'HTTP_HOST': 'localhost.com',
+            'PATH_INFO': '/foo',
+            'REQUEST_METHOD': 'GET',
+        }
+        map.extend(routes)
+        assert_is_none(map.match('/foo', environ=environ))
+
+    def test_add_routes_conditions_met(self):
+        map = Mapper(explicit=True)
+        map.minimization = False
+        routes = [
+            Route('foo', '/foo', conditions=dict(method=["POST"]))
+        ]
+        environ = {
+            'HTTP_HOST': 'localhost.com',
+            'PATH_INFO': '/foo',
+            'REQUEST_METHOD': 'POST',
+        }
+        map.extend(routes)
+        eq_(map.match('/foo', environ=environ), {})
 
     def test_using_func(self):
         def fred(view):

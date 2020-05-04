@@ -490,7 +490,11 @@ class Mapper(SubMapperParent):
                 routepath = path_prefix + route.routepath
             else:
                 routepath = route.routepath
-            self.connect(route.name, routepath, **route._kargs)
+            self.connect(route.name,
+                         routepath,
+                         conditions=route.conditions,
+                         **route._kargs,
+                         )
 
     def make_route(self, *args, **kargs):
         """Make a new Route object
