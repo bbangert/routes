@@ -493,7 +493,7 @@ class Mapper(SubMapperParent):
             self.connect(route.name,
                          routepath,
                          conditions=route.conditions,
-                         **route._kargs,
+                         **route._kargs
                          )
 
     def make_route(self, *args, **kargs):
