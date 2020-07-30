@@ -515,7 +515,7 @@ class Mapper(SubMapperParent):
             m.connect('date/:year/:month/:day', controller="blog",
                       action="view")
             m.connect('archives/:page', controller="blog", action="by_page",
-            requirements = { 'page':'\d{1,2}' })
+            requirements = { 'page':'\\d{1,2}' })
             m.connect('category_list', 'archives/category/:section',
                       controller='blog', action='category',
                       section='home', type='list')
@@ -999,7 +999,7 @@ class Mapper(SubMapperParent):
 
                 map.resource('message', 'messages',
                      path_prefix='{project_id}/',
-                     requirements={"project_id": R"\d+"})
+                     requirements={"project_id": R"\\d+"})
                 # POST /01234/message
                 #    success, project_id is set to "01234"
                 # POST /foo/message
@@ -1181,7 +1181,7 @@ class Mapper(SubMapperParent):
                              **route_options)
                 self.connect(name_prefix + name, path, **route_options)
 
-        requirements_regexp = '[^\/]+(?<!\\\)'
+        requirements_regexp = '[^\\/]+(?<!\\\\)'
 
         # Add the routes that deal with member methods of a resource
         for method, lst in six.iteritems(member_methods):

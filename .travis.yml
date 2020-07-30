@@ -1,19 +1,18 @@
 language: python
 python:
-- '2.7'
-- '3.4'
-- '3.5'
-- '3.6'
-- nightly
-- pypy
-- pypy3
+  - '2.7'
+  - '3.5'
+  - '3.6'
+  - nightly
+  - pypy
+  - pypy3
 matrix:
   allow_failures:
   - python: nightly
 install: pip install tox-travis
 script: tox
 after_success:
-- codecov
+  - codecov
 deploy:
   provider: pypi
   user: bbangert
