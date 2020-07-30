@@ -146,13 +146,22 @@ class Route(object):
         """Utility function to walk the route, and pull out the valid
         dynamic/wildcard keys."""
         collecting = False
+        escaping = False
         current = ''
         done_on = ''
         var_type = ''
         just_started = False
         routelist = []
         for char in routepath:
-            if char in [':', '*', '{'] and not collecting and not self.static \
+            if escaping:
+                if char in ['\\', ':', '*', '{', '}']:
+                    current += char
+                else:
+                    current += '\\' + char
+                escaping = False
+            elif char == '\\':
+                escaping = True
+            elif char in [':', '*', '{'] and not collecting and not self.static \
                or char in ['{'] and not collecting:
                 just_started = True
                 collecting = True
