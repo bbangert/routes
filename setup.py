@@ -1,4 +1,4 @@
-__version__ = '2.4.1'
+__version__ = '2.5.0'
 
 import io
 import os
@@ -46,7 +46,9 @@ setup(name="Routes",
                    "Programming Language :: Python :: 2.7",
                    "Programming Language :: Python :: 3",
                    "Programming Language :: Python :: 3.5",
-                   "Programming Language :: Python :: 3.6"
+                   "Programming Language :: Python :: 3.6",
+                   "Programming Language :: Python :: 3.7",
+                   "Programming Language :: Python :: 3.8"
                    ],
       keywords='routes webob dispatch',
       author="Ben Bangert",
