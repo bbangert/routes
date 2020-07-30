@@ -56,7 +56,7 @@ setup(name="Routes",
       test_suite="nose.collector",
       include_package_data=True,
       zip_safe=False,
-      tests_require=['nose', 'webtest', 'webob', 'coverage'],
+      tests_require=["soupsieve<2.0", 'nose', 'webtest', 'webob', 'coverage'],
       install_requires=[
           "six",
           "repoze.lru>=0.3"
