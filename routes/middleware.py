@@ -61,9 +61,15 @@ class RoutesMiddleware(object):
             if '_method' in qs:
                 req = Request(environ)
                 req.errors = 'ignore'
-                if '_method' in req.GET:
+
+                try:
+                    method = req.GET.get('_method')
+                except UnicodeDecodeError:
+                    method = None
+
+                if method:
                     old_method = environ['REQUEST_METHOD']
-                    environ['REQUEST_METHOD'] = req.GET['_method'].upper()
+                    environ['REQUEST_METHOD'] = method.upper()
                     if self.log_debug:
                         log.debug("_method found in QUERY_STRING, altering "
                                   "request method to %s",
@@ -72,9 +78,15 @@ class RoutesMiddleware(object):
                 if req is None:
                     req = Request(environ)
                     req.errors = 'ignore'
-                if '_method' in req.POST:
+
+                try:
+                    method = req.POST.get('_method')
+                except UnicodeDecodeError:
+                    method = None
+
+                if method:
                     old_method = environ['REQUEST_METHOD']
-                    environ['REQUEST_METHOD'] = req.POST['_method'].upper()
+                    environ['REQUEST_METHOD'] = method.upper()
                     if self.log_debug:
                         log.debug("_method found in POST data, altering "
                                   "request method to %s",
