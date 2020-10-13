@@ -1,4 +1,6 @@
 """Mapper and Sub-Mapper"""
+import collections
+import itertools as it
 import re
 import threading
 
@@ -628,12 +630,20 @@ class Mapper(SubMapperParent):
                 route.makeregexp(clist)
 
         regexps = []
-        routematches = []
+        prefix2routes = collections.defaultdict(list)
         for route in self.matchlist:
             if not route.static:
-                routematches.append(route)
                 regexps.append(route.makeregexp(clist, include_names=False))
-        self._routematches = routematches
+                # Group the routes by static prefix
+                prefix = ''.join(it.takewhile(lambda p: isinstance(p, str),
+                                              route.routelist))
+                if route.minimization and not prefix.startswith('/'):
+                    prefix = '/' + prefix
+                prefix2routes[prefix.rstrip("/")].append(route)
+        self._prefix2routes = prefix2routes
+        # Keep track of all possible prefix lengths in decreasing order
+        self._prefix_lens = sorted(set(len(p) for p in prefix2routes),
+                                   reverse=True)
 
         # Create our regexp to strip the prefix
         if self.prefix:
@@ -694,7 +704,9 @@ class Mapper(SubMapperParent):
         if not valid_url:
             return (None, None, matchlog)
 
-        for route in self.matchlist:
+        matchlist = it.chain.from_iterable(self._prefix2routes.get(url[:prefix_len], ())
+                                           for prefix_len in self._prefix_lens)
+        for route in matchlist:
             if route.static:
                 if debug:
                     matchlog.append(dict(route=route, static=True))
