@@ -409,7 +409,7 @@ class Mapper(SubMapperParent):
         self.append_slash = False
         self.sub_domains = False
         self.sub_domains_ignore = []
-        self.domain_match = '[^\.\/]+?\.[^\.\/]+'
+        self.domain_match = r'[^\.\/]+?\.[^\.\/]+'
         self.explicit = explicit
         self.encoding = 'utf-8'
         self.decode_errors = 'ignore'
