@@ -61,12 +61,12 @@ class RoutesMiddleware(object):
             if '_method' in qs:
                 req = Request(environ)
                 req.errors = 'ignore'
-                
+
                 try:
                     method = req.GET.get('_method')
                 except UnicodeDecodeError:
                     method = None
-                
+
                 if method:
                     old_method = environ['REQUEST_METHOD']
                     environ['REQUEST_METHOD'] = method.upper()
@@ -83,7 +83,7 @@ class RoutesMiddleware(object):
                     method = req.POST.get('_method')
                 except UnicodeDecodeError:
                     method = None
-                   
+
                 if method:
                     old_method = environ['REQUEST_METHOD']
                     environ['REQUEST_METHOD'] = method.upper()
