@@ -1,12 +1,26 @@
 Routes Changelog
 %%%%%%%%%%%%%%%%
 
-Release 2.4.0 (January 1, 2017)
+Release 2.5.0 (October 13, 2020)
+================================
+
+* Add graceful fallback for invalid character encoding from request object. Patch by Phillip Baker.
+  PR #94.
+* Enhanced performance for matching routes that share the same static prefix. Patch by George Sakkis.
+  PR #89.
+* Fixed issue with child routes not passing route conditions to the Mapper.connect call. Patch by
+  Robin Abbi. PR #88.
+* Fixed documentation to reflect default value for minimization. Patch by Marcin Raczyński. PR #86.
+* Allow backslash to escape special characters in route paths. Patch by Orhan Kavrakoğlu. PR #83.
+* Resolve invalid escape sequences. Patch by Stephen Finucane. PR #85.
+* Remove support for Python 2.6, 3.3, and 3.4. Patch by Stephen Finucane. PR #85.
+* Remove obsolete Python 2.3 compat code. Patch by Jakub Wilk. PR #80.
+
+Release 2.4.1 (January 1, 2017)
 ===============================
 
 * Release as a universal wheel. PR #75.
 * Convert readthedocs links for their .org -> .io migration for hosted projects. PR #67.
-
 
 Release 2.3.1 (March 30, 2016)
 ==============================
