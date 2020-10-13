@@ -1,0 +1,84 @@
+name: Python package
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - 2.7
+          - 3.5
+          - 3.6
+          - 3.9
+          - pypy2
+          - pypy3
+
+    env:
+      TOX_PARALLEL_NO_SPINNER: 1
+      TOXENV: python
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: pip install tox
+      - name: "Initialize tox envs"
+        run: >-
+          python -m
+          tox
+          --parallel auto
+          --parallel-live
+          --notest
+          --skip-missing-interpreters false
+      - name: Test with tox
+        run: >-
+          python -m
+          tox
+          --parallel auto
+          --parallel-live
+          --
+          -vvvvv
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - 3.9
+      toxenv:
+        - style
+    env:
+      TOX_PARALLEL_NO_SPINNER: 1
+      TOXENV: ${{ matrix.env }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Set up Python ${{ matrix.python-version }}"
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: pip install tox
+      - name: "Initialize tox envs: ${{ env.TOXENV }}"
+        run: >-
+          python -m
+          tox
+          --parallel auto
+          --parallel-live
+          --notest
+          --skip-missing-interpreters false
+      - name: Test with tox
+        run: >-
+          python -m
+          tox
+          --parallel auto
+          --parallel-live
+          --
+          -vvvvv
