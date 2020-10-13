@@ -54,8 +54,8 @@ jobs:
       matrix:
         python-version:
           - 3.9
-      toxenv:
-        - style
+        toxenv:
+          - style
     env:
       TOX_PARALLEL_NO_SPINNER: 1
       TOXENV: ${{ matrix.env }}
