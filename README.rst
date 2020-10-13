@@ -7,7 +7,3 @@ Speedy and dynamic URL generation means you get a URL with minimal cruft
 on repetitive typing.
 
 See `the documentation for installation and usage of Routes <http://readthedocs.org/docs/routes/en/latest/>`_.
-
-.. image:: https://secure.travis-ci.org/bbangert/routes.png?branch=master
-   :alt: Build Status
-   :target: https://secure.travis-ci.org/bbangert/routes
