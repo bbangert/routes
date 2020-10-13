@@ -364,7 +364,6 @@ class Route(object):
             self.prior = part
             (rest, noreqs, allblank) = self.buildnextreg(path[1:], clist,
                                                          include_names)
-
         if isinstance(part, dict) and part['type'] in (':', '.'):
             var = part['name']
             typ = part['type']
@@ -502,7 +501,13 @@ class Route(object):
                 reg += ')?'
             else:
                 allblank = False
-                reg = re.escape(part) + rest
+                # Starting in Python 3.7, the / is no longer escaped, however quite a bit of
+                # route generation code relies on it being escaped. This forces the escape in
+                # Python 3.7+ so that the remainder of the code functions as intended.
+                if part == '/':
+                    reg = r'\/' + rest
+                else:
+                    reg = re.escape(part) + rest
 
         # We have a normal string here, this is a req, and it prevents us from
         # being all blank
