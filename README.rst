@@ -7,3 +7,7 @@ Speedy and dynamic URL generation means you get a URL with minimal cruft
 on repetitive typing.
 
 See `the documentation for installation and usage of Routes <http://readthedocs.org/docs/routes/en/latest/>`_.
+
+.. image:: https://github.com/bbangert/routes/workflows/Python%20package/badge.svg?branch=main&event=push
+   :target: https://github.com/cherrypy/cheroot/actions?query=workflow%3A%22Python+package%22+branch%3Amaster
+   :alt: GitHub Actions Workflows CI/CD
