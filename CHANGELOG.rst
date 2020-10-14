@@ -1,6 +1,10 @@
 Routes Changelog
 %%%%%%%%%%%%%%%%
 
+Release 2.5.1 (October 13, 2020)
+================================
+* Add compatibility for Python 3.7+. PR #99.
+
 Release 2.5.0 (October 13, 2020)
 ================================
 
