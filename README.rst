@@ -1,6 +1,6 @@
 Routes is a Python re-implementation of the Rails routes system for mapping
-URL's to Controllers/Actions and generating URL's. Routes makes it easy to
-create pretty and concise URL's that are RESTful with little effort.
+URLs to Controllers/Actions and generating URLs. Routes makes it easy to
+create pretty and concise URLs that are RESTful with little effort.
 
 Speedy and dynamic URL generation means you get a URL with minimal cruft
 (no big dangling query args). Shortcut features like Named Routes cut down
