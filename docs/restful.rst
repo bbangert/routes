@@ -59,7 +59,7 @@ This establishes the following convention::
 
 .. note::
 
-    Due to how Routes matches a list of URL's, it has no inherent knowledge of
+    Due to how Routes matches a list of URLs, it has no inherent knowledge of
     a route being a **resource**. As such, if a route fails to match due to
     the method requirements not being met, a 404 will return just like any
     other failure to match a route.

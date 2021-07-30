@@ -285,7 +285,7 @@ def url_for(*args, **kargs):
 
 
 class URLGenerator(object):
-    """The URL Generator generates URL's
+    """The URL Generator generates URLs
 
     It is automatically instantiated by the RoutesMiddleware and put
     into the ``wsgiorg.routing_args`` tuple accessible as::
@@ -297,7 +297,7 @@ class URLGenerator(object):
         url = environ['routes.url']
 
     The url object may be instantiated outside of a web context for use
-    in testing, however sub_domain support and fully qualified URL's
+    in testing, however sub_domain support and fully qualified URLs
     cannot be generated without supplying a dict that must contain the
     key ``HTTP_HOST``.
 
