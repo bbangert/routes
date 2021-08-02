@@ -1,6 +1,6 @@
 """test_resources"""
 import unittest
-from nose.tools import eq_, assert_raises
+import pytest
 
 from routes import *
 
@@ -10,14 +10,15 @@ class TestSubmapper(unittest.TestCase):
         c = m.submapper(path_prefix='/entries', requirements=dict(id='\d+'))
         c.connect('entry', '/{id}')
 
-        eq_('/entries/1', url_for('entry', id=1))
-        assert_raises(Exception, url_for, 'entry', id='foo')
+        assert url_for('entry', id=1) == '/entries/1'
+        with pytest.raises(Exception):
+            url_for('entry', id='foo')
 
     def test_submapper_with_no_path(self):
         m = Mapper()
         c = m.submapper(path_prefix='/')
         c.connect('entry')
-        eq_('/entry?id=1', url_for('entry', id=1))
+        assert url_for('entry', id=1) == '/entry?id=1'
 
     def test_submapper_nesting(self):
         m = Mapper()
@@ -25,15 +26,16 @@ class TestSubmapper(unittest.TestCase):
                         requirements=dict(id='\d+'))
         e = c.submapper(path_prefix='/{id}')
 
-        eq_('entry', c.resource_name)
-        eq_('entry', e.resource_name)
+        assert c.resource_name == 'entry'
+        assert e.resource_name == 'entry'
 
         e.connect('entry', '')
         e.connect('edit_entry', '/edit')
 
-        eq_('/entries/1', url_for('entry', id=1))
-        eq_('/entries/1/edit', url_for('edit_entry', id=1))
-        assert_raises(Exception, url_for, 'entry', id='foo')
+        assert url_for('entry', id=1) == '/entries/1'
+        assert url_for('edit_entry', id=1) == '/entries/1/edit'
+        with pytest.raises(Exception):
+            url_for('entry', id='foo')
 
     def test_submapper_action(self):
         m = Mapper(explicit=True)
@@ -42,11 +44,12 @@ class TestSubmapper(unittest.TestCase):
         c.action(name='entries', action='list')
         c.action(action='create', method='POST')
 
-        eq_('/entries', url_for('entries', method='GET'))
-        eq_('/entries', url_for('create_entry', method='POST'))
-        eq_('/entries', url_for(controller='entry', action='list', method='GET'))
-        eq_('/entries', url_for(controller='entry', action='create', method='POST'))
-        assert_raises(Exception, url_for, 'entries', method='DELETE')
+        assert url_for('entries', method='GET') == '/entries'
+        assert url_for('create_entry', method='POST') == '/entries'
+        assert url_for(controller='entry', action='list', method='GET') == '/entries'
+        assert url_for(controller='entry', action='create', method='POST') == '/entries'
+        with pytest.raises(Exception):
+            url_for('entries', method='DELETE')
 
     def test_submapper_link(self):
         m = Mapper(explicit=True)
@@ -55,12 +58,14 @@ class TestSubmapper(unittest.TestCase):
         c.link(rel='new')
         c.link(rel='ping', method='POST')
 
-        eq_('/entries/new', url_for('new_entry', method='GET'))
-        eq_('/entries/ping', url_for('ping_entry', method='POST'))
-        eq_('/entries/new', url_for(controller='entry', action='new', method='GET'))
-        eq_('/entries/ping', url_for(controller='entry', action='ping', method='POST'))
-        assert_raises(Exception, url_for, 'new_entry', method='PUT')
-        assert_raises(Exception, url_for, 'ping_entry', method='PUT')
+        assert url_for('new_entry', method='GET') == '/entries/new'
+        assert url_for('ping_entry', method='POST') == '/entries/ping'
+        assert url_for(controller='entry', action='new', method='GET') == '/entries/new'
+        assert url_for(controller='entry', action='ping', method='POST') == '/entries/ping'
+        with pytest.raises(Exception):
+            url_for('new_entry', method='PUT')
+        with pytest.raises(Exception):
+            url_for('ping_entry', method='PUT')
 
     def test_submapper_standard_actions(self):
         m = Mapper()
@@ -74,14 +79,16 @@ class TestSubmapper(unittest.TestCase):
         e.update()
         e.delete()
 
-        eq_('/entries', url_for('entries', method='GET'))
-        eq_('/entries', url_for('create_entry', method='POST'))
-        assert_raises(Exception, url_for, 'entries', method='DELETE')
+        assert url_for('entries', method='GET') == '/entries'
+        assert url_for('create_entry', method='POST') == '/entries'
+        with pytest.raises(Exception):
+            url_for('entries', method='DELETE')
 
-        eq_('/entries/1', url_for('entry', id=1, method='GET'))
-        eq_('/entries/1', url_for('update_entry', id=1, method='PUT'))
-        eq_('/entries/1', url_for('delete_entry', id=1, method='DELETE'))
-        assert_raises(Exception, url_for, 'entry', id=1, method='POST')
+        assert url_for('entry', id=1, method='GET') == '/entries/1'
+        assert url_for('update_entry', id=1, method='PUT') == '/entries/1'
+        assert url_for('delete_entry', id=1, method='DELETE') == '/entries/1'
+        with pytest.raises(Exception):
+            url_for('entry', id=1, method='POST')
 
     def test_submapper_standard_links(self):
         m = Mapper()
@@ -91,11 +98,13 @@ class TestSubmapper(unittest.TestCase):
         c.new()
         e.edit()
 
-        eq_('/entries/new', url_for('new_entry', method='GET'))
-        assert_raises(Exception, url_for, 'new_entry', method='POST')
+        assert url_for('new_entry', method='GET') == '/entries/new'
+        with pytest.raises(Exception):
+            url_for('new_entry', method='POST')
 
-        eq_('/entries/1/edit', url_for('edit_entry', id=1, method='GET'))
-        assert_raises(Exception, url_for, 'edit_entry', id=1, method='POST')
+        assert url_for('edit_entry', id=1, method='GET') == '/entries/1/edit'
+        with pytest.raises(Exception):
+            url_for('edit_entry', id=1, method='POST')
 
     def test_submapper_action_and_link_generation(self):
         m = Mapper()
@@ -105,39 +114,47 @@ class TestSubmapper(unittest.TestCase):
         e = c.submapper(path_prefix='/{id}',
                        actions=['show', 'edit', 'update', 'delete'])
 
-        eq_('/entries', url_for('entries', method='GET'))
-        eq_('/entries', url_for('create_entry', method='POST'))
-        assert_raises(Exception, url_for, 'entries', method='DELETE')
+        assert url_for('entries', method='GET') == '/entries'
+        assert url_for('create_entry', method='POST') == '/entries'
+        with pytest.raises(Exception):
+            url_for('entries', method='DELETE')
 
-        eq_('/entries/1', url_for('entry', id=1, method='GET'))
-        eq_('/entries/1', url_for('update_entry', id=1, method='PUT'))
-        eq_('/entries/1', url_for('delete_entry', id=1, method='DELETE'))
-        assert_raises(Exception, url_for, 'entry', id=1, method='POST')
+        assert url_for('entry', id=1, method='GET') == '/entries/1'
+        assert url_for('update_entry', id=1, method='PUT') == '/entries/1'
+        assert url_for('delete_entry', id=1, method='DELETE') == '/entries/1'
+        with pytest.raises(Exception):
+            url_for('entry', id=1, method='POST')
 
-        eq_('/entries/new', url_for('new_entry', method='GET'))
-        assert_raises(Exception, url_for, 'new_entry', method='POST')
+        assert url_for('new_entry', method='GET') == '/entries/new'
+        with pytest.raises(Exception):
+            url_for('new_entry', method='POST')
 
-        eq_('/entries/1/edit', url_for('edit_entry', id=1, method='GET'))
-        assert_raises(Exception, url_for, 'edit_entry', id=1, method='POST')
+        assert url_for('edit_entry', id=1, method='GET') == '/entries/1/edit'
+        with pytest.raises(Exception):
+            url_for('edit_entry', id=1, method='POST')
 
     def test_collection(self):
         m = Mapper()
         c = m.collection('entries', 'entry')
 
-        eq_('/entries', url_for('entries', method='GET'))
-        eq_('/entries', url_for('create_entry', method='POST'))
-        assert_raises(Exception, url_for, 'entries', method='DELETE')
+        assert url_for('entries', method='GET') == '/entries'
+        assert url_for('create_entry', method='POST') == '/entries'
+        with pytest.raises(Exception):
+            url_for('entries', method='DELETE')
 
-        eq_('/entries/1', url_for('entry', id=1, method='GET'))
-        eq_('/entries/1', url_for('update_entry', id=1, method='PUT'))
-        eq_('/entries/1', url_for('delete_entry', id=1, method='DELETE'))
-        assert_raises(Exception, url_for, 'entry', id=1, method='POST')
+        assert url_for('entry', id=1, method='GET') == '/entries/1'
+        assert url_for('update_entry', id=1, method='PUT') == '/entries/1'
+        assert url_for('delete_entry', id=1, method='DELETE') == '/entries/1'
+        with pytest.raises(Exception):
+            url_for('entry', id=1, method='POST')
 
-        eq_('/entries/new', url_for('new_entry', method='GET'))
-        assert_raises(Exception, url_for, 'new_entry', method='POST')
+        assert url_for('new_entry', method='GET') == '/entries/new'
+        with pytest.raises(Exception):
+            url_for('new_entry', method='POST')
 
-        eq_('/entries/1/edit', url_for('edit_entry', id=1, method='GET'))
-        assert_raises(Exception, url_for, 'edit_entry', id=1, method='POST')
+        assert url_for('edit_entry', id=1, method='GET') == '/entries/1/edit'
+        with pytest.raises(Exception):
+            url_for('edit_entry', id=1, method='POST')
 
     def test_collection_options(self):
         m = Mapper()
@@ -145,8 +162,8 @@ class TestSubmapper(unittest.TestCase):
         c = m.collection('entries', 'entry', conditions=dict(sub_domain=True),
                          requirements=requirement)
         for r in m.matchlist:
-            eq_(True, r.conditions['sub_domain'])
-            eq_(requirement, r.reqs)
+            assert r.conditions['sub_domain'] is True
+            assert r.reqs == requirement
 
     def test_subsubmapper_with_controller(self):
         m = Mapper()
@@ -158,7 +175,7 @@ class TestSubmapper(unittest.TestCase):
                                       controller='col2',
                                       member_prefix='/{child_id}')
         match = m.match('/parents/1/children/2')
-        eq_('col2', match.get('controller'))
+        assert match.get('controller') == 'col2'
 
     def test_submapper_argument_overriding(self):
         m = Mapper()
@@ -177,25 +194,24 @@ class TestSubmapper(unittest.TestCase):
 
         # test first level
         match = m.match('/first_level/test')
-        eq_('first', match.get('controller'))
-        eq_('test', match.get('action'))
+        assert match.get('controller') == 'first'
+        assert match.get('action') == 'test'
         # test name_prefix worked
-        eq_('/first_level/test', url_for('first_test'))
+        assert url_for('first_test') == '/first_level/test'
 
         # test second level controller override
         match = m.match('/first_level/second_level/test')
-        eq_('second', match.get('controller'))
-        eq_('test', match.get('action'))
+        assert match.get('controller') == 'second'
+        assert match.get('action') == 'test'
         # test name_prefix worked
-        eq_('/first_level/second_level/test', url_for('first_second_test'))
+        assert url_for('first_second_test') == '/first_level/second_level/test'
 
         # test third level controller and action override
         match = m.match('/first_level/second_level/third_level/test')
-        eq_('third', match.get('controller'))
-        eq_('third_action', match.get('action'))
+        assert match.get('controller') == 'third'
+        assert match.get('action') == 'third_action'
         # test name_prefix worked
-        eq_('/first_level/second_level/third_level/test',
-             url_for('first_second_third_test'))
+        assert url_for('first_second_third_test') == '/first_level/second_level/third_level/test'
 
 
 if __name__ == '__main__':
