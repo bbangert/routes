@@ -67,8 +67,7 @@ setup(name="Routes",
       zip_safe=False,
       tests_require=["soupsieve<2.0", 'nose', 'webtest', 'webob', 'coverage'],
       install_requires=[
-          "six",
-          "repoze.lru>=0.3"
+          "six"
       ],
       extras_require=extras_require,
       **extra_options
