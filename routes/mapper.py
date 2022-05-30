@@ -941,7 +941,8 @@ class Mapper(SubMapperParent):
                 external_static = route.static and route.external
                 if not route.absolute and not external_static:
                     path = script_name + path
-                    key = cache_key_script_name
+                    if self.urlcache is not None:
+                       key = cache_key_script_name
                 else:
                     key = cache_key
                 if self.urlcache is not None:
