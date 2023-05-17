@@ -1,7 +1,7 @@
 """test_utils"""
 import os, sys, time, unittest
-from nose.tools import eq_, assert_raises
 
+import pytest
 from routes.util import controller_scan, GenerationException
 from routes import *
 
@@ -25,32 +25,32 @@ class TestUtils(unittest.TestCase):
         con = self.con
         con.mapper_dict = {}
 
-        eq_('/blog', url_for('/blog'))
-        eq_('/blog?q=fred&q=here%20now', url_for('/blog', q=['fred', u'here now']))
-        eq_('/blog#here', url_for('/blog', anchor='here'))
+        assert url_for('/blog') == '/blog'
+        assert url_for('/blog', q=['fred', u'here now']) == '/blog?q=fred&q=here%20now'
+        assert url_for('/blog', anchor='here') == '/blog#here'
 
     def test_url_for_with_nongen_no_encoding(self):
         con = self.con
         con.mapper_dict = {}
         con.mapper.encoding = None
 
-        eq_('/blog', url_for('/blog'))
-        eq_('/blog#here', url_for('/blog', anchor='here'))
+        assert url_for('/blog') == '/blog'
+        assert url_for('/blog', anchor='here') == '/blog#here'
 
     def test_url_for_with_unicode(self):
         con = self.con
         con.mapper_dict = {}
 
-        eq_('/blog', url_for(controller='blog'))
-        eq_('/blog/view/umulat', url_for(controller='blog', action='view', id=u'umulat'))
-        eq_('/blog/view/umulat?other=%CE%B1%CF%83%CE%B4%CE%B3',
-            url_for(controller='blog', action='view', id=u'umulat', other=u'\u03b1\u03c3\u03b4\u03b3'))
+        assert url_for(controller='blog') == '/blog'
+        assert url_for(controller='blog', action='view', id=u'umulat') == '/blog/view/umulat'
+        assert url_for(controller='blog', action='view', id=u'umulat', other=u'\u03b1\u03c3\u03b4\u03b3') == '/blog/view/umulat?other=%CE%B1%CF%83%CE%B4%CE%B3'
 
         url = URLGenerator(con.mapper, {})
         for urlobj in [url_for, url]:
             def raise_url():
                 return urlobj(u'/some/st\xc3rng')
-            assert_raises(Exception, raise_url)
+            with pytest.raises(Exception):
+                raise_url()
 
     def test_url_for(self):
         con = self.con
@@ -58,73 +58,75 @@ class TestUtils(unittest.TestCase):
         url = URLGenerator(con.mapper, {'HTTP_HOST':'www.test.com:80'})
 
         for urlobj in [url_for, url]:
-            eq_('/blog', urlobj(controller='blog'))
-            eq_('/content', urlobj())
-            eq_('https://www.test.com/viewpost', urlobj(controller='post', action='view', protocol='https'))
-            eq_('http://www.test.org/content', urlobj(host='www.test.org'))
-            eq_('//www.test.com/viewpost', urlobj(controller='post', action='view', protocol=''))
-            eq_('//www.test.org/content', urlobj(host='www.test.org', protocol=''))
+            assert urlobj(controller='blog') == '/blog'
+            assert urlobj() == '/content'
+            assert urlobj(controller='post', action='view', protocol='https') == 'https://www.test.com/viewpost'
+            assert urlobj(host='www.test.org') == 'http://www.test.org/content'
+            assert urlobj(controller='post', action='view', protocol='') == '//www.test.com/viewpost'
+            assert urlobj(host='www.test.org', protocol='') == '//www.test.org/content'
 
     def test_url_raises(self):
         con = self.con
         con.mapper.explicit = True
         con.mapper_dict = {}
         url = URLGenerator(con.mapper, {})
-        assert_raises(GenerationException, url_for, action='juice')
-        assert_raises(GenerationException, url, action='juice')
+        with pytest.raises(GenerationException):
+            url_for(action='juice')
+        with pytest.raises(GenerationException):
+            url(action='juice')
 
     def test_url_for_with_defaults(self):
         con = self.con
         con.mapper_dict = {'controller':'blog','action':'view','id':4}
         url = URLGenerator(con.mapper, {'wsgiorg.routing_args':((), con.mapper_dict)})
 
-        eq_('/blog/view/4', url_for())
-        eq_('/post/index/4', url_for(controller='post'))
-        eq_('/blog/view/2', url_for(id=2))
-        eq_('/viewpost/4', url_for(controller='post', action='view', id=4))
+        assert url_for() == '/blog/view/4'
+        assert url_for(controller='post') == '/post/index/4'
+        assert url_for(id=2) == '/blog/view/2'
+        assert url_for(controller='post', action='view', id=4) == '/viewpost/4'
 
-        eq_('/blog/view/4', url.current())
-        eq_('/post/index/4', url.current(controller='post'))
-        eq_('/blog/view/2', url.current(id=2))
-        eq_('/viewpost/4', url.current(controller='post', action='view', id=4))
+        assert url.current() == '/blog/view/4'
+        assert url.current(controller='post') == '/post/index/4'
+        assert url.current(id=2) == '/blog/view/2'
+        assert url.current(controller='post', action='view', id=4) == '/viewpost/4'
 
         con.mapper_dict = {'controller':'blog','action':'view','year':2004}
         url = URLGenerator(con.mapper, {'wsgiorg.routing_args':((), con.mapper_dict)})
 
-        eq_('/archive/2004/10', url_for(month=10))
-        eq_('/archive/2004/9/2', url_for(month=9, day=2))
-        eq_('/blog', url_for(controller='blog', year=None))
+        assert url_for(month=10) == '/archive/2004/10'
+        assert url_for(month=9, day=2) == '/archive/2004/9/2'
+        assert url_for(controller='blog', year=None) == '/blog'
 
-        eq_('/archive/2004/10', url.current(month=10))
-        eq_('/archive/2004/9/2', url.current(month=9, day=2))
-        eq_('/blog', url.current(controller='blog', year=None))
+        assert url.current(month=10) == '/archive/2004/10'
+        assert url.current(month=9, day=2) == '/archive/2004/9/2'
+        assert url.current(controller='blog', year=None) == '/blog'
 
     def test_url_for_with_more_defaults(self):
         con = self.con
         con.mapper_dict = {'controller':'blog','action':'view','id':4}
         url = URLGenerator(con.mapper, {'wsgiorg.routing_args':((), con.mapper_dict)})
 
-        eq_('/blog/view/4', url_for())
-        eq_('/post/index/4', url_for(controller='post'))
-        eq_('/blog/view/2', url_for(id=2))
-        eq_('/viewpost/4', url_for(controller='post', action='view', id=4))
+        assert url_for() == '/blog/view/4'
+        assert url_for(controller='post') == '/post/index/4'
+        assert url_for(id=2) == '/blog/view/2'
+        assert url_for(controller='post', action='view', id=4) == '/viewpost/4'
 
-        eq_('/blog/view/4', url.current())
-        eq_('/post/index/4', url.current(controller='post'))
-        eq_('/blog/view/2', url.current(id=2))
-        eq_('/viewpost/4', url.current(controller='post', action='view', id=4))
+        assert url.current() == '/blog/view/4'
+        assert url.current(controller='post') == '/post/index/4'
+        assert url.current(id=2) == '/blog/view/2'
+        assert url.current(controller='post', action='view', id=4) == '/viewpost/4'
 
         con.mapper_dict = {'controller':'blog','action':'view','year':2004}
         url = URLGenerator(con.mapper, {'wsgiorg.routing_args':((), con.mapper_dict)})
-        eq_('/archive/2004/10', url_for(month=10))
-        eq_('/archive/2004/9/2', url_for(month=9, day=2))
-        eq_('/blog', url_for(controller='blog', year=None))
-        eq_('/archive/2004', url_for())
+        assert url_for(month=10) == '/archive/2004/10'
+        assert url_for(month=9, day=2) == '/archive/2004/9/2'
+        assert url_for(controller='blog', year=None) == '/blog'
+        assert url_for() == '/archive/2004'
 
-        eq_('/archive/2004/10', url.current(month=10))
-        eq_('/archive/2004/9/2', url.current(month=9, day=2))
-        eq_('/blog', url.current(controller='blog', year=None))
-        eq_('/archive/2004', url.current())
+        assert url.current(month=10) == '/archive/2004/10'
+        assert url.current(month=9, day=2) == '/archive/2004/9/2'
+        assert url.current(controller='blog', year=None) == '/blog'
+        assert url.current() == '/archive/2004'
 
     def test_url_for_with_defaults_and_qualified(self):
         m = self.con.mapper
@@ -136,17 +138,17 @@ class TestUtils(unittest.TestCase):
         self.con.environ.update({'wsgiorg.routing_args':((), self.con.mapper_dict)})
         url = URLGenerator(m, self.con.environ)
 
-        eq_('/blog/view/4', url_for())
-        eq_('/post/index/4', url_for(controller='post'))
-        eq_('http://www.example.com/blog/view/4', url_for(qualified=True))
-        eq_('/blog/view/2', url_for(id=2))
-        eq_('/viewpost/4', url_for(controller='post', action='view', id=4))
+        assert url_for() == '/blog/view/4'
+        assert url_for(controller='post') == '/post/index/4'
+        assert url_for(qualified=True) == 'http://www.example.com/blog/view/4'
+        assert url_for(id=2) == '/blog/view/2'
+        assert url_for(controller='post', action='view', id=4) == '/viewpost/4'
 
-        eq_('/blog/view/4', url.current())
-        eq_('/post/index/4', url.current(controller='post'))
-        eq_('http://www.example.com/blog/view/4', url.current(qualified=True))
-        eq_('/blog/view/2', url.current(id=2))
-        eq_('/viewpost/4', url.current(controller='post', action='view', id=4))
+        assert url.current() == '/blog/view/4'
+        assert url.current(controller='post') == '/post/index/4'
+        assert url.current(qualified=True) == 'http://www.example.com/blog/view/4'
+        assert url.current(id=2) == '/blog/view/2'
+        assert url.current(controller='post', action='view', id=4) == '/viewpost/4'
 
         env = dict(SCRIPT_NAME='', SERVER_NAME='www.example.com', SERVER_PORT='8080', PATH_INFO='/blog/view/4')
         env['wsgi.url_scheme'] = 'http'
@@ -154,18 +156,18 @@ class TestUtils(unittest.TestCase):
         self.con.environ.update({'wsgiorg.routing_args':((), self.con.mapper_dict)})
         url = URLGenerator(m, self.con.environ)
 
-        eq_('/post/index/4', url_for(controller='post'))
-        eq_('http://www.example.com:8080/blog/view/4', url_for(qualified=True))
+        assert url_for(controller='post') == '/post/index/4'
+        assert url_for(qualified=True) == 'http://www.example.com:8080/blog/view/4'
 
-        eq_('/post/index/4', url.current(controller='post'))
-        eq_('http://www.example.com:8080/blog/view/4', url.current(qualified=True))
+        assert url.current(controller='post') == '/post/index/4'
+        assert url.current(qualified=True) == 'http://www.example.com:8080/blog/view/4'
 
     def test_route_overflow(self):
         m = self.con.mapper
         m.create_regs(["x"*50000])
         m.connect('route-overflow', "x"*50000)
         url = URLGenerator(m, {})
-        eq_("/%s" % ("x"*50000), url('route-overflow'))
+        assert url('route-overflow') == "/%s" % ("x"*50000)
 
     def test_with_route_names(self):
         m = self.con.mapper
@@ -176,12 +178,12 @@ class TestUtils(unittest.TestCase):
         url = URLGenerator(m, {})
 
         for urlobj in [url, url_for]:
-            eq_('/content/view', urlobj(controller='content', action='view'))
-            eq_('/content', urlobj(controller='content'))
-            eq_('/admin/comments', urlobj(controller='admin/comments'))
-            eq_('/category', urlobj('category_home'))
-            eq_('/category/food', urlobj('category_home', section='food'))
-            eq_('/', urlobj('home'))
+            assert urlobj(controller='content', action='view') == '/content/view'
+            assert urlobj(controller='content') == '/content'
+            assert urlobj(controller='admin/comments') == '/admin/comments'
+            assert urlobj('category_home') == '/category'
+            assert urlobj('category_home', section='food') == '/category/food'
+            assert urlobj('home') == '/'
 
     def test_with_route_names_and_defaults(self):
         m = self.con.mapper
@@ -194,10 +196,10 @@ class TestUtils(unittest.TestCase):
         self.con.mapper_dict = dict(controller='building', action='showjacks', campus='wilma', building='port')
         url = URLGenerator(m, {'wsgiorg.routing_args':((), self.con.mapper_dict)})
 
-        eq_('/building/wilma/port/alljacks', url_for())
-        eq_('/', url_for('home'))
-        eq_('/building/wilma/port/alljacks', url.current())
-        eq_('/', url.current('home'))
+        assert url_for() == '/building/wilma/port/alljacks'
+        assert url_for('home') == '/'
+        assert url.current() == '/building/wilma/port/alljacks'
+        assert url.current('home') == '/'
 
     def test_with_route_names_and_hardcode(self):
         m = self.con.mapper
@@ -213,22 +215,22 @@ class TestUtils(unittest.TestCase):
 
         self.con.mapper_dict = dict(controller='building', action='showjacks', campus='wilma', building='port')
         url = URLGenerator(m, {'wsgiorg.routing_args':((), self.con.mapper_dict)})
-        eq_('/building/wilma/port/alljacks', url_for())
-        eq_('/', url_for('home'))
-        eq_('/gallery/home_thumbnail.jpg', url_for('gallery_thumb', img_id='home'))
-        eq_('/gallery/home_thumbnail.jpg', url_for('gallery', img_id='home'))
+        assert url_for() == '/building/wilma/port/alljacks'
+        assert url_for('home') == '/'
+        assert url_for('gallery_thumb', img_id='home') == '/gallery/home_thumbnail.jpg'
+        assert url_for('gallery', img_id='home') == '/gallery/home_thumbnail.jpg'
 
-        eq_('/building/wilma/port/alljacks', url.current())
-        eq_('/', url.current('home'))
-        eq_('/gallery/home_thumbnail.jpg', url.current('gallery_thumb', img_id='home'))
-        eq_('/gallery/home_thumbnail.jpg', url.current('gallery', img_id='home'))
+        assert url.current() == '/building/wilma/port/alljacks'
+        assert url.current('home') == '/'
+        assert url.current('gallery_thumb', img_id='home') == '/gallery/home_thumbnail.jpg'
+        assert url.current('gallery', img_id='home') == '/gallery/home_thumbnail.jpg'
 
         m.hardcode_names = True
-        eq_('/gallery/home_thumbnail.jpg', url_for('gallery_thumb', img_id='home'))
-        eq_('/gallery/home.jpg', url_for('gallery', img_id='home'))
+        assert url_for('gallery_thumb', img_id='home') == '/gallery/home_thumbnail.jpg'
+        assert url_for('gallery', img_id='home') == '/gallery/home.jpg'
 
-        eq_('/gallery/home_thumbnail.jpg', url.current('gallery_thumb', img_id='home'))
-        eq_('/gallery/home.jpg', url.current('gallery', img_id='home'))
+        assert url.current('gallery_thumb', img_id='home') == '/gallery/home_thumbnail.jpg'
+        assert url.current('gallery', img_id='home') == '/gallery/home.jpg'
         m.hardcode_names = False
 
     def test_redirect_to(self):
@@ -242,15 +244,15 @@ class TestUtils(unittest.TestCase):
         m.create_regs(['content','blog','admin/comments'])
 
         redirect_to(controller='content', action='view')
-        eq_('/content/view', redirect_to.result)
+        assert redirect_to.result == '/content/view'
         redirect_to(controller='content', action='lookup', id=4)
-        eq_('/content/lookup/4', redirect_to.result)
+        assert redirect_to.result == '/content/lookup/4'
         redirect_to(controller='admin/comments',action='splash')
-        eq_('/admin/comments/splash', redirect_to.result)
+        assert redirect_to.result == '/admin/comments/splash'
         redirect_to('http://www.example.com/')
-        eq_('http://www.example.com/', redirect_to.result)
+        assert redirect_to.result == 'http://www.example.com/'
         redirect_to('/somewhere.html', var='keyword')
-        eq_('/somewhere.html?var=keyword', redirect_to.result)
+        assert redirect_to.result == '/somewhere.html?var=keyword'
 
     def test_redirect_to_with_route_names(self):
         m = self.con.mapper
@@ -264,17 +266,17 @@ class TestUtils(unittest.TestCase):
         m.create_regs(['content','blog','admin/comments'])
 
         redirect_to(controller='content', action='view')
-        eq_('/content/view', redirect_to.result)
+        assert redirect_to.result == '/content/view'
         redirect_to(controller='content')
-        eq_('/content', redirect_to.result)
+        assert redirect_to.result == '/content'
         redirect_to(controller='admin/comments')
-        eq_('/admin/comments', redirect_to.result)
+        assert redirect_to.result == '/admin/comments'
         redirect_to('category_home')
-        eq_('/category', redirect_to.result)
+        assert redirect_to.result == '/category'
         redirect_to('category_home', section='food')
-        eq_('/category/food', redirect_to.result)
+        assert redirect_to.result == '/category/food'
         redirect_to('home')
-        eq_('/', redirect_to.result)
+        assert redirect_to.result == '/'
 
     def test_static_route(self):
         m = self.con.mapper
@@ -287,10 +289,10 @@ class TestUtils(unittest.TestCase):
 
         url = URLGenerator(m, {})
         for urlobj in [url_for, url]:
-            eq_('http://www.groovie.org/', urlobj('home'))
-            eq_('http://www.groovie.org/?s=stars', urlobj('home', s='stars'))
-            eq_('/content/view', urlobj(controller='content', action='view'))
-            eq_('/nasa/images?search=all', urlobj('space', search='all'))
+            assert urlobj('home') == 'http://www.groovie.org/'
+            assert urlobj('home', s='stars') == 'http://www.groovie.org/?s=stars'
+            assert urlobj(controller='content', action='view') == '/content/view'
+            assert urlobj('space', search='all') == '/nasa/images?search=all'
 
     def test_static_route_with_script(self):
         m = self.con.mapper
@@ -305,12 +307,12 @@ class TestUtils(unittest.TestCase):
         self.con.environ.update({'wsgiorg.routing_args':((), {})})
         url = URLGenerator(m, self.con.environ)
         for urlobj in [url_for, url]:
-            eq_('http://www.groovie.org/', urlobj('home'))
-            eq_('http://www.groovie.org/?s=stars', urlobj('home', s='stars'))
-            eq_('/webapp/content/view', urlobj(controller='content', action='view'))
-            eq_('/webapp/nasa/images?search=all', urlobj('space', search='all'))
-            eq_('http://example.com/webapp/nasa/images', urlobj('space', protocol='http'))
-            eq_('http://example.com/webapp/login', urlobj('login', qualified=True))
+            assert urlobj('home') == 'http://www.groovie.org/'
+            assert urlobj('home', s='stars') == 'http://www.groovie.org/?s=stars'
+            assert urlobj(controller='content', action='view') == '/webapp/content/view'
+            assert urlobj('space', search='all') == '/webapp/nasa/images?search=all'
+            assert urlobj('space', protocol='http') == 'http://example.com/webapp/nasa/images'
+            assert urlobj('login', qualified=True) == 'http://example.com/webapp/login'
 
     def test_static_route_with_vars(self):
         m = self.con.mapper
@@ -323,13 +325,16 @@ class TestUtils(unittest.TestCase):
         self.con.environ.update({'wsgiorg.routing_args':((), {})})
         url = URLGenerator(m, self.con.environ)
         for urlobj in [url_for, url]:
-            assert_raises(GenerationException, urlobj, 'home')
-            assert_raises(GenerationException, urlobj, 'home', domain='fred')
-            assert_raises(GenerationException, urlobj, 'home', location='index')
-            eq_('http://fred.groovie.org/index', urlobj('home', domain='fred', location='index'))
-            eq_('http://fred.groovie.org/index?search=all', urlobj('home', domain='fred', location='index', search='all'))
-            eq_('/webapp/nasa/images?search=all', urlobj('space', location='images', search='all'))
-            eq_('http://example.com/webapp/nasa/images', urlobj('space', location='images', protocol='http'))
+            with pytest.raises(GenerationException):
+                urlobj('home')
+            with pytest.raises(GenerationException):
+                urlobj('home', domain='fred')
+            with pytest.raises(GenerationException):
+                urlobj('home', location='index')
+            assert urlobj('home', domain='fred', location='index') == 'http://fred.groovie.org/index'
+            assert urlobj('home', domain='fred', location='index', search='all') == 'http://fred.groovie.org/index?search=all'
+            assert urlobj('space', location='images', search='all') == '/webapp/nasa/images?search=all'
+            assert urlobj('space', location='images', protocol='http') == 'http://example.com/webapp/nasa/images'
 
     def test_static_route_with_vars_and_defaults(self):
         m = self.con.mapper
@@ -342,27 +347,31 @@ class TestUtils(unittest.TestCase):
         self.con.environ.update({'wsgiorg.routing_args':((), {})})
         url = URLGenerator(m, self.con.environ)
 
-        assert_raises(GenerationException, url_for, 'home')
-        assert_raises(GenerationException, url_for, 'home', domain='fred')
-        eq_('http://routes.groovie.org/index', url_for('home', location='index'))
-        eq_('http://fred.groovie.org/index', url_for('home', domain='fred', location='index'))
-        eq_('http://routes.groovie.org/index?search=all', url_for('home', location='index', search='all'))
-        eq_('http://fred.groovie.org/index?search=all', url_for('home', domain='fred', location='index', search='all'))
-        eq_('/webapp/nasa/articles?search=all', url_for('space', location='articles', search='all'))
-        eq_('http://example.com/webapp/nasa/articles', url_for('space', location='articles', protocol='http'))
-        eq_('/webapp/nasa/images?search=all', url_for('space', search='all'))
-        eq_('http://example.com/webapp/nasa/images', url_for('space', protocol='http'))
+        with pytest.raises(GenerationException):
+            url_for('home')
+        with pytest.raises(GenerationException):
+            url_for('home', domain='fred')
+        assert url_for('home', location='index') == 'http://routes.groovie.org/index'
+        assert url_for('home', domain='fred', location='index') == 'http://fred.groovie.org/index'
+        assert url_for('home', location='index', search='all') == 'http://routes.groovie.org/index?search=all'
+        assert url_for('home', domain='fred', location='index', search='all') == 'http://fred.groovie.org/index?search=all'
+        assert url_for('space', location='articles', search='all') == '/webapp/nasa/articles?search=all'
+        assert url_for('space', location='articles', protocol='http') == 'http://example.com/webapp/nasa/articles'
+        assert url_for('space', search='all') == '/webapp/nasa/images?search=all'
+        assert url_for('space', protocol='http') == 'http://example.com/webapp/nasa/images'
 
-        assert_raises(GenerationException, url.current, 'home')
-        assert_raises(GenerationException, url.current, 'home', domain='fred')
-        eq_('http://routes.groovie.org/index', url.current('home', location='index'))
-        eq_('http://fred.groovie.org/index', url.current('home', domain='fred', location='index'))
-        eq_('http://routes.groovie.org/index?search=all', url.current('home', location='index', search='all'))
-        eq_('http://fred.groovie.org/index?search=all', url.current('home', domain='fred', location='index', search='all'))
-        eq_('/webapp/nasa/articles?search=all', url.current('space', location='articles', search='all'))
-        eq_('http://example.com/webapp/nasa/articles', url.current('space', location='articles', protocol='http'))
-        eq_('/webapp/nasa/images?search=all', url.current('space', search='all'))
-        eq_('http://example.com/webapp/nasa/images', url.current('space', protocol='http'))
+        with pytest.raises(GenerationException):
+            url.current('home')
+        with pytest.raises(GenerationException):
+            url.current('home', domain='fred')
+        assert url.current('home', location='index') == 'http://routes.groovie.org/index'
+        assert url.current('home', domain='fred', location='index') == 'http://fred.groovie.org/index'
+        assert url.current('home', location='index', search='all') == 'http://routes.groovie.org/index?search=all'
+        assert url.current('home', domain='fred', location='index', search='all') == 'http://fred.groovie.org/index?search=all'
+        assert url.current('space', location='articles', search='all') == '/webapp/nasa/articles?search=all'
+        assert url.current('space', location='articles', protocol='http') == 'http://example.com/webapp/nasa/articles'
+        assert url.current('space', search='all') == '/webapp/nasa/images?search=all'
+        assert url.current('space', protocol='http') == 'http://example.com/webapp/nasa/images'
 
 
     def test_static_route_with_vars_and_requirements(self):
@@ -377,31 +386,43 @@ class TestUtils(unittest.TestCase):
         self.con.environ.update({'wsgiorg.routing_args':((), {})})
         url = URLGenerator(m, self.con.environ)
 
-        assert_raises(GenerationException, url_for, 'home', domain='george', location='index')
-        assert_raises(GenerationException, url_for, 'space', year='asdf', month='1')
-        assert_raises(GenerationException, url_for, 'space', year='2004', month='a')
-        assert_raises(GenerationException, url_for, 'space', year='1', month='1')
-        assert_raises(GenerationException, url_for, 'space', year='20045', month='1')
-        assert_raises(GenerationException, url_for, 'space', year='2004', month='123')
-        eq_('http://fred.groovie.org/index', url_for('home', domain='fred', location='index'))
-        eq_('http://bob.groovie.org/index', url_for('home', domain='bob', location='index'))
-        eq_('http://fred.groovie.org/asdf', url_for('home', domain='fred', location='asdf'))
-        eq_('/webapp/nasa/articles/2004/6', url_for('space', year='2004', month='6'))
-        eq_('/webapp/nasa/articles/2004/12', url_for('space', year='2004', month='12'))
-        eq_('/webapp/nasa/articles/89/6', url_for('space', year='89', month='6'))
+        with pytest.raises(GenerationException):
+            url_for('home', domain='george', location='index')
+        with pytest.raises(GenerationException):
+            url_for('space', year='asdf', month='1')
+        with pytest.raises(GenerationException):
+            url_for('space', year='2004', month='a')
+        with pytest.raises(GenerationException):
+            url_for('space', year='1', month='1')
+        with pytest.raises(GenerationException):
+            url_for('space', year='20045', month='1')
+        with pytest.raises(GenerationException):
+            url_for('space', year='2004', month='123')
+        assert url_for('home', domain='fred', location='index') == 'http://fred.groovie.org/index'
+        assert url_for('home', domain='bob', location='index') == 'http://bob.groovie.org/index'
+        assert url_for('home', domain='fred', location='asdf') == 'http://fred.groovie.org/asdf'
+        assert url_for('space', year='2004', month='6') == '/webapp/nasa/articles/2004/6'
+        assert url_for('space', year='2004', month='12') == '/webapp/nasa/articles/2004/12'
+        assert url_for('space', year='89', month='6') == '/webapp/nasa/articles/89/6'
 
-        assert_raises(GenerationException, url.current, 'home', domain='george', location='index')
-        assert_raises(GenerationException, url.current, 'space', year='asdf', month='1')
-        assert_raises(GenerationException, url.current, 'space', year='2004', month='a')
-        assert_raises(GenerationException, url.current, 'space', year='1', month='1')
-        assert_raises(GenerationException, url.current, 'space', year='20045', month='1')
-        assert_raises(GenerationException, url.current, 'space', year='2004', month='123')
-        eq_('http://fred.groovie.org/index', url.current('home', domain='fred', location='index'))
-        eq_('http://bob.groovie.org/index', url.current('home', domain='bob', location='index'))
-        eq_('http://fred.groovie.org/asdf', url.current('home', domain='fred', location='asdf'))
-        eq_('/webapp/nasa/articles/2004/6', url.current('space', year='2004', month='6'))
-        eq_('/webapp/nasa/articles/2004/12', url.current('space', year='2004', month='12'))
-        eq_('/webapp/nasa/articles/89/6', url.current('space', year='89', month='6'))
+        with pytest.raises(GenerationException):
+            url.current('home', domain='george', location='index')
+        with pytest.raises(GenerationException):
+            url.current('space', year='asdf', month='1')
+        with pytest.raises(GenerationException):
+            url.current('space', year='2004', month='a')
+        with pytest.raises(GenerationException):
+            url.current('space', year='1', month='1')
+        with pytest.raises(GenerationException):
+            url.current('space', year='20045', month='1')
+        with pytest.raises(GenerationException):
+            url.current('space', year='2004', month='123')
+        assert url.current('home', domain='fred', location='index') == 'http://fred.groovie.org/index'
+        assert url.current('home', domain='bob', location='index') == 'http://bob.groovie.org/index'
+        assert url.current('home', domain='fred', location='asdf') == 'http://fred.groovie.org/asdf'
+        assert url.current('space', year='2004', month='6') == '/webapp/nasa/articles/2004/6'
+        assert url.current('space', year='2004', month='12') == '/webapp/nasa/articles/2004/12'
+        assert url.current('space', year='89', month='6') == '/webapp/nasa/articles/89/6'
 
     def test_no_named_path(self):
         m = self.con.mapper
@@ -414,10 +435,10 @@ class TestUtils(unittest.TestCase):
 
         url = URLGenerator(m, {})
         for urlobj in [url_for, url]:
-            eq_('http://www.google.com/search', urlobj('http://www.google.com/search'))
-            eq_('http://www.google.com/search?q=routes', urlobj('http://www.google.com/search', q='routes'))
-            eq_('/delicious.jpg', urlobj('/delicious.jpg'))
-            eq_('/delicious/search?v=routes', urlobj('/delicious/search', v='routes'))
+            assert urlobj('http://www.google.com/search') == 'http://www.google.com/search'
+            assert urlobj('http://www.google.com/search', q='routes') == 'http://www.google.com/search?q=routes'
+            assert urlobj('/delicious.jpg') == '/delicious.jpg'
+            assert urlobj('/delicious/search', v='routes') == '/delicious/search?v=routes'
 
     def test_append_slash(self):
         m = self.con.mapper
@@ -431,12 +452,12 @@ class TestUtils(unittest.TestCase):
 
         url = URLGenerator(m, {})
         for urlobj in [url_for, url]:
-            eq_('http://www.google.com/search', urlobj('http://www.google.com/search'))
-            eq_('http://www.google.com/search?q=routes', urlobj('http://www.google.com/search', q='routes'))
-            eq_('/delicious.jpg', urlobj('/delicious.jpg'))
-            eq_('/delicious/search?v=routes', urlobj('/delicious/search', v='routes'))
-            eq_('/content/list/', urlobj(controller='/content', action='list'))
-            eq_('/content/list/?page=1', urlobj(controller='/content', action='list', page='1'))
+            assert urlobj('http://www.google.com/search') == 'http://www.google.com/search'
+            assert urlobj('http://www.google.com/search', q='routes') == 'http://www.google.com/search?q=routes'
+            assert urlobj('/delicious.jpg') == '/delicious.jpg'
+            assert urlobj('/delicious/search', v='routes') == '/delicious/search?v=routes'
+            assert urlobj(controller='/content', action='list') == '/content/list/'
+            assert urlobj(controller='/content', action='list', page='1') == '/content/list/?page=1'
 
     def test_no_named_path_with_script(self):
         m = self.con.mapper
@@ -449,10 +470,10 @@ class TestUtils(unittest.TestCase):
 
         url = URLGenerator(m, self.con.environ)
         for urlobj in [url_for, url]:
-            eq_('http://www.google.com/search', urlobj('http://www.google.com/search'))
-            eq_('http://www.google.com/search?q=routes', urlobj('http://www.google.com/search', q='routes'))
-            eq_('/webapp/delicious.jpg', urlobj('/delicious.jpg'))
-            eq_('/webapp/delicious/search?v=routes', urlobj('/delicious/search', v='routes'))
+            assert urlobj('http://www.google.com/search') == 'http://www.google.com/search'
+            assert urlobj('http://www.google.com/search', q='routes') == 'http://www.google.com/search?q=routes'
+            assert urlobj('/delicious.jpg') == '/webapp/delicious.jpg'
+            assert urlobj('/delicious/search', v='routes') == '/webapp/delicious/search?v=routes'
 
     def test_route_filter(self):
         def article_filter(kargs):
@@ -480,20 +501,20 @@ class TestUtils(unittest.TestCase):
 
         url = URLGenerator(m, self.con.environ)
         for urlobj in [url_for, url]:
-            assert_raises(Exception, urlobj, controller='content', action='view')
-            assert_raises(Exception, urlobj, controller='content')
+            with pytest.raises(Exception):
+                urlobj(controller='content', action='view')
+            with pytest.raises(Exception):
+                urlobj(controller='content')
 
-            eq_('/content/view-3.html', urlobj(controller='content', action='view', id=3))
-            eq_('/content/index-2.html', urlobj(controller='content', id=2))
+            assert urlobj(controller='content', action='view', id=3) == '/content/view-3.html'
+            assert urlobj(controller='content', id=2) == '/content/index-2.html'
 
-            eq_('/archives/2005/10/5/happy',
-                urlobj('archives',year=2005, month=10, day=5, slug='happy'))
+            assert urlobj('archives', year=2005, month=10, day=5, slug='happy') == '/archives/2005/10/5/happy'
             story = dict(year=2003, month=8, day=2, slug='woopee')
             empty = {}
-            eq_({'controller':'archives','action':'view','year':'2005',
-                'month':'10','day':'5','slug':'happy'}, m.match('/archives/2005/10/5/happy'))
-            eq_('/archives/2003/8/2/woopee', urlobj('archives', article=story))
-            eq_('/archives/2004/12/20/default', urlobj('archives', article=empty))
+            assert m.match('/archives/2005/10/5/happy') == {'controller':'archives','action':'view','year':'2005','month':'10','day':'5','slug':'happy'}
+            assert urlobj('archives', article=story) == '/archives/2003/8/2/woopee'
+            assert urlobj('archives', article=empty) == '/archives/2004/12/20/default'
 
     def test_with_ssl_environ(self):
         base_environ = dict(SCRIPT_NAME='', HTTPS='on', SERVER_PORT='443', PATH_INFO='/',
@@ -512,21 +533,21 @@ class TestUtils(unittest.TestCase):
         for urlobj in [url_for, url]:
 
             # HTTPS is on, but we're running on a different port internally
-            eq_(self.con.protocol, 'https')
-            eq_('/content/view', urlobj(controller='content', action='view'))
-            eq_('/content/index/2', urlobj(controller='content', id=2))
-            eq_('https://nowhere.com/content', urlobj(host='nowhere.com', controller='content'))
+            assert self.con.protocol == 'https'
+            assert urlobj(controller='content', action='view') == '/content/view'
+            assert urlobj(controller='content', id=2) == '/content/index/2'
+            assert urlobj(host='nowhere.com', controller='content') == 'https://nowhere.com/content'
 
             # If HTTPS is on, but the port isn't 443, we'll need to include the port info
             environ = base_environ.copy()
             environ.update(dict(SERVER_PORT='8080'))
             self.con.environ = environ
             self.con.mapper_dict = {}
-            eq_('/content/index/2', urlobj(controller='content', id=2))
-            eq_('https://nowhere.com/content', urlobj(host='nowhere.com', controller='content'))
-            eq_('https://nowhere.com:8080/content', urlobj(host='nowhere.com:8080', controller='content'))
-            eq_('http://nowhere.com/content', urlobj(host='nowhere.com', protocol='http', controller='content'))
-            eq_('http://home.com/content', urlobj(host='home.com', protocol='http', controller='content'))
+            assert urlobj(controller='content', id=2) == '/content/index/2'
+            assert urlobj(host='nowhere.com', controller='content') == 'https://nowhere.com/content'
+            assert urlobj(host='nowhere.com:8080', controller='content') == 'https://nowhere.com:8080/content'
+            assert urlobj(host='nowhere.com', protocol='http', controller='content') == 'http://nowhere.com/content'
+            assert urlobj(host='home.com', protocol='http', controller='content') == 'http://home.com/content'
 
 
     def test_with_http_environ(self):
@@ -544,10 +565,10 @@ class TestUtils(unittest.TestCase):
 
         url = URLGenerator(m, self.con.environ)
         for urlobj in [url_for, url]:
-            eq_(self.con.protocol, 'http')
-            eq_('/content/view', urlobj(controller='content', action='view'))
-            eq_('/content/index/2', urlobj(controller='content', id=2))
-            eq_('https://example.com/content', urlobj(protocol='https', controller='content'))
+            assert self.con.protocol == 'http'
+            assert urlobj(controller='content', action='view') == '/content/view'
+            assert urlobj(controller='content', id=2) == '/content/index/2'
+            assert urlobj(protocol='https', controller='content') == 'https://example.com/content'
 
 
     def test_subdomains(self):
@@ -564,14 +585,14 @@ class TestUtils(unittest.TestCase):
 
         url = URLGenerator(m, self.con.environ)
         for urlobj in [url_for, url]:
-            eq_('/content/view', urlobj(controller='content', action='view'))
-            eq_('/content/index/2', urlobj(controller='content', id=2))
+            assert urlobj(controller='content', action='view') == '/content/view'
+            assert urlobj(controller='content', id=2) == '/content/index/2'
             environ = base_environ.copy()
             environ.update(dict(HTTP_HOST='sub.example.com'))
             self.con.environ = environ
             self.con.mapper_dict = {'sub_domain':'sub'}
-            eq_('/content/view/3', urlobj(controller='content', action='view', id=3))
-            eq_('http://new.example.com/content', urlobj(controller='content', sub_domain='new'))
+            assert urlobj(controller='content', action='view', id=3) == '/content/view/3'
+            assert urlobj(controller='content', sub_domain='new') == 'http://new.example.com/content'
 
     def test_subdomains_with_exceptions(self):
         base_environ = dict(SCRIPT_NAME='', PATH_INFO='/', HTTP_HOST='example.com', SERVER_NAME='example.com')
@@ -587,10 +608,10 @@ class TestUtils(unittest.TestCase):
         self.con.mapper = m
 
         url = URLGenerator(m, self.con.environ)
-        eq_('/content/view', url_for(controller='content', action='view'))
-        eq_('/content/index/2', url_for(controller='content', id=2))
-        eq_('/content/view', url(controller='content', action='view'))
-        eq_('/content/index/2', url(controller='content', id=2))
+        assert url_for(controller='content', action='view') == '/content/view'
+        assert url_for(controller='content', id=2) == '/content/index/2'
+        assert url(controller='content', action='view') == '/content/view'
+        assert url(controller='content', id=2) == '/content/index/2'
 
         environ = base_environ.copy()
         environ.update(dict(HTTP_HOST='sub.example.com'))
@@ -599,25 +620,25 @@ class TestUtils(unittest.TestCase):
         self.con.environ.update({'wsgiorg.routing_args':((), self.con.mapper_dict)})
         url = URLGenerator(m, self.con.environ)
 
-        eq_('/content/view/3', url_for(controller='content', action='view', id=3))
-        eq_('http://new.example.com/content', url_for(controller='content', sub_domain='new'))
-        eq_('http://example.com/content', url_for(controller='content', sub_domain='www'))
-        eq_('/content/view/3', url(controller='content', action='view', id=3))
-        eq_('http://new.example.com/content', url(controller='content', sub_domain='new'))
-        eq_('http://example.com/content', url(controller='content', sub_domain='www'))
+        assert url_for(controller='content', action='view', id=3) == '/content/view/3'
+        assert url_for(controller='content', sub_domain='new') == 'http://new.example.com/content'
+        assert url_for(controller='content', sub_domain='www') == 'http://example.com/content'
+        assert url(controller='content', action='view', id=3) == '/content/view/3'
+        assert url(controller='content', sub_domain='new') == 'http://new.example.com/content'
+        assert url(controller='content', sub_domain='www') == 'http://example.com/content'
 
         self.con.mapper_dict = {'sub_domain':'www'}
         self.con.environ.update({'wsgiorg.routing_args':((), self.con.mapper_dict)})
         url = URLGenerator(m, self.con.environ)
 
-        eq_('http://example.com/content/view/3', url_for(controller='content', action='view', id=3))
-        eq_('http://new.example.com/content', url_for(controller='content', sub_domain='new'))
-        eq_('/content', url_for(controller='content', sub_domain='sub'))
+        assert url_for(controller='content', action='view', id=3) == 'http://example.com/content/view/3'
+        assert url_for(controller='content', sub_domain='new') == 'http://new.example.com/content'
+        assert url_for(controller='content', sub_domain='sub') == '/content'
 
         # This requires the sub-domain, because we don't automatically go to the existing match dict
-        eq_('http://example.com/content/view/3', url(controller='content', action='view', id=3, sub_domain='www'))
-        eq_('http://new.example.com/content', url(controller='content', sub_domain='new'))
-        eq_('/content', url(controller='content', sub_domain='sub'))
+        assert url(controller='content', action='view', id=3, sub_domain='www') == 'http://example.com/content/view/3'
+        assert url(controller='content', sub_domain='new') == 'http://new.example.com/content'
+        assert url(controller='content', sub_domain='sub') == '/content'
 
     def test_subdomains_with_named_routes(self):
         base_environ = dict(SCRIPT_NAME='', PATH_INFO='/', HTTP_HOST='example.com', SERVER_NAME='example.com')
@@ -635,10 +656,10 @@ class TestUtils(unittest.TestCase):
 
         url = URLGenerator(m, self.con.environ)
         for urlobj in [url_for, url]:
-            eq_('/content/view', urlobj(controller='content', action='view'))
-            eq_('/content/index/2', urlobj(controller='content', id=2))
-            eq_('/category', urlobj('category_home'))
-            eq_('http://new.example.com/category', urlobj('category_home', sub_domain='new'))
+            assert urlobj(controller='content', action='view') == '/content/view'
+            assert urlobj(controller='content', id=2) == '/content/index/2'
+            assert urlobj('category_home') == '/category'
+            assert urlobj('category_home', sub_domain='new') == 'http://new.example.com/category'
 
         environ = base_environ.copy()
         environ.update(dict(HTTP_HOST='sub.example.com'))
@@ -647,15 +668,13 @@ class TestUtils(unittest.TestCase):
         self.con.environ.update({'wsgiorg.routing_args':((), self.con.mapper_dict)})
         url = URLGenerator(m, self.con.environ)
 
-        eq_('/content/view/3', url_for(controller='content', action='view', id=3))
-        eq_('http://joy.example.com/building/west/merlot/alljacks',
-            url_for('building', campus='west', building='merlot', sub_domain='joy'))
-        eq_('http://example.com/category/feeds', url_for('category_home', section='feeds', sub_domain=None))
+        assert url_for(controller='content', action='view', id=3) == '/content/view/3'
+        assert url_for('building', campus='west', building='merlot', sub_domain='joy') == 'http://joy.example.com/building/west/merlot/alljacks'
+        assert url_for('category_home', section='feeds', sub_domain=None) == 'http://example.com/category/feeds'
 
-        eq_('/content/view/3', url(controller='content', action='view', id=3))
-        eq_('http://joy.example.com/building/west/merlot/alljacks',
-            url('building', campus='west', building='merlot', sub_domain='joy'))
-        eq_('http://example.com/category/feeds', url('category_home', section='feeds', sub_domain=None))
+        assert url(controller='content', action='view', id=3) == '/content/view/3'
+        assert url('building', campus='west', building='merlot', sub_domain='joy') == 'http://joy.example.com/building/west/merlot/alljacks'
+        assert url('category_home', section='feeds', sub_domain=None) == 'http://example.com/category/feeds'
 
 
     def test_subdomains_with_ports(self):
@@ -675,15 +694,14 @@ class TestUtils(unittest.TestCase):
         url = URLGenerator(m, self.con.environ)
         for urlobj in [url, url_for]:
             self.con.environ['HTTP_HOST'] = 'example.com:8000'
-            eq_('/content/view', urlobj(controller='content', action='view'))
-            eq_('/category', urlobj('category_home'))
-            eq_('http://new.example.com:8000/category', urlobj('category_home', sub_domain='new'))
-            eq_('http://joy.example.com:8000/building/west/merlot/alljacks',
-                urlobj('building', campus='west', building='merlot', sub_domain='joy'))
+            assert urlobj(controller='content', action='view') == '/content/view'
+            assert urlobj('category_home') == '/category'
+            assert urlobj('category_home', sub_domain='new') == 'http://new.example.com:8000/category'
+            assert urlobj('building', campus='west', building='merlot', sub_domain='joy') == 'http://joy.example.com:8000/building/west/merlot/alljacks'
 
             self.con.environ['HTTP_HOST'] = 'example.com'
             del self.con.environ['routes.cached_hostinfo']
-            eq_('http://new.example.com/category', urlobj('category_home', sub_domain='new'))
+            assert urlobj('category_home', sub_domain='new') == 'http://new.example.com/category'
 
     def test_subdomains_with_default(self):
         base_environ = dict(SCRIPT_NAME='', PATH_INFO='/', HTTP_HOST='example.com:8000', SERVER_NAME='example.com')
@@ -702,13 +720,14 @@ class TestUtils(unittest.TestCase):
 
         urlobj = URLGenerator(m, self.con.environ)
         self.con.environ['HTTP_HOST'] = 'example.com:8000'
-        eq_('/content/view', urlobj(controller='content', action='view'))
-        eq_('http://cat.example.com:8000/category', urlobj('category_home'))
+        assert urlobj(controller='content', action='view') == '/content/view'
+        assert urlobj('category_home') == 'http://cat.example.com:8000/category'
 
         self.con.environ['HTTP_HOST'] = 'example.com'
         del self.con.environ['routes.cached_hostinfo']
 
-        assert_raises(GenerationException, lambda: urlobj('category_home', sub_domain='new'))
+        with pytest.raises(GenerationException):
+            urlobj('category_home', sub_domain='new')
 
 
     def test_controller_scan(self):
@@ -716,10 +735,10 @@ class TestUtils(unittest.TestCase):
         controller_dir = os.path.join(os.path.dirname(here_dir),
             os.path.join('test_files', 'controller_files'))
         controllers = controller_scan(controller_dir)
-        eq_(len(controllers), 3)
-        eq_(controllers[0], 'admin/users')
-        eq_(controllers[1], 'content')
-        eq_(controllers[2], 'users')
+        assert len(controllers) == 3
+        assert controllers[0] == 'admin/users'
+        assert controllers[1] == 'content'
+        assert controllers[2] == 'users'
 
     def test_auto_controller_scan(self):
         here_dir = os.path.dirname(__file__)
@@ -730,9 +749,9 @@ class TestUtils(unittest.TestCase):
         m.always_scan = True
         m.connect(':controller/:action/:id')
 
-        eq_({'action':'index', 'controller':'content','id':None}, m.match('/content'))
-        eq_({'action':'index', 'controller':'users','id':None}, m.match('/users'))
-        eq_({'action':'index', 'controller':'admin/users','id':None}, m.match('/admin/users'))
+        assert m.match('/content') == {'action':'index', 'controller':'content','id':None}
+        assert m.match('/users') == {'action':'index', 'controller':'users','id':None}
+        assert m.match('/admin/users') == {'action':'index', 'controller':'admin/users','id':None}
 
 class TestUtilsWithExplicit(unittest.TestCase):
     def setUp(self):
@@ -752,38 +771,51 @@ class TestUtilsWithExplicit(unittest.TestCase):
         con = self.con
         con.mapper_dict = {}
 
-        assert_raises(Exception, url_for, controller='blog')
-        assert_raises(Exception, url_for)
-        eq_('/blog/view/3', url_for(controller='blog', action='view', id=3))
-        eq_('https://www.test.com/viewpost', url_for(controller='post', action='view', protocol='https'))
-        eq_('http://www.test.org/content/view/2', url_for(host='www.test.org', controller='content', action='view', id=2))
+        with pytest.raises(Exception):
+            url_for(controller='blog')
+        with pytest.raises(Exception):
+            url_for()
+        assert url_for(controller='blog', action='view', id=3) == '/blog/view/3'
+        assert url_for(controller='post', action='view', protocol='https') == 'https://www.test.com/viewpost'
+        assert url_for(host='www.test.org', controller='content', action='view', id=2) == 'http://www.test.org/content/view/2'
 
     def test_url_for_with_defaults(self):
         con = self.con
         con.mapper_dict = {'controller':'blog','action':'view','id':4}
 
-        assert_raises(Exception, url_for)
-        assert_raises(Exception, url_for, controller='post')
-        assert_raises(Exception, url_for, id=2)
-        eq_('/viewpost/4', url_for(controller='post', action='view', id=4))
+        with pytest.raises(Exception):
+            url_for()
+        with pytest.raises(Exception):
+            url_for(controller='post')
+        with pytest.raises(Exception):
+            url_for(id=2)
+        assert url_for(controller='post', action='view', id=4) == '/viewpost/4'
 
         con.mapper_dict = {'controller':'blog','action':'view','year':2004}
-        assert_raises(Exception, url_for, month=10)
-        assert_raises(Exception, url_for, month=9, day=2)
-        assert_raises(Exception, url_for, controller='blog', year=None)
+        with pytest.raises(Exception):
+            url_for(month=10)
+        with pytest.raises(Exception):
+            url_for(month=9, day=2)
+        with pytest.raises(Exception):
+            url_for(controller='blog', year=None)
 
     def test_url_for_with_more_defaults(self):
         con = self.con
         con.mapper_dict = {'controller':'blog','action':'view','id':4}
 
-        assert_raises(Exception, url_for)
-        assert_raises(Exception, url_for, controller='post')
-        assert_raises(Exception, url_for, id=2)
-        eq_('/viewpost/4', url_for(controller='post', action='view', id=4))
+        with pytest.raises(Exception):
+            url_for()
+        with pytest.raises(Exception):
+            url_for(controller='post')
+        with pytest.raises(Exception):
+            url_for(id=2)
+        assert url_for(controller='post', action='view', id=4) == '/viewpost/4'
 
         con.mapper_dict = {'controller':'blog','action':'view','year':2004}
-        assert_raises(Exception, url_for, month=10)
-        assert_raises(Exception, url_for)
+        with pytest.raises(Exception):
+            url_for(month=10)
+        with pytest.raises(Exception):
+            url_for()
 
     def test_url_for_with_defaults_and_qualified(self):
         m = self.con.mapper
@@ -796,18 +828,23 @@ class TestUtilsWithExplicit(unittest.TestCase):
 
         self.con.environ = env
 
-        assert_raises(Exception, url_for)
-        assert_raises(Exception, url_for, controller='post')
-        assert_raises(Exception, url_for, id=2)
-        assert_raises(Exception, url_for, qualified=True, controller='blog', id=4)
-        eq_('http://www.example.com/blog/view/4', url_for(qualified=True, controller='blog', action='view', id=4))
-        eq_('/viewpost/4', url_for(controller='post', action='view', id=4))
+        with pytest.raises(Exception):
+            url_for()
+        with pytest.raises(Exception):
+            url_for(controller='post')
+        with pytest.raises(Exception):
+            url_for(id=2)
+        with pytest.raises(Exception):
+            url_for(qualified=True, controller='blog', id=4)
+        assert url_for(qualified=True, controller='blog', action='view', id=4) == 'http://www.example.com/blog/view/4'
+        assert url_for(controller='post', action='view', id=4) == '/viewpost/4'
 
         env = dict(SCRIPT_NAME='', SERVER_NAME='www.example.com', SERVER_PORT='8080', PATH_INFO='/blog/view/4')
         env['wsgi.url_scheme'] = 'http'
         self.con.environ = env
-        assert_raises(Exception, url_for, controller='post')
-        eq_('http://www.example.com:8080/blog/view/4', url_for(qualified=True, controller='blog', action='view', id=4))
+        with pytest.raises(Exception):
+            url_for(controller='post')
+        assert url_for(qualified=True, controller='blog', action='view', id=4) == 'http://www.example.com:8080/blog/view/4'
 
 
     def test_with_route_names(self):
@@ -818,13 +855,17 @@ class TestUtilsWithExplicit(unittest.TestCase):
         m.connect('category_home', 'category/:section', controller='blog', action='view', section='home')
         m.create_regs(['content','blog','admin/comments'])
 
-        assert_raises(Exception, url_for, controller='content', action='view')
-        assert_raises(Exception, url_for, controller='content')
-        assert_raises(Exception, url_for, controller='admin/comments')
-        eq_('/category', url_for('category_home'))
-        eq_('/category/food', url_for('category_home', section='food'))
-        assert_raises(Exception, url_for, 'home', controller='content')
-        eq_('/', url_for('home'))
+        with pytest.raises(Exception):
+            url_for(controller='content', action='view')
+        with pytest.raises(Exception):
+            url_for(controller='content')
+        with pytest.raises(Exception):
+            url_for(controller='admin/comments')
+        assert url_for('category_home') == '/category'
+        assert url_for('category_home', section='food') == '/category/food'
+        with pytest.raises(Exception):
+            url_for('home', controller='content')
+        assert url_for('home') == '/'
 
     def test_with_route_names_and_nomin(self):
         m = self.con.mapper
@@ -834,13 +875,17 @@ class TestUtilsWithExplicit(unittest.TestCase):
         m.connect('category_home', 'category/:section', controller='blog', action='view', section='home')
         m.create_regs(['content','blog','admin/comments'])
 
-        assert_raises(Exception, url_for, controller='content', action='view')
-        assert_raises(Exception, url_for, controller='content')
-        assert_raises(Exception, url_for, controller='admin/comments')
-        eq_('/category/home', url_for('category_home'))
-        eq_('/category/food', url_for('category_home', section='food'))
-        assert_raises(Exception, url_for, 'home', controller='content')
-        eq_('/', url_for('home'))
+        with pytest.raises(Exception):
+            url_for(controller='content', action='view')
+        with pytest.raises(Exception):
+            url_for(controller='content')
+        with pytest.raises(Exception):
+            url_for(controller='admin/comments')
+        assert url_for('category_home') == '/category/home'
+        assert url_for('category_home', section='food') == '/category/food'
+        with pytest.raises(Exception):
+            url_for('home', controller='content')
+        assert url_for('home') == '/'
 
     def test_with_route_names_and_defaults(self):
         m = self.con.mapper
@@ -851,9 +896,10 @@ class TestUtilsWithExplicit(unittest.TestCase):
         m.create_regs(['content','blog','admin/comments','building'])
 
         self.con.mapper_dict = dict(controller='building', action='showjacks', campus='wilma', building='port')
-        assert_raises(Exception, url_for)
-        eq_('/building/wilma/port/alljacks', url_for(controller='building', action='showjacks', campus='wilma', building='port'))
-        eq_('/', url_for('home'))
+        with pytest.raises(Exception):
+            url_for()
+        assert url_for(controller='building', action='showjacks', campus='wilma', building='port') == '/building/wilma/port/alljacks'
+        assert url_for('home') == '/'
 
     def test_with_resource_route_names(self):
         m = Mapper()
@@ -862,22 +908,25 @@ class TestUtilsWithExplicit(unittest.TestCase):
         m.resource('message', 'messages', member={'mark':'GET'}, collection={'rss':'GET'})
         m.create_regs(['messages'])
 
-        assert_raises(Exception, url_for, controller='content', action='view')
-        assert_raises(Exception, url_for, controller='content')
-        assert_raises(Exception, url_for, controller='admin/comments')
-        eq_('/messages', url_for('messages'))
-        eq_('/messages/rss', url_for('rss_messages'))
-        eq_('/messages/4', url_for('message', id=4))
-        eq_('/messages/4/edit', url_for('edit_message', id=4))
-        eq_('/messages/4/mark', url_for('mark_message', id=4))
-        eq_('/messages/new', url_for('new_message'))
+        with pytest.raises(Exception):
+            url_for(controller='content', action='view')
+        with pytest.raises(Exception):
+            url_for(controller='content')
+        with pytest.raises(Exception):
+            url_for(controller='admin/comments')
+        assert url_for('messages') == '/messages'
+        assert url_for('rss_messages') == '/messages/rss'
+        assert url_for('message', id=4) == '/messages/4'
+        assert url_for('edit_message', id=4) == '/messages/4/edit'
+        assert url_for('mark_message', id=4) == '/messages/4/mark'
+        assert url_for('new_message') == '/messages/new'
 
-        eq_('/messages.xml', url_for('formatted_messages', format='xml'))
-        eq_('/messages/rss.xml', url_for('formatted_rss_messages', format='xml'))
-        eq_('/messages/4.xml', url_for('formatted_message', id=4, format='xml'))
-        eq_('/messages/4/edit.xml', url_for('formatted_edit_message', id=4, format='xml'))
-        eq_('/messages/4/mark.xml', url_for('formatted_mark_message', id=4, format='xml'))
-        eq_('/messages/new.xml', url_for('formatted_new_message', format='xml'))
+        assert url_for('formatted_messages', format='xml') == '/messages.xml'
+        assert url_for('formatted_rss_messages', format='xml') == '/messages/rss.xml'
+        assert url_for('formatted_message', id=4, format='xml') == '/messages/4.xml'
+        assert url_for('formatted_edit_message', id=4, format='xml') == '/messages/4/edit.xml'
+        assert url_for('formatted_mark_message', id=4, format='xml') == '/messages/4/mark.xml'
+        assert url_for('formatted_new_message', format='xml') == '/messages/new.xml'
 
     def test_with_resource_route_names_and_nomin(self):
         m = Mapper()
@@ -887,22 +936,25 @@ class TestUtilsWithExplicit(unittest.TestCase):
         m.resource('message', 'messages', member={'mark':'GET'}, collection={'rss':'GET'})
         m.create_regs(['messages'])
 
-        assert_raises(Exception, url_for, controller='content', action='view')
-        assert_raises(Exception, url_for, controller='content')
-        assert_raises(Exception, url_for, controller='admin/comments')
-        eq_('/messages', url_for('messages'))
-        eq_('/messages/rss', url_for('rss_messages'))
-        eq_('/messages/4', url_for('message', id=4))
-        eq_('/messages/4/edit', url_for('edit_message', id=4))
-        eq_('/messages/4/mark', url_for('mark_message', id=4))
-        eq_('/messages/new', url_for('new_message'))
+        with pytest.raises(Exception):
+            url_for(controller='content', action='view')
+        with pytest.raises(Exception):
+            url_for(controller='content')
+        with pytest.raises(Exception):
+            url_for(controller='admin/comments')
+        assert url_for('messages') == '/messages'
+        assert url_for('rss_messages') == '/messages/rss'
+        assert url_for('message', id=4) == '/messages/4'
+        assert url_for('edit_message', id=4) == '/messages/4/edit'
+        assert url_for('mark_message', id=4) == '/messages/4/mark'
+        assert url_for('new_message') == '/messages/new'
 
-        eq_('/messages.xml', url_for('formatted_messages', format='xml'))
-        eq_('/messages/rss.xml', url_for('formatted_rss_messages', format='xml'))
-        eq_('/messages/4.xml', url_for('formatted_message', id=4, format='xml'))
-        eq_('/messages/4/edit.xml', url_for('formatted_edit_message', id=4, format='xml'))
-        eq_('/messages/4/mark.xml', url_for('formatted_mark_message', id=4, format='xml'))
-        eq_('/messages/new.xml', url_for('formatted_new_message', format='xml'))
+        assert url_for('formatted_messages', format='xml') == '/messages.xml'
+        assert url_for('formatted_rss_messages', format='xml') == '/messages/rss.xml'
+        assert url_for('formatted_message', id=4, format='xml') == '/messages/4.xml'
+        assert url_for('formatted_edit_message', id=4, format='xml') == '/messages/4/edit.xml'
+        assert url_for('formatted_mark_message', id=4, format='xml') == '/messages/4/mark.xml'
+        assert url_for('formatted_new_message', format='xml') == '/messages/new.xml'
 
 
 if __name__ == '__main__':

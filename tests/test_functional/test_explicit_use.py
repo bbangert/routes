@@ -1,7 +1,7 @@
 """test_explicit_use"""
 import os, sys, time, unittest
-from nose.tools import eq_, assert_raises, assert_is_none
 
+import pytest
 from routes import *
 from routes.route import Route
 from routes.util import GenerationException
@@ -17,7 +17,7 @@ class TestUtils(unittest.TestCase):
         env = environ.copy()
         env['PATH_INFO'] = '/hi/george'
 
-        eq_({'fred': 'george'}, m.match(environ=env))
+        assert m.match(environ=env) == {'fred': 'george'}
 
     def test_x_forwarded(self):
         m = Mapper()
@@ -26,7 +26,7 @@ class TestUtils(unittest.TestCase):
 
         environ = {'HTTP_X_FORWARDED_HOST': 'localhost'}
         url = URLGenerator(m, environ)
-        eq_('http://localhost/hi/smith', url(fred='smith', qualified=True))
+        assert url(fred='smith', qualified=True) == 'http://localhost/hi/smith'
 
     def test_server_port(self):
         m = Mapper()
@@ -36,7 +36,7 @@ class TestUtils(unittest.TestCase):
         environ = {'SERVER_NAME': 'localhost', 'wsgi.url_scheme': 'https',
                    'SERVER_PORT': '993'}
         url = URLGenerator(m, environ)
-        eq_('https://localhost:993/hi/smith', url(fred='smith', qualified=True))
+        assert url(fred='smith', qualified=True) == 'https://localhost:993/hi/smith'
 
     def test_subdomain_screen(self):
         m = Mapper()
@@ -46,22 +46,23 @@ class TestUtils(unittest.TestCase):
 
         environ = {'HTTP_HOST': 'localhost.com'}
         url = URLGenerator(m, environ)
-        eq_('http://home.localhost.com/hi/smith', url(fred='smith', sub_domain=u'home', qualified=True))
+        assert url(fred='smith', sub_domain=u'home', qualified=True) == 'http://home.localhost.com/hi/smith'
 
         environ = {'HTTP_HOST': 'here.localhost.com', 'PATH_INFO': '/hi/smith'}
         url = URLGenerator(m, environ.copy())
-        assert_raises(GenerationException, lambda: url.current(qualified=True))
+        with pytest.raises(GenerationException):
+            url.current(qualified=True)
 
         environ = {'HTTP_HOST': 'subdomain.localhost.com'}
         url = URLGenerator(m, environ.copy())
-        eq_('http://sub.localhost.com/hi/smith', url(fred='smith', sub_domain='sub', qualified=True))
+        assert url(fred='smith', sub_domain='sub', qualified=True) == 'http://sub.localhost.com/hi/smith'
 
         environ = {'HTTP_HOST': 'sub.sub.localhost.com'}
         url = URLGenerator(m, environ.copy())
-        eq_('http://new.localhost.com/hi/smith', url(fred='smith', sub_domain='new', qualified=True))
+        assert url(fred='smith', sub_domain='new', qualified=True) == 'http://new.localhost.com/hi/smith'
 
         url = URLGenerator(m, {})
-        eq_('/hi/smith', url(fred='smith', sub_domain=u'home'))
+        assert url(fred='smith', sub_domain=u'home') == '/hi/smith'
 
     def test_anchor(self):
         m = Mapper()
@@ -70,7 +71,7 @@ class TestUtils(unittest.TestCase):
 
         environ = {'HTTP_HOST': 'localhost.com'}
         url = URLGenerator(m, environ)
-        eq_('/hi/smith#here', url(fred='smith', anchor='here'))
+        assert url(fred='smith', anchor='here') == '/hi/smith#here'
 
     def test_static_args(self):
         m = Mapper()
@@ -79,7 +80,7 @@ class TestUtils(unittest.TestCase):
 
         url = URLGenerator(m, {})
 
-        eq_('/here?q=fred&q=here%20now', url('/here', q=[u'fred', 'here now']))
+        assert url('/here', q=[u'fred', 'here now']) == '/here?q=fred&q=here%20now'
 
     def test_current(self):
         m = Mapper()
@@ -90,7 +91,7 @@ class TestUtils(unittest.TestCase):
         match = m.routematch(environ=environ)[0]
         environ['wsgiorg.routing_args'] = (None, match)
         url = URLGenerator(m, environ)
-        eq_('/hi/smith', url.current())
+        assert url.current() == '/hi/smith'
 
     def test_add_routes(self):
         map = Mapper(explicit=True)
@@ -99,7 +100,7 @@ class TestUtils(unittest.TestCase):
             Route('foo', '/foo',)
         ]
         map.extend(routes)
-        eq_(map.match('/foo'), {})
+        assert map.match('/foo') == {}
 
     def test_add_routes_conditions_unmet(self):
         map = Mapper(explicit=True)
@@ -113,7 +114,7 @@ class TestUtils(unittest.TestCase):
             'REQUEST_METHOD': 'GET',
         }
         map.extend(routes)
-        assert_is_none(map.match('/foo', environ=environ))
+        assert map.match('/foo', environ=environ) is None
 
     def test_add_routes_conditions_met(self):
         map = Mapper(explicit=True)
@@ -127,7 +128,7 @@ class TestUtils(unittest.TestCase):
             'REQUEST_METHOD': 'POST',
         }
         map.extend(routes)
-        eq_(map.match('/foo', environ=environ), {})
+        assert map.match('/foo', environ=environ) == {}
 
     def test_using_func(self):
         def fred(view):
@@ -141,7 +142,7 @@ class TestUtils(unittest.TestCase):
         match = m.routematch(environ=environ)[0]
         environ['wsgiorg.routing_args'] = (None, match)
         url = URLGenerator(m, environ)
-        eq_('/hi/smith', url.current())
+        assert url.current() == '/hi/smith'
 
     def test_using_prefix(self):
         m = Mapper()
@@ -154,8 +155,8 @@ class TestUtils(unittest.TestCase):
         environ['wsgiorg.routing_args'] = (None, match)
         url = URLGenerator(m, environ)
 
-        eq_('/jones/content/index', url.current())
-        eq_('/jones/smith/barney', url(first='smith', last='barney'))
+        assert url.current() == '/jones/content/index'
+        assert url(first='smith', last='barney') == '/jones/smith/barney'
 
     def test_with_host_param(self):
         m = Mapper()
@@ -164,4 +165,4 @@ class TestUtils(unittest.TestCase):
 
         environ = {'HTTP_HOST': 'localhost.com'}
         url = URLGenerator(m, environ)
-        eq_('/hi/smith?host=here', url(fred='smith', host_='here'))
+        assert url(fred='smith', host_='here') == '/hi/smith?host=here'
