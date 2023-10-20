@@ -1,8 +1,6 @@
 import re
 import sys
-
-import six
-from six.moves.urllib import parse as urlparse
+from urllib import parse as urlparse
 
 from routes.util import _url_quote as url_quote, _str_encode, as_unicode
 
@@ -97,7 +95,7 @@ class Route(object):
 
         # Build a req list with all the regexp requirements for our args
         self.req_regs = {}
-        for key, val in six.iteritems(self.reqs):
+        for key, val in self.reqs.items():
             self.req_regs[key] = re.compile('^' + val + '$')
         # Update our defaults and set new default keys if needed. defaults
         # needs to be saved
@@ -133,14 +131,14 @@ class Route(object):
 
     def make_unicode(self, s):
         """Transform the given argument into a unicode string."""
-        if isinstance(s, six.text_type):
+        if isinstance(s, str):
             return s
         elif isinstance(s, bytes):
             return s.decode(self.encoding)
         elif callable(s):
             return s
         else:
-            return six.text_type(s)
+            return str(s)
 
     def _pathkeys(self, routepath):
         """Utility function to walk the route, and pull out the valid
@@ -567,7 +565,7 @@ class Route(object):
         matchdict = match.groupdict()
         result = {}
         extras = self._default_keys - frozenset(matchdict.keys())
-        for key, val in six.iteritems(matchdict):
+        for key, val in matchdict.items():
             if key != 'path_info' and self.encoding:
                 # change back into python unicode objects from the URL
                 # representation

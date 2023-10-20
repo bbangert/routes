@@ -1,5 +1,5 @@
 """Test non-minimization recognition"""
-from six.moves import urllib
+import urllib
 
 from nose.tools import eq_
 

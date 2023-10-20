@@ -11,7 +11,6 @@ with io.open(os.path.join(here, 'README.rst'), encoding='utf8') as f:
     README = f.read()
 with io.open(os.path.join(here, 'CHANGELOG.rst'), encoding='utf8') as f:
     CHANGES = f.read()
-PY3 = sys.version_info[0] == 3
 
 extra_options = {
     "packages": find_packages(),
@@ -24,11 +23,10 @@ extras_require = {
 }
 extras_require['docs'] = ['Sphinx'] + extras_require['middleware']
 
-if PY3:
-    if "test" in sys.argv or "develop" in sys.argv:
-        for root, directories, files in os.walk("tests"):
-            for directory in directories:
-                extra_options["packages"].append(os.path.join(root, directory))
+if "test" in sys.argv or "develop" in sys.argv:
+    for root, directories, files in os.walk("tests"):
+        for directory in directories:
+            extra_options["packages"].append(os.path.join(root, directory))
 
 setup(name="Routes",
       version=__version__,
@@ -42,8 +40,6 @@ setup(name="Routes",
                    "Programming Language :: Python :: Implementation :: PyPy",
                    "Programming Language :: Python :: Implementation :: CPython",
                    'Programming Language :: Python',
-                   "Programming Language :: Python :: 2",
-                   "Programming Language :: Python :: 2.7",
                    "Programming Language :: Python :: 3",
                    "Programming Language :: Python :: 3.5",
                    "Programming Language :: Python :: 3.6",
@@ -67,7 +63,6 @@ setup(name="Routes",
       zip_safe=False,
       tests_require=["soupsieve<2.0", 'nose', 'webtest', 'webob', 'coverage'],
       install_requires=[
-          "six",
           "repoze.lru>=0.3"
       ],
       extras_require=extras_require,

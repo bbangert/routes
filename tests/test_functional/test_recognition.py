@@ -3,7 +3,8 @@
 import sys
 import time
 import unittest
-from six.moves import urllib
+import urllib
+
 from nose.tools import eq_, assert_raises
 from routes import *
 from routes.util import RoutesException
