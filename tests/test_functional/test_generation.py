@@ -1,6 +1,5 @@
 """test_generation"""
-import sys, time, unittest
-from six.moves import urllib
+import sys, time, unittest, urllib
 
 from nose.tools import eq_, assert_raises
 from routes import *

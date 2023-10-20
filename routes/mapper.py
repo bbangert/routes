@@ -5,7 +5,6 @@ import re
 import threading
 
 from repoze.lru import LRUCache
-import six
 
 from routes import request_config
 from routes.util import (
@@ -168,7 +167,7 @@ class SubMapper(SubMapperParent):
         newkargs = {}
         _routename = routename
         _path = path
-        for key, value in six.iteritems(self.kwargs):
+        for key, value in self.kwargs.items():
             if key == 'path_prefix':
                 if path is not None:
                     # if there's a name_prefix, add it to the route name
@@ -595,7 +594,7 @@ class Mapper(SubMapperParent):
             if 'controller' in route.hardcoded:
                 clist = [route.defaults['controller']]
             if 'action' in route.hardcoded:
-                alist = [six.text_type(route.defaults['action'])]
+                alist = [str(route.defaults['action'])]
             for controller in clist:
                 for action in alist:
                     actiondict = gendict.setdefault(controller, {})
@@ -625,7 +624,7 @@ class Mapper(SubMapperParent):
             else:
                 clist = self.controller_scan
 
-        for key, val in six.iteritems(self.maxkeys):
+        for key, val in self.maxkeys.items():
             for route in val:
                 route.makeregexp(clist)
 
@@ -801,15 +800,11 @@ class Mapper(SubMapperParent):
         # If the URL didn't depend on the SCRIPT_NAME, we'll cache it
         # keyed by just by kargs; otherwise we need to cache it with
         # both SCRIPT_NAME and kargs:
-        cache_key = six.text_type(args).encode('utf8') + \
-            six.text_type(kargs).encode('utf8')
+        cache_key = str(args).encode('utf8') + str(kargs).encode('utf8')
 
         if self.urlcache is not None:
-            if six.PY3:
-                cache_key_script_name = b':'.join((script_name.encode('utf-8'),
-                                                   cache_key))
-            else:
-                cache_key_script_name = '%s:%s' % (script_name, cache_key)
+            cache_key_script_name = b':'.join((script_name.encode('utf-8'),
+                                               cache_key))
 
             # Check the url cache to see if it exists, use it if it does
             val = self.urlcache.get(cache_key_script_name, self)
@@ -829,7 +824,7 @@ class Mapper(SubMapperParent):
 
         keys = frozenset(kargs.keys())
         cacheset = False
-        cachekey = six.text_type(keys)
+        cachekey = str(keys)
         cachelist = sortcache.get(cachekey)
         if args:
             keylist = args
@@ -1110,7 +1105,7 @@ class Mapper(SubMapperParent):
         def swap(dct, newdct):
             """Swap the keys and values in the dict, and uppercase the values
             from the dict during the swap."""
-            for key, val in six.iteritems(dct):
+            for key, val in dct.items():
                 newdct.setdefault(val.upper(), []).append(key)
             return newdct
         collection_methods = swap(collection, {})
@@ -1153,7 +1148,7 @@ class Mapper(SubMapperParent):
             return opts
 
         # Add the routes for handling collection methods
-        for method, lst in six.iteritems(collection_methods):
+        for method, lst in collection_methods.items():
             primary = (method != 'GET' and lst.pop(0)) or None
             route_options = requirements_for(method)
             for action in lst:
@@ -1177,7 +1172,7 @@ class Mapper(SubMapperParent):
                      action='index', conditions={'method': ['GET']}, **options)
 
         # Add the routes that deal with new resource methods
-        for method, lst in six.iteritems(new_methods):
+        for method, lst in new_methods.items():
             route_options = requirements_for(method)
             for action in lst:
                 name = "new_" + member_name
@@ -1196,7 +1191,7 @@ class Mapper(SubMapperParent):
         requirements_regexp = '[^\\/]+(?<!\\\\)'
 
         # Add the routes that deal with member methods of a resource
-        for method, lst in six.iteritems(member_methods):
+        for method, lst in member_methods.items():
             route_options = requirements_for(method)
             route_options['requirements'] = {'id': requirements_regexp}
             if method not in ['POST', 'GET', 'any']:

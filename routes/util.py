@@ -7,9 +7,7 @@ framework.
 """
 import os
 import re
-
-import six
-from six.moves import urllib
+import urllib
 
 from routes import request_config
 
@@ -34,8 +32,8 @@ def _screenargs(kargs, mapper, environ, force_explicit=False):
     """
     # Coerce any unicode args with the encoding
     encoding = mapper.encoding
-    for key, val in six.iteritems(kargs):
-        if isinstance(val, six.text_type):
+    for key, val in kargs.items():
+        if isinstance(val, str):
             kargs[key] = val.encode(encoding)
 
     if mapper.explicit and mapper.sub_domains and not force_explicit:
@@ -60,7 +58,7 @@ def _screenargs(kargs, mapper, environ, force_explicit=False):
         memory_kargs = {}
 
     # Remove keys from memory and kargs if kargs has them as None
-    empty_keys = [key for key, value in six.iteritems(kargs) if value is None]
+    empty_keys = [key for key, value in kargs.items() if value is None]
     for key in empty_keys:
         del kargs[key]
         memory_kargs.pop(key, None)
@@ -79,7 +77,7 @@ def _subdomain_check(kargs, mapper, environ):
     on the current subdomain or lack therof."""
     if mapper.sub_domains:
         subdomain = kargs.pop('sub_domain', None)
-        if isinstance(subdomain, six.text_type):
+        if isinstance(subdomain, str):
             subdomain = str(subdomain)
 
         fullhost = environ.get('HTTP_HOST') or environ.get('SERVER_NAME')
@@ -112,13 +110,13 @@ def _subdomain_check(kargs, mapper, environ):
 def _url_quote(string, encoding):
     """A Unicode handling version of urllib.quote."""
     if encoding:
-        if isinstance(string, six.text_type):
+        if isinstance(string, str):
             s = string.encode(encoding)
-        elif isinstance(string, six.text_type):
+        elif isinstance(string, str):
             # assume the encoding is already correct
             s = string
         else:
-            s = six.text_type(string).encode(encoding)
+            s = str(string).encode(encoding)
     else:
         s = str(string)
     return urllib.parse.quote(s, '/')
@@ -126,13 +124,13 @@ def _url_quote(string, encoding):
 
 def _str_encode(string, encoding):
     if encoding:
-        if isinstance(string, six.text_type):
+        if isinstance(string, str):
             s = string.encode(encoding)
-        elif isinstance(string, six.text_type):
+        elif isinstance(string, str):
             # assume the encoding is already correct
             s = string
         else:
-            s = six.text_type(string).encode(encoding)
+            s = str(string).encode(encoding)
     return s
 
 
@@ -216,16 +214,16 @@ def url_for(*args, **kargs):
             if kargs:
                 url += '?'
                 query_args = []
-                for key, val in six.iteritems(kargs):
+                for key, val in kargs.items():
                     if isinstance(val, (list, tuple)):
                         for value in val:
                             query_args.append("%s=%s" % (
-                                urllib.parse.quote(six.text_type(key).encode(encoding)),
-                                urllib.parse.quote(six.text_type(value).encode(encoding))))
+                                urllib.parse.quote(str(key).encode(encoding)),
+                                urllib.parse.quote(str(value).encode(encoding))))
                     else:
                         query_args.append("%s=%s" % (
-                            urllib.parse.quote(six.text_type(key).encode(encoding)),
-                            urllib.parse.quote(six.text_type(val).encode(encoding))))
+                            urllib.parse.quote(str(key).encode(encoding)),
+                            urllib.parse.quote(str(val).encode(encoding))))
                 url += '&'.join(query_args)
     environ = getattr(config, 'environ', {})
     if 'wsgiorg.routing_args' not in environ:
@@ -366,16 +364,16 @@ class URLGenerator(object):
                 if kargs:
                     url += '?'
                     query_args = []
-                    for key, val in six.iteritems(kargs):
+                    for key, val in kargs.items():
                         if isinstance(val, (list, tuple)):
                             for value in val:
                                 query_args.append("%s=%s" % (
-                                    urllib.parse.quote(six.text_type(key).encode(encoding)),
-                                    urllib.parse.quote(six.text_type(value).encode(encoding))))
+                                    urllib.parse.quote(str(key).encode(encoding)),
+                                    urllib.parse.quote(str(value).encode(encoding))))
                         else:
                             query_args.append("%s=%s" % (
-                                urllib.parse.quote(six.text_type(key).encode(encoding)),
-                                urllib.parse.quote(six.text_type(val).encode(encoding))))
+                                urllib.parse.quote(str(key).encode(encoding)),
+                                urllib.parse.quote(str(val).encode(encoding))))
                     url += '&'.join(query_args)
         if not static:
             route_args = []
