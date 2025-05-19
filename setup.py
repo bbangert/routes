@@ -62,10 +62,8 @@ setup(name="Routes",
           'GitHub: repo': 'https://github.com/bbangert/routes',
       },
       license="MIT",
-      test_suite="nose.collector",
       include_package_data=True,
       zip_safe=False,
-      tests_require=["soupsieve<2.0", 'nose', 'webtest', 'webob', 'coverage'],
       install_requires=[
           "six"
       ],
