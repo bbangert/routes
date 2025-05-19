@@ -4,7 +4,6 @@ import itertools as it
 import re
 import threading
 
-from repoze.lru import LRUCache
 import six
 
 from routes import request_config
@@ -27,6 +26,28 @@ def strip_slashes(name):
     if name.endswith('/'):
         name = name[:-1]
     return name
+
+
+class LRUCache:
+    def __init__(self, capacity):
+        self.capacity = capacity
+        self.cache = collections.OrderedDict()
+
+    def get(self, key, defvalue):
+        try:
+            value = self.cache.pop(key)
+            self.cache[key] = value
+            return value
+        except KeyError:
+            return defvalue
+
+    def put(self, key, value):
+        try:
+            self.cache.pop(key)
+        except KeyError:
+            if len(self.cache) >= self.capacity:
+                self.cache.popitem(last=False)
+        self.cache[key] = value
 
 
 class SubMapperParent(object):
@@ -920,7 +941,8 @@ class Mapper(SubMapperParent):
                 external_static = route.static and route.external
                 if not route.absolute and not external_static:
                     path = script_name + path
-                    key = cache_key_script_name
+                    if self.urlcache is not None:
+                       key = cache_key_script_name
                 else:
                     key = cache_key
                 if self.urlcache is not None:
