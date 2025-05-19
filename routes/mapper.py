@@ -393,7 +393,7 @@ class Mapper(SubMapperParent):
 
         ``encoding``
             Used to indicate alternative encoding/decoding systems to
-            use with both incoming URL's, and during Route generation
+            use with both incoming URLs, and during Route generation
             when passed a Unicode string. Defaults to 'utf-8'.
 
         ``decode_errors``
@@ -403,7 +403,7 @@ class Mapper(SubMapperParent):
 
         ``minimization``
             Boolean used to indicate whether or not Routes should
-            minimize URL's and the generated URL's, or require every
+            minimize URLs and the generated URLs, or require every
             part where it appears in the path. Defaults to False.
 
         ``hardcode_names``
