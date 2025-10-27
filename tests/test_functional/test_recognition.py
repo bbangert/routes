@@ -209,7 +209,7 @@ class TestRecognition(unittest.TestCase):
         m = Mapper(explicit=False)
         m.minimization = True
         m.connect('archive/:year/:month/:day', controller='blog', action='view', month=None, day=None,
-                                    requirements={'month':'\d{1,2}','day':'\d{1,2}'})
+                                    requirements={'month':r'\d{1,2}','day':r'\d{1,2}'})
         m.connect('viewpost/:id', controller='post', action='view')
         m.connect(':controller/:action/:id')
         m.create_regs(['post','blog','admin/user'])
@@ -225,7 +225,7 @@ class TestRecognition(unittest.TestCase):
         m = Mapper()
         m.minimization = False
         m.connect('/archive/:year/:month/:day', controller='blog', action='view', month=None, day=None,
-                                    requirements={'month':'\d{1,2}','day':'\d{1,2}'})
+                                    requirements={'month':r'\d{1,2}','day':r'\d{1,2}'})
         m.connect('/viewpost/:id', controller='post', action='view')
         m.connect('/:controller/:action/:id')
         m.create_regs(['post','blog','admin/user'])
@@ -242,7 +242,7 @@ class TestRecognition(unittest.TestCase):
         m = Mapper(explicit=False)
         m.minimization = True
         m.connect('archive/:(year)/:(month)/:(day)', controller='blog', action='view', month=None, day=None,
-                                    requirements={'month':'\d{1,2}','day':'\d{1,2}'})
+                                    requirements={'month':r'\d{1,2}','day':r'\d{1,2}'})
         m.connect('viewpost/:(id)', controller='post', action='view')
         m.connect(':(controller)/:(action)/:(id)')
         m.create_regs(['post','blog','admin/user'])
@@ -258,8 +258,8 @@ class TestRecognition(unittest.TestCase):
         m = Mapper()
         m.minimization = True
         m.connect('archive/:year/:month/:day', controller='blog', action='view', month=None, day=None,
-                                    requirements={'month':'\d{1,2}'})
-        m.connect('view/:id/:controller', controller='blog', id=2, action='view', requirements={'id':'\d{1,2}'})
+                                    requirements={'month':r'\d{1,2}'})
+        m.connect('view/:id/:controller', controller='blog', id=2, action='view', requirements={'id':r'\d{1,2}'})
         m.create_regs(['post','blog','admin/user'])
 
         assert m.match('/') is None
@@ -273,8 +273,8 @@ class TestRecognition(unittest.TestCase):
         m = Mapper()
         m.minimization = True
         m.connect('archive/:(year)/:(month)/:(day)', controller='blog', action='view', month=None, day=None,
-                                    requirements={'month':'\d{1,2}'})
-        m.connect('view/:(id)/:(controller)', controller='blog', id=2, action='view', requirements={'id':'\d{1,2}'})
+                                    requirements={'month':r'\d{1,2}'})
+        m.connect('view/:(id)/:(controller)', controller='blog', id=2, action='view', requirements={'id':r'\d{1,2}'})
         m.create_regs(['post','blog','admin/user'])
 
         assert m.match('/') is None
@@ -288,7 +288,7 @@ class TestRecognition(unittest.TestCase):
         for path in ['view/:id/:controller', 'view/:(id)/:(controller)']:
             m = Mapper()
             m.minimization = True
-            m.connect(path, id=2, action='view', requirements={'id':'\d{1,2}'})
+            m.connect(path, id=2, action='view', requirements={'id':r'\d{1,2}'})
             m.create_regs(['post','blog','admin/user'])
 
             assert m.match('/') is None
@@ -302,7 +302,7 @@ class TestRecognition(unittest.TestCase):
         for path in ['view/:id/:controller/super', 'view/:(id)/:(controller)/super']:
             m = Mapper()
             m.minimization = True
-            m.connect(path, controller='blog', id=2, action='view', requirements={'id':'\d{1,2}'})
+            m.connect(path, controller='blog', id=2, action='view', requirements={'id':r'\d{1,2}'})
             m.create_regs(['post','blog','admin/user'])
 
             assert m.match('/') is None
@@ -926,10 +926,10 @@ else:
         m.connect('index.rdf', controller='xml', action='rss')
 
         m.connect('articles', controller='articles', action='index')
-        m.connect('articles/page/:page', controller='articles', action='index', requirements = {'page':'\d+'})
+        m.connect('articles/page/:page', controller='articles', action='index', requirements = {'page':r'\d+'})
 
         m.connect('articles/:year/:month/:day/page/:page', controller='articles', action='find_by_date', month = None, day = None,
-                            requirements = {'year':'\d{4}', 'month':'\d{1,2}','day':'\d{1,2}'})
+                            requirements = {'year':r'\d{4}', 'month':r'\d{1,2}','day':r'\d{1,2}'})
         m.connect('articles/category/:id', controller='articles', action='category')
         m.connect('pages/*name', controller='articles', action='view_page')
         m.create_regs(['content','admin/why', 'admin/user'])

@@ -141,26 +141,26 @@ class TestResourceRecognition(unittest.TestCase):
         assert con.mapper_dict == {'controller':'people', 'action':'update', 'id':'2', 'format':'json'}
 
         # Test for dots in urls
-        test_path('/people/2\.13', 'PUT')
-        assert con.mapper_dict == {'controller':'people', 'action':'update', 'id':'2\.13'}
-        test_path('/people/2\.13.xml', 'PUT')
-        assert con.mapper_dict == {'controller':'people', 'action':'update', 'id':'2\.13', 'format':'xml'}
-        test_path('/people/user\.name', 'PUT')
-        assert con.mapper_dict == {'controller':'people', 'action':'update', 'id':'user\.name'}
-        test_path('/people/user\.\.\.name', 'PUT')
-        assert con.mapper_dict == {'controller':'people', 'action':'update', 'id':'user\.\.\.name'}
-        test_path('/people/user\.name\.has\.dots', 'PUT')
-        assert con.mapper_dict == {'controller':'people', 'action':'update', 'id':'user\.name\.has\.dots'}
-        test_path('/people/user\.name\.is\.something.xml', 'PUT')
-        assert con.mapper_dict == {'controller':'people', 'action':'update', 'id':'user\.name\.is\.something', 'format':'xml'}
-        test_path('/people/user\.name\.ends\.with\.dot\..xml', 'PUT')
-        assert con.mapper_dict == {'controller':'people', 'action':'update', 'id':'user\.name\.ends\.with\.dot\.', 'format':'xml'}
-        test_path('/people/user\.name\.ends\.with\.dot\.', 'PUT')
-        assert con.mapper_dict == {'controller':'people', 'action':'update', 'id':'user\.name\.ends\.with\.dot\.'}
-        test_path('/people/\.user\.name\.starts\.with\.dot', 'PUT')
-        assert con.mapper_dict == {'controller':'people', 'action':'update', 'id':'\.user\.name\.starts\.with\.dot'}
-        test_path('/people/user\.name.json', 'PUT')
-        assert con.mapper_dict == {'controller':'people', 'action':'update', 'id':'user\.name', 'format':'json'}
+        test_path(r'/people/2\.13', 'PUT')
+        assert con.mapper_dict == {'controller':'people', 'action':'update', 'id':r'2\.13'}
+        test_path(r'/people/2\.13.xml', 'PUT')
+        assert con.mapper_dict == {'controller':'people', 'action':'update', 'id':r'2\.13', 'format':'xml'}
+        test_path(r'/people/user\.name', 'PUT')
+        assert con.mapper_dict == {'controller':'people', 'action':'update', 'id':r'user\.name'}
+        test_path(r'/people/user\.\.\.name', 'PUT')
+        assert con.mapper_dict == {'controller':'people', 'action':'update', 'id':r'user\.\.\.name'}
+        test_path(r'/people/user\.name\.has\.dots', 'PUT')
+        assert con.mapper_dict == {'controller':'people', 'action':'update', 'id':r'user\.name\.has\.dots'}
+        test_path(r'/people/user\.name\.is\.something.xml', 'PUT')
+        assert con.mapper_dict == {'controller':'people', 'action':'update', 'id':r'user\.name\.is\.something', 'format':'xml'}
+        test_path(r'/people/user\.name\.ends\.with\.dot\..xml', 'PUT')
+        assert con.mapper_dict == {'controller':'people', 'action':'update', 'id':r'user\.name\.ends\.with\.dot\.', 'format':'xml'}
+        test_path(r'/people/user\.name\.ends\.with\.dot\.', 'PUT')
+        assert con.mapper_dict == {'controller':'people', 'action':'update', 'id':r'user\.name\.ends\.with\.dot\.'}
+        test_path(r'/people/\.user\.name\.starts\.with\.dot', 'PUT')
+        assert con.mapper_dict == {'controller':'people', 'action':'update', 'id':r'\.user\.name\.starts\.with\.dot'}
+        test_path(r'/people/user\.name.json', 'PUT')
+        assert con.mapper_dict == {'controller':'people', 'action':'update', 'id':r'user\.name', 'format':'json'}
 
     def test_resource_with_nomin(self):
         m = Mapper()

@@ -10,7 +10,7 @@ class TestUtils(unittest.TestCase):
         m = Mapper(explicit=False)
         m.minimization = True
         m.connect('archive/:year/:month/:day', controller='blog', action='view', month=None, day=None,
-                  requirements={'month':'\d{1,2}','day':'\d{1,2}'})
+                  requirements={'month':r'\d{1,2}','day':r'\d{1,2}'})
         m.connect('viewpost/:id', controller='post', action='view')
         m.connect(':controller/:action/:id')
         con = request_config()
@@ -758,7 +758,7 @@ class TestUtilsWithExplicit(unittest.TestCase):
         m = Mapper(explicit=True)
         m.minimization = True
         m.connect('archive/:year/:month/:day', controller='blog', action='view', month=None, day=None,
-                  requirements={'month':'\d{1,2}','day':'\d{1,2}'})
+                  requirements={'month':r'\d{1,2}','day':r'\d{1,2}'})
         m.connect('viewpost/:id', controller='post', action='view', id=None)
         m.connect(':controller/:action/:id')
         con = request_config()
@@ -974,10 +974,10 @@ else:
         m.connect('index.rdf', controller='xml', action='rss')
 
         m.connect('articles', controller='articles', action='index')
-        m.connect('articles/page/:page', controller='articles', action='index', requirements = {'page':'\d+'})
+        m.connect('articles/page/:page', controller='articles', action='index', requirements = {'page':r'\d+'})
 
         m.connect('articles/:year/:month/:day/page/:page', controller='articles', action='find_by_date', month = None, day = None,
-                            requirements = {'year':'\d{4}', 'month':'\d{1,2}','day':'\d{1,2}'})
+                            requirements = {'year':r'\d{4}', 'month':r'\d{1,2}','day':r'\d{1,2}'})
         m.connect('articles/category/:id', controller='articles', action='category')
         m.connect('pages/*name', controller='articles', action='view_page')
         con = Config()

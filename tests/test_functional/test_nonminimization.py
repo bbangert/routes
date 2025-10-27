@@ -88,7 +88,7 @@ def test_syntax():
 def test_regexp_syntax():
     m = Mapper(explicit=False)
     m.minimization = False
-    m.connect('/{controller}/{action}/{id:\d\d}')
+    m.connect(r'/{controller}/{action}/{id:\d\d}')
     m.create_regs(['content'])
 
     # Recognize
