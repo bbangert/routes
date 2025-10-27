@@ -7,7 +7,7 @@ from routes import *
 class TestSubmapper(unittest.TestCase):
     def test_submapper(self):
         m = Mapper()
-        c = m.submapper(path_prefix='/entries', requirements=dict(id='\d+'))
+        c = m.submapper(path_prefix='/entries', requirements=dict(id=r'\d+'))
         c.connect('entry', '/{id}')
 
         assert url_for('entry', id=1) == '/entries/1'
@@ -23,7 +23,7 @@ class TestSubmapper(unittest.TestCase):
     def test_submapper_nesting(self):
         m = Mapper()
         c = m.submapper(path_prefix='/entries', controller='entry',
-                        requirements=dict(id='\d+'))
+                        requirements=dict(id=r'\d+'))
         e = c.submapper(path_prefix='/{id}')
 
         assert c.resource_name == 'entry'
@@ -158,7 +158,7 @@ class TestSubmapper(unittest.TestCase):
 
     def test_collection_options(self):
         m = Mapper()
-        requirement=dict(id='\d+')
+        requirement=dict(id=r'\d+')
         c = m.collection('entries', 'entry', conditions=dict(sub_domain=True),
                          requirements=requirement)
         for r in m.matchlist:
